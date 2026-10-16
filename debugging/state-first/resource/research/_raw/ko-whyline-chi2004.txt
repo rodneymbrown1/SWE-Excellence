@@ -1,0 +1,508 @@
+CHI 2004 ‫ ׀‬Paper                                                                                               24-29 April ‫ ׀‬Vienna, Austria
+
+
+
+               Designing the Whyline: A Debugging Interface
+               for Asking Questions about Program Behavior
+                                                  Andrew J. Ko and Brad A. Myers
+                                                     Human-Computer Interaction Institute
+                                                          Carnegie Mellon University
+                                                            Pittsburgh, PA 15213
+                                                      ajko@cmu.edu, bam+@cs.cmu.edu
+
+Abstract                                                                          must struggle to map strategies for answering their question
+Debugging is still among the most common and costly of                            to the tools’ limited capabilities. We propose to remove this
+programming activities. One reason is that current                                hurdle by allowing programmers to directly ask the
+debugging tools do not directly support the inquisitive                           questions they naturally want to ask.
+nature of the activity. Interrogative Debugging is a new                          As part of the Natural Programming project
+debugging paradigm in which programmers can ask why                               (www.cs.cmu.edu/~natprog), we have found that
+did and even why didn’t questions directly about their                            programmers tend to ask why did or why didn’t something
+program’s runtime failures. The Whyline is a prototype                            happen. Thus, in this paper we propose a new debugging
+Interrogative Debugging interface for the Alice                                   paradigm called Interrogative Debugging, in which
+programming environment that visualizes answers in terms                          programmers can ask why did and why didn’t questions
+of runtime events directly relevant to a programmer’s                             directly about a program’s behavior, and view answers in
+question. Comparisons of identical debugging scenarios                            terms of directly relevant runtime data. We then describe
+from user tests with and without the Whyline showed that                          the design of the Whyline, an Interrogative Debugging
+the Whyline reduced debugging time by nearly a factor of                          interface for the Alice programming system. By comparing
+8, and helped programmers complete 40% more tasks.                                six identical debugging scenarios from user tests with and
+Categories and Subject Descriptors: D.2.5. [Testing                               without the Whyline, we found that the Whyline reduced
+and Debugging]: Debugging aids.                                                   debugging time by nearly a factor of 8, enabling
+                                                                                  programmers to complete 40% more tasks.
+Keywords: Debugging, Alice, program slicing.
+                                                                                  INTERROGATIVE DEBUGGING
+INTRODUCTION
+                                                                                  Research describes debugging as an exploratory activity
+Among all programming activities, debugging still remains
+                                                                                  aimed at investigating a program’s behavior, involving
+the most common and most costly. A recent study by the
+                                                                                  several distinct and interleaving activities [4, 7, 15]:
+NIST found that software engineers in the U.S. spend 70-
+80% of their time testing and debugging, with the average                            • Hypothesizing what runtime actions caused failure;
+error taking 17.4 hours to find and fix. Software engineers                          • Observing data about a program’s runtime state;
+blamed inadequate testing and debugging tools [19].                                  • Restructuring data into different representations;
+One reason for this might be that the feature sets of                                • Exploring restructured runtime data;
+commercial debugging tools have changed little in the past                           • Diagnosing what code caused faulty runtime actions;
+30 years [14, 17]: programmers’ only tools for finding                               • Repairing erroneous code to prevent such actions.
+errors are still breakpoints, code-stepping, and print                            Current debugging tools support some of these activities,
+statements. There have been many attempts to design more                          while hindering others. For example, breakpoints and code-
+useful debugging paradigms and tools, including automatic                         stepping support observation of control flow, but hinder
+debugging [1], relative debugging [21], program slicing                           exploration and restructuring [17]; visualization tools help
+[20, 22], and visualizations [6], but few of these have been                      restructure data, but hinder diagnosis and observation [11].
+shown to be usable, let alone to reduce debugging time. We                        Yet none of these tools support hypothesizing activities.
+believe this is because debugging activity always begins                          The argument behind Interrogative Debugging (ID) is that
+with a question, and to use existing tools, programmers                           support for such question-related activities is essential to
+                                                                                  successful debugging. If programmers have a weak
+Permission to make digital or hard copies of all or part of this work for         hypothesis about the cause of a failure, any implicit
+personal or classroom use is granted without fee provided that copies are         assumptions about what did or did not happen at runtime
+not made or distributed for profit or commercial advantage and that
+copies bear this notice and the full citation on the first page. To copy          will go unchecked. Not only do these unchecked
+otherwise, or republish, to post on servers or to redistribute to lists,          assumptions cause debugging to take more time [15], but
+requires prior specific permission and/or a fee.                                  we have shown that in Alice, 50% of all errors were due to
+CHI 2004, April 24–29, 2004, Vienna, Austria.                                     programmers’ false assumptions in the hypotheses they
+Copyright 2004 ACM 1-58113-702-8/04/0004…$5.00.
+                                                                                  formed while debugging existing errors [12].
+
+
+
+
+                                                                            151                                         Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                         24-29 April ‫ ׀‬Vienna, Austria
+
+
+Thus, the fundamental goal of ID is to allow programmers                 Some methods of answering questions might be better than
+to ask questions explicitly about their program’s failure.               others at revealing the important information. We propose a
+For example, if a programmer was testing a graphical                     set of design constraints in Table 1, framed in terms of
+button and observed that clicking it had no effect, an ID                Green’s Cognitive Dimensions Framework [9].
+interface would allow her to ask, “Why didn’t this button do             Consider hidden dependencies, which are entity relationships
+anything?” By allowing questions about program output, any               that are not fully visible. Gilmore argues that a critical part of
+implicit assumptions about what did or did not happen at                 debugging is searching for a set of runtime dependencies that
+runtime can be explicitly addressed in the answer.                       explain a programmer’s knowledge gap [7]. These important
+In two studies of both experts’ and novices’ programming                 relationships should never be hidden, while the larger set of
+activity [12], programmers’ questions at the time of failure             irrelevant dependencies could be hidden in trade for
+were one of two types: why did questions, which assume the               visibility. Commercial debugging tools are notorious for
+occurrence of an unexpected runtime action, and why didn’t               hidden dependencies: code stepping tools show runtime data
+questions, which assume the absence of an expected runtime               on the call stack, but not the data that depends on it or that it
+action. There were three possible answers:                               depends on. Print statements reveal relevant runtime data,
+   1. False propositions. The programmer’s assumption is                 but hide the context from which the data was printed.
+      false. The answer to “Why didn’t this button’s action              Another issue is viscosity, or resistance to local changes. For
+      happen?” may be that it did, but had no visible effect.            example, inserting ten print statements to observe runtime
+                                                                         events requires removing them later; trying to use a code
+   2. Invariants. The runtime action always happens (why
+                                                                         stepping tool to show data from the past requires re-
+      did), or can never happen (why didn’t). The answer to
+                                                                         execution. These hindrances to exploration may lead to
+      our button question may be that an event handler was
+                                                                         debugging errors.
+      not attached to an event, so it could never happen.
+   3. Data and control flow. A chain of runtime actions led to           THE WHYLINE
+      the program’s output. For example, a conditional                   To investigate the merits of ID, we used our design
+      expression, which was supposed to fire the button’s                constraints to design the Whyline—a Workspace that Helps
+      action, evaluated to false instead of true.                        You Link Instructions to Numbers and Events. The Whyline
+                                                                         is prototyped in Alice, the environment shown in Figure 1.
+Interaction Design Requirements                                          Alice is an event-based language that simplifies the creation
+Even with a clear idea of the functionality that an ID                   of interactive 3D worlds. Code is created by dragging and
+interface should have, there are numerous ways that one                  dropping tiles to the code area and choosing parameters from
+could design the interactions with such a tool. For example,             popup menus. This interaction prevents all type and syntax
+some methods of asking questions may be better than others               errors. See www.alice.org for more details.
+at allowing programmers to explore possible questions.
+  Table 1. Proposed design constraints for debugging interfaces in terms of the Cognitive Dimensions Framework [8].
+       Dimension        Rationale and Proposed Design Constraint
+     Error-proneness    Knowledge, attentional, and strategic breakdowns in debugging can cause errors, and should be prevented [12].
+                        Assumptions and misperceptions about runtime history lead to inefficient, error-prone debugging strategies [5].
+ Premature Commitment
+                        Don’t require programmers to hypothesize and diagnose without observations of runtime data.
+         Viscosity      Exploration is essential to successful debugging [7], thus acquiring new runtime data should be unhindered.
+      Provisionality    There shouldn’t be any commitment to the effects of exploring questions, runtime data, or code.
+      Visibility and    Ability to see and compare code, runtime data and output is essential to successful observation, hypothesizing
+     Juxtaposability    and diagnosis [7]. This type of data should have more prominence than other potentially visible information.
+          Hidden        With respect to a specific program failure, there are few relevant runtime dependencies and many irrelevant ones
+      dependencies      [7]. Emphasize relevant runtime dependencies by hiding irrelevant ones.
+        Secondary       Support for meta-activities such as managing hypotheses and annotating possibly erroneous code may improve
+         Notation       productivity [5]. Support secondary notations for annotating code, runtime data, and hypotheses considered.
+       Diffuseness      Verbosity of runtime actions should correlate with the programming language’s verbosity.
+       Consistency      Representations of runtime actions should be understandable with only knowledge of the code.
+                        Progressive evaluation is mentally simulating the execution of a program to test if a potential repair would prevent
+ Progressive Evaluation
+                        failure [14]. Debugging interfaces should help programmers simulate computation and control-flow.
+                        Diagnosis involves understanding a computational machine’s mapping from code to runtime behavior.
+  Closeness of Mapping
+                        Representation of runtime data should closely map to machine’s behavior, in order to support diagnosis.
+                        Programmers will not use a tool if they perceive no reward in using it [2]. Interface artifacts should have
+   Role-Expressiveness
+                        affordances for the actions they support and rewards they provide.
+                        Understanding runtime causality (hypothesizing and diagnosis) are hard mental operations; other activities are not
+ Hard Mental Operations
+                        [7]. Make the easy activities easier and hard activities possible.
+                        Debugging is a tight exploratory cycle, suggesting that the reward for creating abstractions is small. Focus on
+  Abstraction-Gradient
+                        helping programmers explore runtime data, not on abstracting runtime data.
+
+
+
+
+                                                                   152                                             Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                 24-29 April ‫ ׀‬Vienna, Austria
+
+
+
+
+Figure 1. The Alice programming environment, before the world has been played: (1) the object list, (2) The 3D world
+ view, (3) the event list, (4) the currently selected object’s properties, methods, and questions, and (5) the code area.
+Alice-Specific Constraints and Guidelines                              She plays the world and makes Pac collide with the
+To further inform our design, we performed two studies of              ghost, but to her surprise, Pac does not shrink...
+novice and expert programmers using Alice in contextual
+                                                                     Pac did not shrink because Ellen (a pseudonym) has code
+and lab settings [12]. One major finding was that 50% of all
+                                                                     that prevents Pac from resizing after the big dot is eaten.
+errors were due to programmers’ false assumptions in the
+                                                                     Either Ellen did not notice that Pac ate the big dot, or she
+hypotheses they formed while debugging existing errors.
+                                                                     forgot about the dependency.
+There were also many consistent trends in their questions:
+    1. 68% of questions were why didn’t questions and the            The Question Menu
+       remaining were why did questions.                             When Ellen played the world, Alice hid the code and
+    2. Programmers only asked why didn’t questions about             expanded the worldview and property panel, as seen in
+       code that plausibly might have executed.                      Figure 2. This relates property values to program output.
+    3. 85% of questions were about a single object. The              Ellen presses the why button after noticing that Pac did not
+       remaining concerned multiple objects’ interactions.           shrink, and a menu appears with the items why did and why
+                                                                     didn’t, as in Figure 3. The submenus contain the objects in
+An Illustration of the Whyline’s Design                              the world that were or could have been affected. The menu
+Before we describe the Whyline’s implementation, let us
+illustrate its design through this debugging scenario (which
+comes directly from the user study we will discuss shortly):
+  Ellen is creating a Pac-Man game, and trying to make
+  Pac shrink when the ghost is chasing and touches Pac.
+
+
+
+
+                                                                     Figure 3. Ellen explores the questions and decides to ask
+Figure 2. Ellen expected Pac to resize, but he did not.               “Why didn’t Pac resize .5?” which highlights the code.
+
+
+
+                                                               153                                         Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                    24-29 April ‫ ׀‬Vienna, Austria
+
+
+supports exploration and diagnosis by increasing questions’            This improves consistency and closeness of mapping with
+visibility and decreasing the viscosity of considering them.           code.
+Because Ellen expected Pac to resize after touching the                The arrows represent data and control flow causality.
+ghost, she selects why didn’t Pac… and scans the property              Predicate arrows are labeled true or false and dataflow
+changes and animations that could have happened. When she              arrows are labeled with the data used by the action they
+hovers the mouse over a menu item, the code that caused the            point to. The arrows support progressive evaluation, and
+output in question is highlighted and centered in the code             thus hypothesizing, by helping Ellen follow the runtime
+area (see Figure 3). This supports diagnosis by exposing               system’s computation and control flow.
+hidden dependencies between the failure and the code that              Along the x-axis is event-relative time, improving the
+might be responsible for it. This also avoids premature                closeness of mapping to the time-based Alice runtime
+commitment in diagnosis by showing the subject of the                  system. Along the y-axis are event threads: this allows co-
+question without requiring that the question be asked.                 occurring events to be shown, supporting juxtaposibility.
+The Answer                                                             Ellen interacts with the timeline by dragging the time
+Ellen asks why didn’t Pac resize .5? and the camera focuses            cursor (the vertical black line in Figure 4). Doing so
+on Pac to increase his visibility. The Whyline answers the             changes all properties to their values at the time represented
+question by analyzing the runtime actions that did and did             by the time cursor’s location. This supports exploration of
+not happen, and provides the answer shown in Figure 4. The             runtime data. When Ellen moves the cursor over an action,
+actions included are only those that prevented Pac from                the action and the code that caused it become selected,
+resizing: the predicate whose expression was false and the             supporting diagnosis and repair. These features allow Ellen
+actions that defined the properties used by the expression. By         to rewind, fast-forward, and even “scrub” the execution
+excluding unrelated actions, we support observation and                history, receiving immediate feedback about the state of the
+hypothesizing by increasing the visibility of the actions that         world. This exposes hidden dependencies between actions
+likely contain the fault. To support diagnosis, the actions’           and data that might not be shown directly on the Whyline,
+names and colors are the same as the code that caused them.            and between properties’ current values and program output.
+
+
+
+
+Figure 4. The Whyline’s answer shows a visualization of the runtime actions preventing Pac from resizing. Ellen uses the
+time cursor to “scrub” the execution history, and realizes that Pac did not resize because isEaten was true.
+
+
+
+                                                                 154                                          Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                  24-29 April ‫ ׀‬Vienna, Austria
+
+
+To reduce the viscosity of exploration, Ellen can double-             decreased visibility, and we believed forcing programmers
+click on an action to implicitly ask what caused this to              to interactively reveal the history would better support
+happen? and actions causing the runtime action are                    progressive evaluation of their hypotheses.
+revealed. Ellen can also hover her mouse cursor over                  For why didn’t answers, we included all of the different
+expressions in the code to see properties’ current values             executions of the predicate that prevented the code in
+and to evaluate expressions based on the current time. This           question from being reached, and the why did slice on each.
+improves the visibility of runtime data and supports
+progressive evaluation. Finally, the Whyline supports                 USER STUDY
+provisionality by making previous answers available                   The Whyline was an exploration of an example
+through the Questions I’ve Asked button. The button                   Interrogative Debugging interface, so we had general
+prevents the hard mental operation of recalling facts                 questions about its usability and impact:
+determined earlier in debugging activity.                              • Would the Whyline be considered useful?
+Ellen discovers her misperception using the Whyline:                   • Would the Whyline reduce debugging time?
+   “So this says Pac didn’t resize because BigDot.isEaten
+                                                                        • Would the Whyline help complete more tasks?
+   is true…Oh! The ghost wasn’t chasing because Pac ate
+   the big dot. Let’s try again without getting the big dot.”         To investigate these questions, we replicated the
+                                                                      observational study discussed earlier [12], but included the
+Without the Whyline, the misperception could have led to
+                                                                      Whyline in the Alice environment. We will refer to the first
+an unnecessary search for non-existent errors.
+                                                                      study without the Whyline as the Without study, and the
+Implementation                                                        present study as the With study. The With study used an
+Alice programs are implemented internally using a control             iterative design methodology: observations from user
+flow graph (CFG), where expressions are represented as                session were used to fix usability problems and inform the
+data flow graphs attached to CFG nodes. These graphs are              design of features for successive sessions.
+constructed incrementally as programmers create and
+                                                                      Participants and Method
+modify code. At runtime, we annotate the graphs with all
+                                                                      In both studies, participants were recruited from the
+assignments and uses of properties’ values. This value
+                                                                      Carnegie Mellon HCI Masters program. Programming
+history is used to traverse the execution history based on
+                                                                      experience ranged from beginning Visual Basic to
+the location of the time cursor.
+                                                                      extensive C++ and Java. The four participants in the
+We use static [20] and dynamic [22] analysis to support:              Without study will be referred to as C1-C4, and the five in
+   1. Creation of a database of all changes to output (all            the With study as E1-E5.
+      animation statements and changes to visible                     Sessions began with a 15-minute tutorial on creating Alice
+      properties), used for generating the why did menu               code. Participants were given the layout in Figure 1 and 90
+      structure, and for answering false propositions.                minutes to make a Pac-Man game with these specifications:
+   2. Generation of precise dynamic slices on the code in               1. Pac must always move. His direction should change
+      question, used to visualize the Whyline’s answer.                    in response to the arrow keys.
+   3. Generation of all potential definitions and uses of               2. Ghost must move in random directions half of the
+      properties from static DFGs, used for constructing                   time and directly towards Pac the other half.
+      the why didn’t question menu. We do not support
+                                                                        3. If Ghost is chasing and touches Pac, Pac must flatten
+      continuous number spaces (i.e., an object’s position),
+                                                                           and stop moving forever.
+      but do support the generic question “why didn’t this
+      property change?”                                                 4. If Pac eats the big dot, ghost must run away for 5
+                                                                           seconds, then return to chasing.
+   4. Answering of invariant why didn’t questions by
+      coupling a dynamic slice on an execution instance of              5. If Pac touches running ghost, Ghost must flatten and
+      a CFG node with the reachability of the node.                        stop for 5 seconds, then chase again.
+We used Alice-specific design heuristics to construct                   6. If Pac eats all of the dots, Ghost must stop and Pac
+program slices. For example, for each question we had to                   must hop indefinitely.
+choose which execution of the queried statement to slice              For the purposes of analysis, we consider these six
+on. Because our observations showed that questions were               specifications to be six distinct tasks, since the code
+asked immediately after failures, we sliced on the most               necessary to accomplish them were only related by the
+recent execution of a program statement.                              character’s state of behavior.
+For why did answers, we included up to two predicates in              In both studies, the experimenter used think-aloud and
+the queried runtime action’s chain of causality, and any              Contextual Inquiry [10] methods to track participants’
+events defining the properties used in the predicates’                goals, strategies and intents. Participants were also
+expressions. Including more runtime actions would have                videotaped while they worked, for later analysis.
+
+
+
+
+                                                                155                                         Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                         24-29 April ‫ ׀‬Vienna, Austria
+
+
+     Table 2. Frequency of question/answer types in each study and times the Whyline was found useful for each.
+  Question                                 Frequency Question/Answer Pair was Asked                    # of times Whyline was found
+                 Answer Type
+   Type                                Without (4 programmers)    With (5 programmers)                    useful in the With study
+             Invariant                            0                               0                                    0
+  Why Did    False Proposition                    1                               0                                    0
+             Control/Data Flow                    7                               5                                    3
+Total # of Why Did Questions                      8                              5                                    3
+             Invariant                            5                               5                                    4
+ Why Didn’t False Proposition                     5                               7                                    5
+             Control/Data Flow                    7                               7                                    7
+Total # of Why Didn’t Questions                   17                             19                                   16
+
+Results                                                                  DISCUSSION
+Table 2 shows the distributions of question/answer types in              The Whyline appears to have great potential as a usable and
+each study. Why didn’t questions were more common than                   effective debugging tool for Alice users. In generalizing
+why did questions, and programmers rarely asked invariant                our experiences, there are many issues to consider.
+or false proposition why did questions. Participants found
+the Whyline useful for 19 of 24 of their questions, and the              Issues Raised in User Testing
+proportion increased in successive user tests: the Whyline               In our user testing, there were a few significant usability
+was useful for 0 of E1’s 3 questions, but all 5 of E5’s.                 issues with our initial designs, some of which we predicted,
+                                                                         and others we did not. These have implications for the
+Table 3 describes six identical debugging scenarios that
+                                                                         design of future ID interfaces.
+occurred in the With and Without studies (many other
+scenarios were similar, but not enough to warrant                        In session 1, for example, our prototype did not support
+comparison). In the Without study, participants tended to                why didn’t questions. When E1 first used the Whyline, he
+hypothesize and diagnose by inspecting and rewriting code.               wanted to ask a why didn’t question, but could not, and
+In the With study, they tended to hypothesize and diagnose               immediately decided “this thing is useless.” This suggests
+by asking questions and analyzing the Whyline’s answer. A                that support for why didn’t questions may be crucial to
+repeated measures ANOVA shows that in the six scenarios,                 programmers’ perceptions of the utility of the tool.
+the Whyline significantly decreased debugging time (F1,5 =               In session 2, our prototype distinguished between questions
+12.64, p < .02) by an average factor of 7.8.                             about output statements (why did) and questions about
+Overall, in the 90 minutes allotted, programmers with the                property changes (which we phrased as why is). E2
+Whyline completed significantly more tasks (M = 3.20, SD                 observed a failure based on Pac’s direction property and
+= .457) than those without (M = 2.25, SD = .500), t(7) =                 searched the why did menu, ignoring the why is menu. We
+3.0, p < .02. This was a 40% increase in tasks completed.                asked her later if she had noticed the menu: “I wanted to
+                                                                         ask about something that already happened.” This is
+Table 3. Identical debugging scenarios in the With and Without studies. Scenarios are described by the programming
+ error, the failure caused, each programmer’s strategy and outcomes, and the time from failure to error diagnosis.
+  Programming Error and                          Strategy, Outcome, and Time in Seconds from Failure → Error Diagnosis
+    the Failure it Caused                              Without                                                With
+Code resized Pac to 0, which Read events, moved method call to event,             Asked, why didn't pac resize 0? and got invariant
+                                                                              330                                                       38
+Alice ignores → Pac doesn’t moved camera, toggled state variables. “So sec answer. “So resize to 0 must not work. I’ll try .5           sec
+resize after touching ghost.    it’s the resize function that’s not working.”     instead.”
+Forgot event to call method Stared at screen and held head in hands.              Browsed why didn’t ghost questions and saw high-
+                                                                               75 lighted ghost movement code: " …oh, I didn't call it 8
+that moves ghost → ghost “Oh! I need an event to start it.”                   sec                                                       sec
+doesn’t move after playing.                                                       anywhere!"
+Thought dot2 was dot1 and Looked at code; searched for dot in world-              Inspected why didn’t menu and realized her misun-
+                                                                              91 derstanding: "Oh, no questions about the other          9
+referenced wrong dot →          view; removed then recreated collision
+                                                                              sec                                                       sec
+dot1 not eaten after collision. code, this time without error.                    dots. That must be dot2".
+Maps right key to right direc- “I think this is wrong; it doesn’t go to where     Asked why did Pac move right? Inspected control
+                                                                              182 and data flow answer; noticed direction set to right 28
+tion → Pac moves down           I want it to be…this is terrible!” Tried all
+                                                                              sec                                                       sec
+instead of right.               possible mappings until she realized direc-       because down was pressed: “So direction is relative
+Dot collision threshold too     “I made some methods that I thought would         Asked why didn't dot1.isShowing change to false?
+small for test to happen while help me rid of the dots…I’m pretty sure I got 207 Scrubbed predicate tests: "that's really intuitive…so 27
+                                                                              sec                                                       sec
+Pac is over dot → dot not       close enough.” Rewrote collision events and       when it actually did this test, this was the state of
+Forgot event to call eat-       “There is definitely nothing happening.”          Asked why didn't big dot isShowing change to
+                                                                              49                                                        10
+BigDot method → Dot not Browsed and inspected code and event list. sec false? and read invariant answer which noted that sec
+eaten after touching Pac        “Oh,   of course not!”                            nothing  called the method.  “Oh,   you’re right!”
+
+
+
+
+                                                                   156                                             Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                    24-29 April ‫ ׀‬Vienna, Austria
+
+
+consistent with our observations that programmers phrased             programmers could not see the values used by the internal
+questions in terms of failures instead of runtime data: she           inequality at runtime. One solution would be to instrument
+said why did Pac’s direction change to forward? and not               the surface-level internal logic of primitives, so that such
+why is Pac’s direction forward right now?                             expressions could be shown on the Whyline.
+In session 3, our prototype answered questions relative to            The Whyline does not yet support object-relative questions
+the time cursor’s placement. When E3 asked his first                  (such as “why did Pac resize after Ghost moved”), which
+question, he moved the time cursor, and upon asking his               were fairly common in early observations of Alice
+second question, noticed that the contents of the question            programmers. In future prototypes, we will investigate
+menu changed considerably: “Where did all my questions                constructing object-relative questions using direct
+go?” This was our rationale for using a statement’s latest            manipulation of the objects on the screen.
+execution, regardless of the time cursor’s placement.                 In our user studies, using the latest execution of the queried
+Usability issues were also found in sessions 4 and 5, but not         statement was sufficient. In more complicated Alice
+of the same magnitude as in the first three.                          worlds, this may not hold true. One possible interaction
+                                                                      would allow programmers to further specify their questions
+What was Helpful?                                                     with a time, which would allow them to find a particular
+The most helpful feature of the Whyline seemed to be the              execution in the recent history. This may require domain-
+question menu. Observations confirmed our hypothesis that             specific heuristics to design effectively.
+asking questions in terms of program output, rather than
+                                                                      We plan to make the Whyline available online, and deploy
+code or runtime actions, would make it easier for
+                                                                      it to the several universities where Alice is already in use.
+programmers to map their question to related code. By
+restricting the programmer’s ability to make assumptions              Interrogative Debugging for Other Languages
+about what did and did not happen, we enabled them to
+                                                                        “Gosh, that’s really intuitive. Can you make this for Java?”
+observe and explore the runtime actions that most likely                                 Subject E5, after his first program failure
+caused failures. We plan to further refine the Whyline and
+formally investigate these findings.                                  There are many open questions in designing ID tools for
+                                                                      other languages. For example, for a given language and
+Similarly, relating code to runtime actions interactively             programming task, what output will programmers want to
+with the time cursor and visual highlighting helped with              ask about? In a modern code base, output might be
+diagnosis and repair activities, as predicted. Had this               numerical, message-based, or simply the execution of a
+relationship not been explicitly visualized, more text would          stub of code. One way to automatically determine the
+have been needed to denote what caused the runtime action,            granularity and nature of such output would be to search for
+decreasing visibility, and programmers would have had to              previous executions of code in recently modified source
+manually search for the code responsible.                             files. This analysis could be used to select a set of output
+Finally, the data and control flow arrows directly supported          statements for why did and why didn’t questions that are
+hypothesizing which runtime events caused failure, as                 likely to be relevant. Even still, the sheer number of
+predicted. This seemed to be because the visualization                possible questions would be overwhelming. Future work
+acted as an external memory aid to help programmers                   must devise methods for selecting a small set of
+simulate runtime execution. In the Without study,                     contextually relevant questions from all possible questions.
+participants were forced to calculate expressions manually,           Because our implementation requires the complete
+allowing for attentional breakdowns during calculation.               execution history, another issue is memory and
+When the time cursor, reversibility, and other features were          performance. Researchers have developed time- and space-
+used, our observations suggest that they played supporting            efficient approaches to recording data definitions and uses,
+roles in the Whyline’s overall effectiveness.                         building CFGs and DFGs, and generating dynamic slices
+                                                                      [20, 22]. However, how to efficiently generate a set of
+FUTURE WORK                                                           relevant questions remains an open question. Even with
+Making the Whyline More Helpful                                       these methods, failures that are difficult to reproduce or
+Currently, questions about complex Boolean and numerical              take significant time to reproduce will pose significant
+expressions give equally complex answers. This is because             challenges.
+the level of detail in the questions is not enough to know            Another question is, for a given task and language, what
+which particular part of the data flow path is problematic.           heuristics generate the most understandable answers? We
+Reichwein et al. describe one solution that allows                    only included a small portion of a dynamic slice because of
+spreadsheet users to mark intermediate values in dataflow             the simplicity of most Alice worlds. For more complex
+paths as correct or incorrect, which feeds into a                     software, there would be a host of visualization and
+visualization of which computations may be faulty [16].               interactive issues in presenting a dynamic slice. One
+Programmers often needed to inspect the internals of Alice            approach might be to use semantic differencing methods
+primitives. For example, choosing the distance for “is                [18] to determine what parts of a dynamic slice might be
+object a within distance of object b” was difficult, because          anomalous, based on past executions histories.
+
+
+
+
+                                                                157                                            Volume 6, Number 1
+CHI 2004 ‫ ׀‬Paper                                                                                      24-29 April ‫ ׀‬Vienna, Austria
+
+
+RELATED WORK                                                            [8] Green, T.R.G., Cognitive dimensions of notations, in
+There are a few systems with approaches similar to ID.                       People and computers v, A. Sutcliffe and L. Macaulay,
+Lencevicius et al. discuss Query-Based Debugging [13],                       Editors. 1989, Cambridge, UK, Cambridge University
+where programmers form textual queries on objects’                           Press, 443-460.
+runtime relationships. However, it forces programmers to                [9] Green, T.R.G. and Petre, M., Usability analysis of
+guess what relationships might exist, and requires learning                  visual programming environments: A 'cognitive
+an unfamiliar query language. Briggs et al. discuss a task                   dimensions' framework. Journal of Visual Languages
+timeline [3] for debugging distributed Ada programs. Their                   and Computing, 7, 1996, 131-174.
+visualization is similar to the Whyline’s in that it highlights         [10] Holtzblatt, K. and Beyer, H., Contextual design:
+a dynamic slice, but it does not relate runtime events to                    Defining customer-centered systems. 1998, San
+code. Zeller’s work on cause-effect chains and the AskIgor                   Francisco, CA, Morgan Kaufmann.
+debugger [21] is a related diagnosis tool. However, Zeller’s            [11] Kehoe, C., Stasko, J., and Taylor, A., Rethinking the
+approach requires both a failed and successful execution of                  evaluation of algorithm animations as learning aids:
+a program. ID interfaces have no such requirement.                           An observational study. International Journal of
+                                                                             Human-Computer Studies, 54(2), 2001, 265-284.
+CONCLUSIONS                                                             [12] Ko, A.J. and Myers, B.A. Development and evaluation
+We have discussed a new debugging paradigm, called                           of a model of programming errors, IEEE Symposia on
+Interrogative Debugging, and a new debugging interface                       Human-Centric Computing Languages and
+called the Whyline. The Whyline allows programmers to                        Environments, 2003, Auckland, New Zealand, 7-14.
+ask why did and why didn’t questions about runtime                      [13] Lencevicius, R., Holzle, U., and Singh, A.K., Dynamic
+failures, and provides direct access to the runtime data that                query-based debugging of object-oriented programs.
+they need to debug. Our user studies demonstrate that the                    Journal of Automated Software Engineering, 10(1),
+Whyline can dramatically reduce debugging time,                              2003, 367-370.
+suggesting the potential of Interrogative Debugging as a                [14] Lieberman, H., The debugging scandal and what to do
+highly effective approach to supporting debugging activity.                  about it. Communications of the ACM, 40(4), 1997, 26-
+                                                                             78.
+ACKNOWLEDGEMENTS                                                        [15] Mayrhauser, A.v. and Vans, A.M. Program
+We thank the programmers in our user studies for their                       understanding behavior during debugging of large
+participation. This work was partially supported under NSF
+                                                                             scale software, Empirical Studies of Programmers, 7th
+grant IIS-0329090 and by the EUSES Consortium via NSF
+                                                                             Workshop, 1997, Alexandria, VA, 157-179.
+grant ITR-0325273. Opinions, findings and conclusions or
+                                                                        [16] Reichwein, J., Rothermel, G., and Burnett, M. Slicing
+recommendations expressed in this material are those of the
+                                                                             spreadsheets: An integrated methodology for
+author(s) and do not necessarily reflect those of the NSF.                   spreadsheet testing and debugging, Proceedings of the
+REFERENCES                                                                   2nd Conference on Domain-specific Languages, 2000,
+[1] Auguston, M., Jeffery, C., and Underwood, S. A                           Austin, Texas, 25-38.
+    framework for automatic debugging, IEEE                             [17] Romero, P., et al., A survey of external representations
+    International Conference on Automated Software                           employed in object-oriented programming
+    Engineering, 2002, Edinburgh, UK, 217-222.                               environments. Journal of Visual Languages and
+[2] Blackwell, A. and Burnett, M. Applying attention                         Computing, 14, 2003, 387-419.
+    investment to end-user programming, IEEE Symposia                   [18] Rothermel, G., Harrold, M.J., and Dedhia, J.,
+    on Human-Centric Computing Languages and                                 Regression test selection for c++ software. Software
+    Environments, 2002, Arlington, VA, 28-30.                                Testing, Verification & Reliability, 10(2), 2000, 77-
+[3] Briggs, J.S., et al., Task time lines as a debugging tool.               109.
+    ACM SIGAda Ada Letters, XVI(2), 1996, 50-69.                        [19] Tassey, G., The economic impacts of inadequate
+[4] Davies, S.P., Models and theories of programming                         infrastructure for software testing. National Institute of
+    strategy. International Journal of Man-Machine                           Standards and Technology, RTI Project Number
+    Studies, (39), 1993, 236-267.                                            7007.011, 2002.
+[5] Davies, S.P. Display-based problem solving strategies               [20] Tip, F., A survey of programming slicing techniques.
+    in computer programming, Empirical Studies of                            Journal of Programming Languages, 3, 1995, 121-
+    Programmers, 6th Workshop, 1996, Washington, D.C.,                       189.
+    59-76.                                                              [21] Zeller, A. Isolating cause-effect chains from computer
+[6] Gestwicki, P. and Jayaraman, B. Interactive                              programs, International Symposium on the
+    visualization of java programs, IEEE Symposia on                         Foundations of Software Engineering, 2002,
+    Human-Centric Computing Languages and                                    Charleston, SC, 1-10.
+    Environments, 2002, Arlington, VA, 226-235.                         [22] Zhang, X. and Zhang, Y. Precise dynamic slicing
+[7] Gilmore, D.J., Models of debugging. Acta                                 algorithms, International Conference on Software
+    Psychologica, (78), 1992, 151-173.                                       Engineering, 2003, Portland, OR, 319-329.
+
+
+
+
+                                                                  158                                           Volume 6, Number 1
+

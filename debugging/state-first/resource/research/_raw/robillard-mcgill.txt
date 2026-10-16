@@ -1,0 +1,910 @@
+IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,               VOL. 30,    NO. 12,     DECEMBER 2004                                                     889
+
+
+
+
+                How Effective Developers Investigate
+                 Source Code: An Exploratory Study
+        Martin P. Robillard, Wesley Coelho, and Gail C. Murphy, Member, IEEE Computer Society
+
+        Abstract—Prior to performing a software change task, developers must discover and understand the subset of the system relevant to
+        the task. Since the behavior exhibited by individual developers when investigating a software system is influenced by intuition,
+        experience, and skill, there is often significant variability in developer effectiveness. To understand the factors that contribute to
+        effective program investigation behavior, we conducted a study of five developers performing a change task on a medium-size open
+        source system. We isolated the factors related to effective program investigation behavior by performing a detailed qualitative analysis
+        of the program investigation behavior of successful and unsuccessful developers. We report on these factors as a set of detailed
+        observations, such as evidence of the phenomenon of inattention blindness by developers skimming source code. In general, our
+        results support the intuitive notion that a methodical and structured approach to program investigation is the most effective.
+
+        Index Terms—Software evolution, empirical software engineering, program investigation, program understanding.
+
+                                                                                 æ
+
+1     INTRODUCTION
+
+U      SEFUL software systems change [14]. As observed by
+      Boehm [2], modifying software generally involves
+three phases: understanding the existing software, modify-
+                                                                                     by a developer. For example, the keywords to provide as
+                                                                                     input to lexical searches, or the choice of cross-reference
+                                                                                     queries to perform, are determined by developers based on
+ing the existing software, and revalidating the modified                             a mix of intuition, experience, and skill. The behavior of a
+software. Thus, before performing a modification to a                                developer investigating a program is thus a highly personal
+software system, a developer must explore the system’s                               process which, combined with other factors, is responsible
+source code to find and understand the subset relevant to                            for the large variability in efficiency that is often observed
+the change task [27]. Often, the code relevant to a change                           between individual developers.
+task is scattered across many modules [10], increasing the                              We were interested in isolating the factors influencing
+difficulty of the task.                                                              the success of a software modification task that are strictly
+   To help developers discover and understand the parts of                           associated with the behavior of a developer (rather than
+a program1 that may be related to a change task, software                            external factors such as the influence of the workplace [9],
+development environments (SDEs) provide features en-                                 the programming environment used [8], [24], or the
+abling users to perform lexical and structural searches on                           expressiveness of the notation used [29]). We believe
+the source code of a program [4], [12], [15], [20], [30]. As an                      understanding the nature of program investigation beha-
+early example, the Interlisp-D environment provided cross-                           vior that is associated with successful software modification
+referencing support [25]. Cross-references allow developers                          tasks can help us improve the tool support and training
+to obtain information that cannot easily be gained through                           programs offered to software developers.
+code inspection. For example, a classic cross-reference                                 To investigate the links between program investigation
+query produces all the callers of a function. Search features                        behavior and success at a software modification task, we
+such as cross-references are now commonly found in                                   conducted a study of five developers undertaking an
+current software development environments (e.g., the                                 identical software change task on a medium-sized system.
+Eclipse platform [19]).                                                              The main goal of our experimental design was to achieve
+   Unfortunately, the provision of search features is not                            the highest level of realism for the task studied while still
+                                                                                     being capable of replicating the study. For this reason, our
+sufficient to ensure the effective investigation of a program
+                                                                                     methodology focused on a context-rich, detailed qualitative
+    1. We use the terms program and software system interchangeably.                 analysis of a few replicated cases, rather than a statistical
+                                                                                     analysis of causality between dependent variables. By
+                                                                                     performing a detailed qualitative analysis contrasting the
+. M.P. Robillard is with the School of Computer Science, McGill University,          program investigation behavior of successful and unsuc-
+  3480 University Street, #318 Montréal QC Canada H3A 2A7.
+                                                                                     cessful developers, we were able to isolate the factors which
+  E-mail: martin@cs.mcgill.ca.
+. W. Coelho and G.C. Murphy are with the Department of Computer                      we believe are associated with effectiveness during the
+  Science, University of British Columbia, 201-2366 Main Mall, Vancouver             program modification task.
+  BC Canada V6T 1Z4. E-mail: {Coelho, Murphy}@cs.ubc.ca.                                Our results are presented as a theory of program
+Manuscript received 7 June 2004; revised 11 Oct. 2004; accepted 18 Oct.              investigation effectiveness that takes the form of a series
+2004.                                                                                of observations and associated hypotheses, each supported
+Recommended for acceptance by D. Rombach.
+For information on obtaining reprints of this article, please send e-mail to:        by detailed evidence taken from video recordings of the
+tse@computer.org, and reference IEEECS Log Number TSE-0109-0604.                     actions of each software developer. Overall, we found that
+                                               0098-5589/04/$20.00 ß 2004 IEEE       Published by the IEEE Computer Society
+890                                                   IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,              VOL. 30, NO. 12,    DECEMBER 2004
+
+
+successful developers exhibited a highly methodical ap-                   .    Personal characteristics such as the skill, experience,
+proach to program investigation. Specifically, they investi-                   and expertise of developers are reflected in their
+gated enough of the code to understand the high-level                          program investigation behavior.
+structures of the system, prepared a detailed plan of the                  We argue the validity of our assumptions by showing the
+change to be made, implemented the plan in a mostly linear             absurdity of a situation in which they would not hold.
+fashion, and used structurally guided searches to investi-             Rejecting the first assumption would imply that a developer
+gate the system. In contrast, the behavior of unsuccessful             could investigate only irrelevant methods and still perform
+developers was clearly ad hoc and opportunistic, relying               a correct change. Rejecting the second assumption would
+heavily on code skimming and guessing. Surprisingly, the               imply that the program investigation behavior of devel-
+methodical approach did not lead to a longer time required             opers is either completely algorithmic or completely
+to finish the task. On the contrary this approach allowed the          random.
+successful developers to complete the task in close to half of             These assumptions allow us to focus on the character-
+the time allotted.                                                     istics of program investigation behavior that influence
+    Our study has several novel features. First, it involved a         developer effectiveness without having to consider the
+more complex task and larger system than most previous                 factors explaining the behavior. As a consequence, we
+multisubject studies of developers. Second, many of the                believe our results are more useful and generalizable.
+previous studies (e.g., [5], [6], [7], [11], [18], [34]) have relied       To fulfill our research goal, we undertook a study of the
+on analyses that were based on heavily abstracted char-                behavior of different developers as they performed an
+acterizations of both developer behavior and success level.            identical change task. To ensure we were studying the
+Although this strategy allowed the investigators to study a            appropriate phenomenon, our experimental methodology
+higher number of subjects, potentially increasing confidence           needed to meet two specific requirements: realism and
+in the results, it also limited the scope of the results. In           replication.
+contrast, our analysis involved a detailed study of the code               Realism. To explore the program investigation behavior
+examined by each developer and of the methods used by                  of developers, we needed to study a situation representative
+the developers to navigate between different locations in              of realistic program modification tasks. In practice, this
+the code. Furthermore, our observations take into account a            meant a change task challenging enough to require
+detailed analysis of the actual source code modified by each           developers to spend a significant amount of effort investi-
+developer.                                                             gating the system, and a system large enough to preclude a
+    The contributions of this paper are twofold. First, we             “systematic” program understanding strategy [28], and
+provide a set of detailed observations about the character-            developed by multiple people over multiple evolution
+istics of effective program investigation behavior. These              cycles.2
+observations are accompanied by hypotheses that can be                     Replication. To allow us to identify the characteristics of
+validated by additional research and practical experience.             program investigation behavior associated with successful
+Second, we describe a methodology and analysis technique               program modification tasks, we needed to be able to
+for studying the behavior of software developers that can be           contrast the behavior of successful and unsuccessful
+used by researchers to further test the hypotheses proposed            developers. This requirement implies some form of replica-
+in this paper and to perform other detailed investigations of          tion. Additionally, because success at program change tasks
+programmer behavior.                                                   can be heavily influenced by the nature of the task,
+    The rest of the paper is organized as follows: In Section 2,       programming language used, and other factors indepen-
+we present the details of the modification task studied and            dent of developers, we needed to be able to control the task
+our methodology. In Section 3, we describe how we                      and the environment in which the work was performed.
+performed an analysis of the data to determine the success                 These requirements are conflicting because, as we study
+level of each developer and to characterize their behavior.            more realistic tasks, we face increasing problems controlling
+Section 4 is the presentation of our observations. In                  for factors that might influence the results, and increasing
+Section 5, we discuss the factors influencing the validity             difficulty analyzing enough of the data collected to account
+of our study. In Section 6, we present the related work, and           for the complexity of the phenomenon observed. To achieve
+                                                                       a balance, we chose a three-hour software modification task
+conclude in Section 7.
+                                                                       on a 65kLOC3 text editor system written in Java. We
+                                                                       replicated the study with five different developers as this
+2         METHODOLOGY                                                  amount of replication offered a reasonable tradeoff between
+Our goal for this research was to be able to make                      the cost of replication and detailed qualitative analysis and
+hypotheses about the characteristics of the program                    the generalizability of the results [22], [35]. Since our study
+investigation process that are associated with success at a            was exploratory, we were interested in making observa-
+software modification task. For this reason, we chose an               tions based on a detailed, qualitative investigation of
+exploratory study format. Our research relies on two main              program investigation behavior rather that testing causality
+assumptions:                                                           hypotheses using statistical inference.
+
+      .    There exists a relation between program investiga-             2. In this paper, we consistently use the term “systematic” in the sense of
+                                                                       Soloway et al., to mean a line-by-line read of the entire source code of a
+           tion behavior and the success with which developers         program.
+           can perform a software modification task.                      3. Thousand lines of source code, excluding comments and blank lines.
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                          891
+
+
+  In the rest of this section, we describe the details of our          of Java programming experience and experience with the
+experimental setting, our data collection methods, and the             maintenance of software systems of at least medium size.
+coding and analysis methodology we used to process the                 Student applicants with programming experience gained
+raw data in preparation for the detailed analysis.                     through cooperative work terms and graduate research
+                                                                       projects were accepted for the study, since this level of
+2.1 The Study                                                          experience corresponds to that of entry-level professional
+Our study setup was to ask five developers to individually             developers. No current member of our research group was
+perform an identical software modification task.                       accepted for this study. Subjects were paid for their time.
+2.1.1 The Task                                                         2.1.3 Study Setting
+The target system for our study was the jEdit text editor              The study was divided into three phases. To minimize
+(version 4.6-pre6).4 jEdit is written in Java and consists of          potential investigator bias, each phase was described
+64,994 noncomment, nonblank lines of source code,                      entirely through written instructions. In any phase, the
+distributed over 301 classes in 20 packages. Among other               subjects could ask questions, but we established guidelines
+features, jEdit saves open file buffers automatically. Our             restricting answers from the investigator to clarification of
+study focuses on this autosave feature.                                the written material.
+    In version 4.6-pre6, any changed and unsaved (or dirty)                Eclipse Training Phase. To investigate the code and to
+file buffer is saved in a special backup file at regular               perform the change, subjects used the Eclipse integrated
+intervals (e.g., every 30 seconds). This frequency can be set          programming environment configured for Java [19]. To
+by the user through an Options page brought up with a                  ensure that all subjects had sufficient familiarity with the
+menu command in the application’s menu bar. If jEdit                   development environment, we first had the subjects
+crashes with unsaved buffers, the next time it is executed, it         complete a tutorial on how to use the principal features of
+will attempt to recover the unsaved files from the                     Eclipse required for the study: code browsing and editing,
+automatically saved backups. In the initial version of jEdit           and performing searches and cross-references. This phase
+used for our study, a user can disable the autosave feature            was limited to 30 minutes. Subjects already familiar with
+by specifying the autosave frequency as zero. However, this            Eclipse were asked to read through the tutorial, but could
+option is undocumented, and can only be discovered by                  end the training period at their discretion. Before continu-
+inspecting the source code.                                            ing on to the next phase, the subjects had to pass a simple
+    The task we requested of subjects consisted of the                 proficiency test, in which the investigator asked them to
+following modification request.                                        perform various tasks covered in the tutorial. All subjects
+    Modify the application so that the users can explicitly disable    passed the Eclipse training test.
+the autosave feature. The modified version should meet the                 Program Investigation Phase. After the training phase,
+following requirements.                                                the subjects were asked to read some preparatory material
+                                                                       about the change to perform. This material included
+   1.   jEdit shall have a check box labeled “Enable Autosave”         excerpts from the jEdit user manual describing file buffers
+        above the autosave frequency field in the Loading and          and the autosave feature, instructions on how to launch
+        Saving pane of the global options. This check box shall        jEdit and test the autosave feature, the change requirements
+        control whether the autosave feature is enabled or not.        listed in Section 2.1.1, and a set of eight test cases covering
+   2. The state of the autosave feature should persist between         the basic requirements. The test cases were sequences of
+        different executions of the tool.                              operations on jEdit, described in English, that could be
+   3. When the autosave feature is disabled, all autosave backup       performed using jEdit’s graphical user interface. The
+        files for existing buffers shall be immediately deleted from   subjects were allowed to perform these tests at any point
+        disk.                                                          during the study. The written material for that phase also
+   4. When the autosave feature is enabled, all dirty buffers          included two pointers to the code, intended to simulate
+        should be saved within the specified autosave frequency.       expert knowledge available about the change task. These
+   5. When the autosave feature is disabled, the tool should           pointers consisted of the classes Autosave and LoadSa-
+        never attempt to recover from an autosave backup, if for       veOptionPane, the classes dealing with the autosave
+        some reason an autosave backup is present. In this case the    timer and the option pane where the autosave save
+        autosave backup should be left as is.                          frequency was set, respectively. We felt such pointers were
+   The change corresponding to this request for modifica-              a reasonable starting point since this type of information is
+tion, as initially performed by an author of this paper in             often found in requests for modifications and bug descrip-
+preparation for the study, amounted to about 65 lines of               tions managed by systems such as Bugzilla.5 In our case,
+modified, deleted, or added code, scattered in six files.              using such starting points enabled us to reduce the
+                                                                       variability of the behavior analyzed, with the benefit of
+2.1.2 Subject Selection                                                increasing the value of any contrast observed between
+Subjects for this study were recruited through a mailing               subjects.
+list in the Department of Computer Science at the                          The subjects were then given one hour to investigate the
+University of British Columbia, and through personal                   code pertaining to the change in preparation to the actual
+contacts. Subjects were required to have a minimum level               task. The subjects were to investigate the code using the
+
+  4. http://www.jedit.org.                                               5. http://www.bugzilla.org.
+892                                               IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,     VOL. 30, NO. 12,   DECEMBER 2004
+
+
+features of Eclipse covered in the training phase, but were                              TABLE 1
+not instructed which features to use or how and when to             Time Taken to Complete the Change Phase of the Study
+use them. The subjects were informed about the possibility
+of taking notes in a text file, but were not explicitly
+instructed to do so. The subjects were also allowed to
+execute the jEdit program, but not to change any code, even
+temporarily, nor to use the debugger. We set these
+restrictions to reduce the influence of debugging skills in
+Eclipse on the results. The intent of the initial investigation
+phase was to introduce some control over the study, and to
+prevent the case where a developer would try to perform             This methodology required two types of data analysis:
+the change with almost no prior investigation. Although
+this is possible in the case of trivial tasks, we knew from         .    an evaluation of the success level of each developer,
+designing the study that the possibility of succeeding at the            and
+task without investigating the program was extremely                .    an abstraction of the behavior of each developer to
+unlikely. We thus wanted to prevent developers from                      guide the detailed analysis process.
+coming to this realization halfway through the study.             3.1 Analysis of Developer Success
+Section 5.3 discusses the potential impact of this choice on
+                                                                  We evaluated the success level of each developer by
+the generalizability of our results.
+                                                                  analyzing two types of data: the time taken to complete
+   Program Change Phase. In this phase, subjects were
+                                                                  the change and the quality of the coded solution.
+simply instructed to implement the requirements, and that
+this implementation needed to pass the tests. The subjects        3.1.1 Time
+were given two hours to complete this phase of the study.
+                                                                  Table 1 presents the time taken by each subject to complete
+The instructions for this phase were purposefully left as
+                                                                  the change phase of the study (this time was capped at
+general as possible so as not to be leading. However, it
+                                                                  125 minutes: two hours plus a five-minute grace period).
+elicited questions to determine when the change was
+                                                                     As this table shows, an important difference exists
+“completed.” These questions were answered with the
+                                                                  between subjects 2 and 3, who completed the change in
+clarification to implement the requirements as well and as
+                                                                  just above half of the total allocated time, and subjects 1, 4,
+efficiently as possible and to end the study when they felt
+                                                                  and 5, who used practically the entire time allocated to the
+they had done so. The subjects who completed the study
+                                                                  change phase of the study.
+before the prescribed time independently identified the
+completion point for the study. In this phase, use of the         3.1.2 Quality of Change
+debugger was again disallowed. At the end of the phase
+                                                                  We assessed the quality of the change carried out by each
+(either triggered by the subject or after two hours), an
+                                                                  developer by inspecting the details of the source code
+investigator ran through the test cases that had been
+                                                                  changes performed. This analysis was carried out by the
+provided to the subjects.
+                                                                  first author of this paper, who designed the experiment and
+2.2 Data Collection                                               had a detailed understanding of the code of jEdit pertaining
+We collected two types of data as part of the study: artifacts    to the autosave feature. Our analysis involved three steps:
+produced or modified by the subjects and a record of the            1.    We analyzed the jEdit source code in detail to
+actions of the subjects during their task. The artifacts                  determine the characteristics of an ideal solution. We
+collected include any source code changed during the task,                considered a solution to be ideal if it correctly
+and any additional documents produced, such as a free-                    implements the requirements and respects the design
+form text file with personal notes. To record the actions of a            of jEdit.
+developer in the investigation and modification phases, we           2. Based on our analysis of the implementation of jEdit
+captured a video of the screen using the Camtasia screen                  and the requirements of the task, we divided the task
+recording program6 operating at 5 frames/second and a                     into five subtasks. A subtask was defined as the
+resolution of 1; 280  1; 024 pixels.                                     implementation of a relatively independent subset of
+                                                                          the requirements (with the exception that it could
+3     DATA ANALYSIS                                                       depend on other subtasks). Although this separation
+                                                                          into subtasks is subjective, we found that it naturally
+Our basic strategy for data analysis is inspired by the                   aligned with the requirements.
+method described by Seaman [26]. First, we looked for                3. We examined how each subject had implemented
+patterns, contrasts, and commonalities in the behavior of                 each subtask, and characterized its quality.
+successful versus unsuccessful developers. We then derived
+                                                                     Task breakdown. Fig. 1 is a diagram representing each
+observations based on a detailed study of the behavior of
+                                                                  subtask and the dependencies between them. The top-level
+developers surrounding these patterns, contrasts, and
+                                                                  task is the complete modification task. To realize this task,
+commonalities.
+                                                                  developers had to correctly implement subtasks 1 to 5,
+                                                                  where subtasks 2 to 5 in turn depend on the correct
+    6. http://www.techsmith.com.                                  implementation of subtask 1. To provide context for the
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                     893
+
+
+
+
+Fig. 1. Decomposition of the requirements of the task.
+
+analysis described in the rest of the paper, we describe the              class named Autosave. This class is provided as an
+challenges associated with each subtask.                                  initial hint and is short (78 LOC). It is thus possible
+                                                                          to completely understand how to deactivate the
+   1.   Add check box and persist the state of autosave. This             autosave feature through a systematic (i.e., line-by-
+        subtask involves adding a check box widget in the                 line) study of class Autosave. The problem of
+        option pane for loading and saving files. Performing              identifying where to deactivate (and reactivate) the
+        this subtask requires adding code to methods _init                autosave feature is much more complex. To respect
+        and _save of class LoadSaveOptionPane to                          the design of jEdit, this action should be performed
+        respectively show a check box to disable autosave                 in a method of the jEdit class called proper-
+        and to save its state when the option pane is closed.             tiesChanged, which is used to respond to various
+        This subtask can be considered relatively easy since              changes in the properties of the application. For
+        the LoadSaveOptionPane class was given as an                      example, in the version of the code provided to the
+        initial hint to the subjects, and because the code to             subjects, propertiesChanged contains the code to
+        add has a high similarity to code that already exists             modify the frequency of the autosave events.
+        in the file to display other check boxes.                     4. Delete autosave files when disabled. One of the require-
+   2.   Reset autosave state. In the jEdit application, files are         ments states that whenever the autosave feature is
+        represented in memory as instances of a Buffer                    disabled, all automatically saved backups corre-
+        class. Buffers can be in different states, such as                sponding to files currently open should be deleted.
+        “dirty” (the file contains changes not saved expli-               Performing this subtask requires discovering how to
+        citly) and “autosave-dirty” (the file contains changes            obtain a list of all of the open buffers and how to
+        saved neither explicitly nor automatically). The                  delete the autosave file associated with the buffers.
+        implementation of this subtask is trivial, involving              In jEdit, the simplest way to do this is to call the
+        one line of code, but requires a detailed knowledge               static method getBuffers in class jEdit, to use
+        of how the state of file buffers is managed. This                 the method getAutosaveFile for each buffer, and
+        knowledge involves elements such as methods                       then to call delete on the returned File object.
+        setFlag and getFlag of class Buffer, informa-                     Logically, this implementation should take place at
+        tion about accesses to a flag field in class Buffer,              the same location as the one used to disable/enable
+        and the various flag constants (e.g., AUTOSAVE_                   the autosave feature (subtask 3).
+        DIRTY). This subtask is particularly difficult because        5. Prevent recovery. This subtask represents requirement
+        it is not explicitly mentioned in the requirements for            5 of our study. To implement this subtask, the
+        the change: subjects must discover that this subtask              subject must identify where recovery from auto-
+        is necessary in order to ensure a correct implementa-             matically saved backups is normally triggered, and
+        tion of the requirements. However, the test suite                 bypass the recovery stage if the autosave feature is
+        given to the subjects exercises this functionality.               disabled. This requires identifying a call between
+   3.   Control the disabling of autosave. Once a check box is            methods load and recoverAutosave of class
+        installed in the option pane, its selection must cause            Buffer, and to insert a conditional statement in
+        the autosave feature to be suspended. This requires               either method to bypass the recovery if the autosave
+        discovering 1) how to suspend the autosave feature                feature is disabled.
+        and 2) where to trigger the suspension. In jEdit, the         Evaluation. Given the task breakdown described above,
+        timing of the autosave feature is performed by a            we inspected the solution provided by each subject and
+894                                               IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,     VOL. 30, NO. 12,   DECEMBER 2004
+
+
+                                                          TABLE 2
+                                               Solution Quality for Each Subject
+
+
+
+
+characterized the success level for each subtask using the        Because subjects 1 and 5 could not provide a working
+following classifications:                                        solution in the time alloted, we consider these subjects
+                                                                  “unsuccessful.” With a workable yet low-quality solution,
+      . Success. The subject provided a correct solution that     subject 4 cannot be associated with either of the two
+        respects the original design of jEdit.                    extremes, and will be referred to as “average.” Table 3
+   . Inelegant. The subject provided a correct solution           provides information on the background of the subjects,
+        that did not respect the original design of jEdit.        showing the approximate and self-reported number of years
+   . Buggy. The subject provided a generally workable             of programming experience of each subject. Not surpris-
+        solution that contains one or more bugs.                  ingly, the unsuccessful subjects are also the less experienced.
+   . Unworkable. The subject provided a solution that             However, the two successful subjects are not the two most
+        does not work in most cases.                              experienced subjects. In any case, the focus of our study was
+   . Not attempted. The subject did not provide a                 to determine why certain developers are efficient, indepen-
+        solution.                                                 dently of their background. Our intent is in part to help
+   In the evaluation, correctness can be assessed objectively     make novice developers more quickly reach the efficiency
+by determining whether the solution meets the require-            level of more experienced developers.
+ments and does not contain faults. However, the assessment
+of whether a solution respects the existing design is             3.2 Abstraction of Developer Behavior
+subjective. For this reason, we have been conservative in         To perform a high-level analysis of the behavior of each
+our analysis, and judged that a solution did not respect the      developer in our study, we needed an abstraction of their
+existing design only if it clearly broke an existing structure    actions. For this reason, we transcribed the videos produced
+(e.g., by hard-coding a value that should have been               during the investigation and change phases for each subject.
+obtained from a property object).                                 Transcribing information-rich media like video inevitably
+   Table 2 presents the characterization of the success level     involves deciding which information to include and which
+for each subtask and each subject. As this table shows, all       to leave out. Because we were mostly interested in studying
+subjects were able to complete subtask 1. The success level       how each developer navigated through the program code,
+for subtask 1 is not surprising given the hints provided to       we produced transcripts listing each method a developer
+the subjects, and given the natural inclination of developers     examined during the study. Specifically, for each phase of
+to code by example [13], [23]. The other subtasks discrimi-       the study and each subject, we transcribed the correspond-
+nate the subjects. Subjects 1 and 5 can be considered to have     ing video into a list of events defined as evidence that a
+generally failed at the task. Subjects 2 and 3 were highly        developer may be examining the implementation of a
+successful. Specifically, subject 3’s solution is ideal, and      method in a code editor. A new event is created every time
+subject 2’s solution contains only a very small logic error,      a new method is displayed in the code editor. For each
+where a flag is reset to false instead of the value of            event we recorded the following information:
+another flag. Finally, subject 4’s solution can be considered
+“average,” as it is a workable but generally low-quality            .    Time. The time at which a program investigation
+implementation.                                                          event is observed.
+                                                                    .    Method. The method examined by the developer at
+3.1.3 Overall Analysis                                                   the time of the event.
+Given that subjects 2 and 3 completed the task in close to half     .    Navigation. The way the method was accessed.
+the time allotted and provided a high-quality solution, we          .    Modification. Whether the method examined was
+can confidently characterize these subjects as “successful.”             also modified (for the change phase only).
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                                             895
+
+
+                          TABLE 3                                                                        TABLE 4
+              Programming Experience of Subjects                                                     Transcript Excerpt
+
+
+
+
+   The navigation techniques we considered were the
+following:
+
+   .    Scrolling. The subject reveals a method by scrolling
+        up or down a source file.                                         the one investigated. We feel this level of accuracy is
+   . Browsing. The subject reveals a method by selecting                  sufficient for our purposes since the observations we make
+        it in a code browser.7                                            based on the transcripts are not affected by the differences
+   . Cross-reference. The subject reveals a method by                     in the coding of transcripts and because most of the
+        following a cross-reference in the code.                          observations relied on both the transcripts and a detailed
+   . Recall. The subject reveals a method by returning to                 reinvestigation of the videos.
+        an already open editor window.
+   . Keyword search. The subject reveals a method by
+        performing a keyword search.                                      4    RESULTS
+   As an example, Table 4 shows a partial transcript from                 Based on a detailed analysis of the data collected during the
+subject 1 in the study. As this transcript shows, the behavior            study, we made several observations about the program
+observed involves the subject revealing method B898                       investigation behavior of both the successful and unsuc-
+through a keyword search, then switching to previously                    cessful subjects. From these observations, we derived
+examined method A4, then recalling method L3, and finally                 hypotheses about the intrinsic factors influencing the
+scrolling within the file to reveal method L2.                            success of developers. We express our findings as a theory
+   The main challenge with coding video data into a                       of effective program investigation. This theory is formu-
+transcript that abstracts program navigation as a sequence                lated as a high-level statement that summarizes our
+of method examination events is to determine which                        observations and hypotheses. Our general theory of
+method a developer is examining at any point in time. In                  program investigation effectiveness can be stated as
+many cases, it is possible to unambiguously determine this                follows:
+information. For example, when there is only one method
+displayed in the editor, or when a method is revealed                     Theory. During a program investigation task, a methodical
+explicitly through an action such as selecting the method                   investigation of the code of a system is more effective than an
+from a list. However, in many cases, it was necessary to                    opportunistic approach.9
+determine which method was being examined based on
+more subtle clues such as a mouse pointer hovering over a                    What this theory synthesizes is that during a program
+certain area of the code. This problem made it necessary for              investigation session, the successful subjects seemed to be
+an investigator to manually code the entire transcript,                   trying to answer specific questions using focused searches.
+introducing a certain amount of subjectivity into the coding.             They also recorded their findings in detail, prepared a
+   To address the subjectivity of the coding, two investiga-              modification plan, and mostly kept to this plan while
+tors independently coded each video. Table 5 shows the                    implementing the change. In contrast, the unsuccessful
+correlations between the transcripts for each subject in                  subjects exhibited a more opportunistic approach that can
+terms of common events versus the total number of events                  be summarized as involving more guessing. Perhaps
+(averaged over the two transcripts). The length of the                    surprisingly, the effort spent by subjects planning their
+transcripts varied between 35 and 112 events for the                      change did not translate into a longer time required to
+investigation phase and between 30 and 164 events for the                 perform the task. In fact, subjects who were methodical
+change phase.                                                             performed the task in half of the time. This being said, the
+   These results show an inter-coder accuracy varying                     theory does not imply that a purely systematic approach to
+between 73 percent and 83 percent. Most of the discrepan-                 program investigation is the most effective. Successful
+cies between coders fall into two categories: not including               subjects also exhibited some opportunistic behavior. How-
+an event because a method was examined too fast by a                      ever, they exhibited opportunistic behavior much less often
+subject, or not including methods because there is not                    than unsuccessful subjects.
+enough evidence that the method on the screen is actually
+                                                                             9. We use the term methodical in its general sense, to indicate a behavior
+  7. In our study, the code browser corresponded to the Eclipse Package   characterized by method and order. This term can be contrasted with
+Explorer View.                                                            systematic, which we use to refer to a line-by-line investigation of the entire
+  8. Indices are used instead of method names for simplicity.             source code. We use the term opportunistic as an antonym of methodical.
+896                                                       IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,   VOL. 30, NO. 12,   DECEMBER 2004
+
+
+                           TABLE 5                                      represent the difference between the two independent
+                      Transcript Correlation                            codings of the transcripts. As Fig. 2 shows, all subjects
+                                                                        except for subject 3 (ideal solution) present a high number
+                                                                        of modification events for one method corresponding to the
+                                                                        method where most of the change was implemented, and
+                                                                        little activity for other methods. In contrast, subject 3 shows
+                                                                        a much more even pattern of code modification. This points
+                                                                        to the possibility that developers (in our case, even some
+                                                                        successful developers) have the tendency to focus all of
+                                                                        their changes in one location.
+    In the rest of this section, we present specific observa-
+                                                                            Based on this evidence we propose the following
+tions we have made about the program investigation
+                                                                        hypothesis.
+behavior of developers during our study. For each observa-
+tion, we summarize the supporting evidence, propose a                   Hypothesis. Inadequate investigation prior to performing a
+hypothesis to explain the observation, detail any additional              change task limits the understanding of the existing design
+evidence that specifically supports the hypothesis, and                   of a system, leading to a change performed in a single
+briefly discuss the implications of the observation for the               location in the code that is better understood by the
+field of software engineering.                                            developer. In other words, inadequate investigation leads to
+                                                                          “ignorant surgery” [21].
+Observation 1 (Locality of Changes). Unsuccessful subjects
+  made all of their code modifications in one place even if they            Additional support for our hypothesis that colocated
+  should have been scattered to better align with the existing          modifications are the result of inadequate planning comes
+  design.                                                               from observing that the investigation of the unsuccessful
+                                                                        subjects during the investigation phase was desultory and
+   The inspection of the solution for each subject showed               limited. This observation is made by characterizing the
+that the subjects who provided an unacceptable or average               investigation performed by each subject during the inves-
+solution (i.e., subjects 1, 4, and 5) had an implementation             tigation phase.
+where all of the solution implementation was located                        Table 6 gives a high-level characterization of the
+predominantly in one method, which did not respect the                  behavior of each subject during the program investigation
+existing design. Specifically, subjects 1 and 5 tried to                phase. The second column lists the number of distinct
+implement the entire functionality in methods _save and                 methods examined by each subject (presented as an average
+_init of class LoadSaveOptionPane, respectively, and                    over the two transcripts, with the boundaries). The third
+subject 4 implemented all the functionality in method                   column shows the proportion of intent-driven discovery
+autosave of class Buffer. This observation of the code is               events (cross-references and keyword searches) versus the
+corroborated by the following characterization of the                   total number of events (including scrolling, browsing, and
+behavior of the subjects during the program change phase.               recalling). This table again presents a sharp contrast
+Fig. 2 shows, for each subject, the three methods that were             between unsuccessful subjects (1, 5) and successful subjects
+modified the most often, with the bars representing the total           (2, 3). The successful subjects are seen to have investigated
+number of modifications. A method is modified if, during                more methods during the investigation phase and to have
+the event associated with it, the subject modified code in the          relied more on cross-reference and keyword searches. In
+method (see Section 3.2). The name of the method modified               contrast, unsuccessful subjects examined very few methods,
+most often is also indicated on the figure, and the error bars          and relied more on unstructured techniques such as
+
+
+
+
+Fig. 2. Methods modified often during the change phase.
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                          897
+
+
+                                                              TABLE 6
+                                             Characterization of the Investigation Phase
+
+
+
+
+scrolling and browsing. However, this high-level character-             elaborated in the field of cognitive psychology [17] may apply
+ization does not help to explain the behavior of the average            to program investigation activities.
+subject (subject 4). Although this subject’s solution exhib-
+ited the problem of being colocated (although to a lesser                The hypothesis of inattention blindness is not refuted by
+degree), the abstract behavior of the subject is associated           the successful and average subjects since all three found the
+with the one of the successful subjects. This suggests that           method through a cross-reference (i.e., explicit) search, and
+factors that cannot be characterized by a coarse abstraction          the two successful subjects incorporated the method in the
+of the programmer behavior also come into play, such as               design of their solution.
+how well the information investigated is retained. Observa-           Implications. The impact of this hypothesis for program
+tion 3 (below) potentially explains the case of subject 4.              investigation tasks is that broad searches without a
+Implications. Assuming the design of a system is not                    specific discovery purpose (i.e., skimming the source
+  known, a broad cross-section of the system potentially                code) are of little value and should be limited. If our
+  impacted by the change needs to be investigated prior to              hypothesis holds, unfocused code investigation behavior
+  making a change in order to allow reasoning about                     is open to the problem of inattention blindness.
+  design. In other words developers should not rely on                Observation 3 (Planning). The successful subjects created a
+  studying specific locations in detail with the hope of                detailed and complete plan prior to the change whereas the
+  performing a surgical change as this may lead to code                 unsuccessful and average subjects did not.
+  decay.
+Observation 2 (Inattention Blindness During Program                      The written instructions provided to the subjects as part
+  Investigation). Program segments that were clearly relevant         of the study stated that any notes they wished to make
+  to the change task were not acknowledged when displayed             should be saved in a text file. During the investigation
+  accidentally.                                                       phase, every subject chose to record some information in a
+                                                                      text file. Some subjects wrote vague comments on what they
+   This observation was made when we tried to understand              intended to do and what they had discovered about how
+why subjects 1 and 5 did not realize that method proper-              the system worked. Other subjects created a detailed
+tiesChanged in class jEdit was the key to the success of              implementation plan that included the names of methods
+the task, and as a result could not produce a workable                to be modified. We found that subjects who produced the
+solution (see subtask 3, Section 3.1.2). Subject 5 never              best solutions created and followed a detailed change plan.
+investigated the method, which explains the problem.                     Specifically, we considered the content of each subject’s
+However, the case of subject 1 is more interesting. This              notes file as they began the execution phase of the change
+subject displayed method propertiesChanged while                      task. For each subject, we compared the methods intended
+                                                                      for modification according to the notes file with the
+scrolling the code of class jEdit. At one point, the subject
+                                                                      methods actually modified. We also considered the nature
+pauses and the code of the method is shown on the screen,
+                                                                      and level of detail of the recorded notes.
+with keywords visible that are strongly associated with the
+                                                                         Subject 3 implemented an ideal solution to the requested
+task (e.g., “Autosave”). However, at this point the subject
+                                                                      task and subject 2’s solution was very close to ideal. Both
+takes no action that indicates that the information was               subjects 2 and 3 chose to produce a detailed plan for making
+acknowledged. Based on these observations we propose the              the change that included the names of methods that were to
+following hypothesis.                                                 be modified. Subject 2 did not modify any methods that
+Hypothesis. Program information relevant to a change is               were not previously documented as part of the change task.
+  discovered only if it is searched for explicitly. In other words,   Subject 3 modified only a single method that was not part of
+  the hypothesis of “no conscious perception without attention”       his plan and later returned this method to its original state.
+898                                                  IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,     VOL. 30, NO. 12,   DECEMBER 2004
+
+
+                         TABLE 7                                                             TABLE 8
+            Average Reinvestigations per Window                               Average Method Investigation Cycle Length
+
+
+
+
+This shows that subjects 2 and 3 created complete plans and          mostly linear traversal of the code, with few cycles, whereas
+followed them to produce quality solutions.                          we expect an opportunistic approach to involve more
+   The notes for subject 4, whose solution was of average            iterations. Indeed, in our study we found that the successful
+quality, identified three methods to be modified, but seven          subjects navigated the code with longer method investiga-
+methods were actually modified during the modification               tion cycles.
+phase. This suggests that subject 4 did not create a complete           Specifically, we analyzed the transcripts of each subject’s
+plan before proceeding with the implementation. Although             program investigation behavior to determine how fre-
+subject 4 was able to implement the requested change, the            quently methods were reinvestigated. To characterize the
+solution was of average quality.                                     iterative nature of the program investigation behavior, we
+   Subject 5’s notes included a 10-step plan for implement-          proceeded as follows. Given a sequence of investigated
+ing the required changes. However, the notes were of a               methods from each transcript, we defined a window of n
+high-level nature that described what was to be discovered           methods. The window was then advanced through the
+but did not include actual changes to be made. Although              entire transcript one event at a time to consider all
+related classes were identified, the plan did not include the        consecutive sets of n events. For each window, the number
+name of any methods. Subject 5 modified four methods but             of times a method was reinvestigated was computed. To
+was unable to implement the requested change.                        summarize our analysis, we computed the average number
+   Subject 1 was also unable to implement the required               of reinvestigated methods per window. This number
+changes. Subject 1’s notes identified three methods to be            provides a measure of the degree to which method
+modified. All three of these methods plus an additional              navigation events were focused on a small number of
+method that was not in the plan were modified during the             methods at a time. Table 7 shows this high-level character-
+execution phase. This shows that Subject 1 created a plan            ization of the behavior for each subject for window sizes of
+and followed it to some extent. However, the plan was                10 and 20 methods, respectively.
+incomplete, as was the implemented change.                              This table shows a contrast between subjects 2, 3, and 4
+   Based on this evidence we propose the following                   (the successful and average subjects, with a value below
+hypothesis.                                                          3.5), and subjects 1 and 5 (the unsuccessful subjects, with a
+Hypothesis. Making a detailed change plan allows developers to       value above 4.6). This contrast is robust in terms of window
+  1) reason about the extent of the code investigated and assess     size since we observe it for window sizes of both 10 and
+  whether it is sufficient, 2) perform focused program searches in   20 events (with different values).
+  the context of the elaboration of a solution, and 3) eases the        To increase our confidence in our high-level assessment,
+  cognitive load on developers.                                      we also characterized the iterative behavior of subjects in
+                                                                     terms of the average length of method investigation cycles.
+                                                                     We defined an investigation cycle as the investigation of a
+Implications. Developers should investigate the code of a            method followed by the investigation of one or more other
+  system related to a change in the context of a change plan         methods followed by reinvestigation of the original method.
+  explicitly supported by an external medium (e.g., a text           The length of a cycle is simply the number of methods in the
+  file or a dedicated software engineering tool).                    cycle. The analysis of subject behavior using this character-
+Observation 4 (Reinvestigation Frequency). Successful                ization is consistent with our previous one. Specifically,
+  subjects did not reinvestigate methods as frequently as            subjects 2, 3, and 4 navigated with longer cycles than
+  unsuccessful subjects.                                             subjects 1 and 5. Table 8 lists the average cycle length for
+                                                                     each subject.
+   One way to characterize the behavior of subjects is to               There are several possible hypotheses that may explain
+look at how often they return to previously investigated             this relationship between reinvestigation frequency and
+methods. Intuitively, a methodical change should involve a           change task implementation success.
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                             899
+
+
+
+
+Fig. 3. Ratios of structurally guided searches.
+
+Hypotheses.                                                           their output is very often the name of program structures
+                                                                      (e,g, fields and methods), rather than purely lexical
+      .     Developers who are better able to assess the importance   information such as comments.
+            of methods they are investigating are more effective.        Evidence of the effectiveness of structurally guided
+            They can identify key methods and spend more time         searches comes from two sources involving both a high-
+            understanding them early in the investigation rather      level analysis of the transcripts and a detailed analysis of
+            than returning to them only later when their relevance    the videos.
+            is more evident.                                             A first source of evidence is a high-level analysis of the
+      .     Developers who are better able to understand and
+                                                                      navigation methods used by each subject. To characterize
+            remember the methods they have investigated are more
+                                                                      the general style of navigation method used by a subject we
+            effective; they do not need to reinvestigate those
+                                                                      computed the ratio of events in both phases where the
+            methods as frequently.
+                                                                      navigation method was “keyword” or “cross-reference,”
+      .     Developers who have difficulty discovering new
+                                                                      and divided this number by the total number of nonrecall
+            relevant methods are less effective; they spend more
+                                                                      events. This characterization differs from the one presented
+            time reinvestigating methods that have been previously
+                                                                      in Table 6 because it does not include recall events in the
+            identified as important to the change task.
+                                                                      denominator of the ratio. This has an important conse-
+Implications. The first hypothesis suggests that developers           quence for the interpretation of the results: including recall
+  should carefully assess the potential relevance of each             events provides a characterization of what subjects do, while
+  method investigated. If it is possible that the method is           excluding recall events provides a characterization of how
+  relevant to the change task, it may be beneficial to                subjects search. Fig. 3 illustrates this last characterization of
+  understand its function thoroughly before proceeding, as            subject behavior. Each bar represents the ratio for a subject
+  this strategy may avoid repeated future reinvestigations.           (in percentage points), and the error bars represent the
+                                                                      difference between the two independent codings of the
+   The second and third hypotheses suggest that tools
+                                                                      transcripts. Again, this figure shows a contrast between the
+should be used to assist programmers with discovering,                unsuccessful subjects (1 and 5) and the successful and
+understanding and remembering relevant methods. For                   average subjects (2, 3, 4).
+example, when a developer identifies a relevant method a                 A second source of evidence for this observation is
+tool could be used to identify related methods that are also          simply a corroboration with the evidence provided for
+potentially relevant. Tools could also be used to organize            Observation 2 stating that the successful and average
+and annotate methods that have been discovered and                    subjects had all identified the most critical method for the
+understood.                                                           change through a cross-reference query.
+Observation 5 (Structurally Guided Searches). The success-               Based on this evidence, we propose the following
+  ful subjects performed mostly structurally guided searches          hypothesis.
+  (e.g., keyword and cross-reference searches), rather than           Hypothesis. Without a detailed knowledge of the implementa-
+  searches based on intuition (browsing) or aligned with the            tion of a system, guessing which method to look at based on its
+  file decomposition of the system (scrolling).                         name (browsing) or looking at methods simply because they are
+                                                                        in the same file as another relevant method (scrolling) is not as
+   We consider keyword searches to be structurally guided               effective as performing structurally guided searches.
+because, as we observed, the input to keyword searches and
+900                                               IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,      VOL. 30, NO. 12,   DECEMBER 2004
+
+
+Implications. Developers should resist the temptation to try      others, we provided basic training with Eclipse to each
+  to guess the code relevant to a change based on                 subject, we precluded the use of powerful features of
+  nonstructural clues. In other words, developers should          Eclipse, such as the debugger, and we scripted the entire
+  minimize the use of scrolling. Even though this strategy        study, limiting the role of the investigator to answering
+  may seem more effective that methodically investigating         questions. There is always the possibility of investigator
+  the structural links in a system, our study provides            bias in the answers to the subject’s questions. To limit this
+  evidence that it is not.                                        effect, we established guidelines at the start of the study for
+                                                                  the investigator to use in answering questions: The
+                                                                  investigator was to only answer questions about the
+5     EXPERIMENTAL CRITIQUE                                       features of the tools covered in the tutorial, and provide
+Several factors potentially affect the validity of our study.     no comment about the task.
+                                                                     Another possibility is that the experimental setup may
+5.1 Construct Validity
+                                                                  have affected the behavior of the subjects. In particular, the
+The test of construct validity questions whether the opera-       explicit separation of the task into an investigation and
+tional measures used correctly reflect the concept studied        change phase, the use of test cases, and the constraint
+[35]. Ensuring construct validity is generally a difficult        preventing subjects from modifying the code in the
+problem in empirical studies of programmers involving             investigation phase, may have caused adjustments to the
+multiple subjects. Abstracting the behavior of developers or      subjects’ behavior. However, we feel that the impact of
+the result of their task inevitably introduces the possibility    these necessary constraints is lessened by the fact that the
+for the variables studied to not truly represent the              primary object of our study is not the behavior of
+phenomenon observed. Realizing this challenge, one of             developers per se, but rather the contrast between the
+the main goals of our study was to analyze the behavior of        behavior of different developers.
+developers in detail and thus, implicitly, ensure a high level       Finally, there exists the possibility that the evaluation of
+of construct validity. Specifically, our study relies on two      the solution presented in Section 3.1.2 may influence the
+main measures: the evaluation of each developer’s solution        results. However, this analysis was carefully performed by
+and an analysis of the behavior of the developers. To             an investigator who had detailed knowledge of the code of
+evaluate the solution produced by the subjects, we                jEdit pertaining to the study. Subjectivity in assessing
+performed a detailed inspection of the source code for the        design was addressed through the use of a conservative
+solution of each developer. Although our final evaluation         criterion. Also, the differences observed between subjects
+                                                                  were so large that the evaluation is likely to be robust in the
+relies on a subjective assessment of the quality of the
+                                                                  face of a different categorization. In any case, our analysis is
+solution, this assessment is directly based on the unab-
+                                                                  transparent: Independent researchers can access the code of
+stracted raw data collected, and as such we have a high
+                                                                  jEdit and evaluate the solution. Our general belief is that the
+confidence in the validity of the evaluation. To analyze the
+                                                                  evaluation of the solution is stable and poses limited threats
+behavior of the developers, we partly relied on transcripts       to the validity of the study.
+which are an approximation of the data recorded. To
+compensate for the potential errors of interpretation due to      5.3 External Validity
+the use of transcripts, we corroborated our observations          The applicability of our findings must be carefully
+with detailed analysis of the videos whenever possible and,       established. All of the subjects were either students or
+in some cases (e.g., observation 1), we corroborated our          recent graduates from a computer science department.
+findings with data from the code modifications performed          Different results might be obtained from different popula-
+by the subjects. The use of multiple sources of evidence is       tions such as, for example, a population of senior devel-
+generally considered to increase the validity of qualitative      opers not formally trained in object-oriented programming.
+assessments [3].                                                  Another threat to the generality of our study is our use of a
+                                                                  single task. Although our study involved a nontrivial task
+5.2 Internal Validity                                             requiring developers to reason about different aspects of the
+The test of internal validity for a study questions whether the   system (e.g., control-flow, state transitions), there exists
+results truly represent “a causal relationship, whereby           many different types of software modification problems.
+certain conditions are shown to lead to other conditions,         We do not expect that identical results will be obtained for
+as distinguished from spurious relationships.” [35, p. 33].       all problems. In particular, modification tasks involving
+Since our study was exploratory, internal validity in our         surgical changes to a single location may yield different
+case relates to the soundness of the evidence used to make        results. Nevertheless, we believe that our use of a real task
+hypotheses. We thus discuss the factors potentially affecting     in a program large enough that it cannot be completely
+our observations, and our attempts to limit them.                 understood in a short amount of time contributes to
+   One possible source of interference for this study is the      achieving an acceptable level of external validity.
+possibility that the success level for a subject was                  The software development environment and program-
+determined by prior knowledge, proficiency with the               ming language used by the subjects were also fixed. This
+development environment, and investigator bias during             additional factor limits the generalizability of the study to
+the study. To reduce this possibility, we took steps to ensure    similar conditions. However, in the case of the development
+that no subject had prior knowledge of jEdit, we asked            environment, by limiting the use of advanced functional-
+subjects not to communicate the details of the study to           ities, we ensured that the results were not dependent on
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                        901
+
+
+platform-specific features. Many integrated software devel-            Corritore and Wiedenbeck [5], [6], [7], Engebretson and
+opment environments offer features such as the ones used            Wiedenbeck [11], Mosemann and Wiedenbeck [18], and
+in this study, and we can expect that they are used in a            Wiedenbeck et al. [34] carried out many studies to
+similar fashion.                                                    investigate various characteristics of developers involved
+   Finally, an important limit to the generalizability of our       in program understanding tasks. All these studies share a
+findings comes from the fact that we have based our                 common methodology. First, a large set of subjects (30-100)
+observations on the analysis of the behavior of only five           studies (and in some cases, modifies) one or more small
+subjects. We could gain additional confidence in our                programs (less than 800LOC). Then, the subjects are asked
+hypotheses by studying more subjects from a larger cross-           questions intended to test different aspects of their under-
+section of backgrounds. However, by focusing our study on           standing of the target program. Finally, statistical analysis is
+the link between the program investigation behavior and             performed to test hypotheses concerning their understand-
+the effectiveness of developers, we limit the risk of our           ing. The main difference between the studies described
+hypotheses not being robust in the face of the personal             above and our work lies in the choice of methodology. In
+characteristics of developers that are reflected in the             contrast to a highly controlled experiment, we used a more
+program investigation behavior.                                     realistic setting and performed a more detailed analysis, at
+5.4 Reliability                                                     the cost of not being able to statistically infer causality. For
+The methodology of this study, including the data collec-           this reason, the nature of the results are also different:
+tion procedures, has been documented in this paper. The             Rather than statistical evidence supporting a small set of
+task was defined in detail and an open-source code base             hypotheses, we contribute detailed and context-rich data
+was used as a target system. The complete experimental              potentially explaining the behavior of developers.
+material can be obtained from http://www.cs.mcgill.ca/                 Using the technique of protocol analysis, Vans et al. [31],
+~martin/tse1. As a result, it should be possible to replicate       von Mayrhauser and Vans [32], and von Mayrhauser et al.
+the study.                                                          [33] studied the comprehension processes of programmers
+                                                                    during large-scale corrective and perfective maintenance.
+                                                                    The approach of von Mayrhauser, et al. also involved the
+6   RELATED WORK                                                    detailed analysis of few subjects (one, two, and four,
+Many empirical studies of programmers have been                     respectively), and as such can be considered closer to our
+reported in the literature (see Basili et al. [1] for an overview   approach than the studies of Wiedenbeck et al. However,
+of the foundational work on this topic). In this section, we        the focus of von Mayrhauser’ work was to investigate the
+provide a brief survey of the studies that focused on               cognitive processes of programmers. As a result, the
+program understanding for the purpose of software change            principal source of data is the utterances of the subjects.
+tasks, and discuss the novelty of our research in this              This is in contrast to our approach, where we have spent
+context.                                                            most of our effort analyzing the navigation behavior of the
+   Letovsky and Soloway performed seminal work on the               subjects.
+topic of program understanding. An early study of six                  To summarize, in contrast to previous work, the novelty
+professional programmers modifying a 300LOC Fortran 77              of our study is that it not only looked at what developers do
+                                                                    in general, but focused on determining what successful
+program focused on eliciting the causes of comprehension
+                                                                    developers do in contrast to unsuccessful ones. This
+failures, and determined that such failures were often
+                                                                    comparative analysis allowed us to make detailed hypoth-
+caused by the presence of “delocalized plans” [16]. In
+                                                                    eses about the style of program investigation behavior that
+another study of 20 programmers modifying a 250LOC
+                                                                    contributes to effectiveness at program modification tasks.
+Fortran program, Soloway et al. focused on understanding
+the strategies developers used during a program under-
+standing task [28], and concluded that programmers whose            7   CONCLUSIONS
+strategy was to systematically study a program line-by-line         Prior to performing a software modification task, devel-
+made fewer errors than the ones using an opportunistic (or          opers must inevitably investigate the code of the target
+“as needed”) approach [28]. Our study shares some                   system in order to find and understand the code related to
+commonalities with these early studies of Fortran program-          the change. If we assume that the way a developer
+mers. Notably, both our approaches were exploratory and             investigates a program influences the success of the
+focused on understanding the details of the programmer              modification task, then ensuring that developers in charge
+behavior in terms of source code modified. However, our             of modifying software systems investigate the code of the
+experimental methods differ. Soloway et al. used protocol           system effectively can yield important benefits such as
+analysis (where subjects are asked to “think aloud”),               decreasing the cost of performing software changes and
+whereas we judged this technique too disruptive and                 increasing the quality of the change.
+focused only on the analysis of screen recordings. More                The empirical study described in this paper investigated
+important, the target programs used by Letovsky and                 the links between program investigation behavior and
+Soloway were small enough to be analyzed systematically.            success at a software modification task. Although many
+Judging this an unrealistic scenario in the general case, we        empirical studies of programmers have analyzed what
+used a target program too large to be fully understood by           developers do during program modification tasks, our
+the subjects.                                                       study is novel in that it considered specifically what effective
+902                                                      IEEE TRANSACTIONS ON SOFTWARE ENGINEERING,             VOL. 30, NO. 12,   DECEMBER 2004
+
+
+developers do in contrast to ineffective ones. This analysis              [8]    B. Curtis, “Substantiating Programmer Variability,” Proc. IEEE,
+                                                                                 vol. 69, no. 7, pp. 846, July 1981.
+was possible because we replicated the study of a developer               [9]    T. DeMarco and T. Lister, “Programmer Performance and the
+performing a highly realistic task.                                              Effects of the Workplace,” Proc. Eighth Int’l Conf. Software Eng.,
+   Based on our analysis of the data collected during the                        pp. 268-272, 1985.
+                                                                          [10]   S.G. Eick, T.L. Graves, A.F. Karr, J.S. Marron, and A. Mockus,
+study, we observed many sharp contrasts between the
+                                                                                 “Does Code Decay? Assessing the Evidence from Change
+behavior of successful and unsuccessful developers and                           Management Data,” IEEE Trans. Software Eng., vol. 27, no. 1,
+came to the conclusion that in the context of a program                          pp. 1-12, 2001.
+investigation task, a methodical investigation of the code of a           [11]   A. Engebretson and S. Wiedenbeck, “Novice Comprehension of
+                                                                                 Program Using Task-Specific and Nontask-Specific Constructs,”
+system is more effective than an opportunistic approach. This                    Proc. IEEE 2002 Symp. Human Centric Computing Languages and
+theory does not imply that a complete line-by-line investi-                      Environments, pp. 11-18, Sept. 2002.
+gation of a program is the most effective approach, but                   [12]   A. Goldberg, Smalltalk-80: The Interactive Programming Environ-
+                                                                                 ment. Addison-Wesley, 1984.
+rather that developers should follow a general plan when                  [13]   B.M. Lange and T.G. Moher, “Some Strategies of Reuse in an
+investigating a program, should perform focused searches                         Object-Oriented Programming Environment,” Proc. SIGCHI Conf.
+in the context of this plan, and should keep some form of                        Human Factors in Computing Systems, pp. 69-73, 1989.
+                                                                          [14]   M.M. Lehman and L.A. Belady, “Program Evolution: Processes of
+record of their findings. Although this theory will sound                        Software Change,” APIC Studies in Data Processing, vol. 27, 1985.
+intuitive to many, some of our detailed observations include              [15]   M. Lejter, S. Meyers, and S.P. Reiss, “Support for Maintaining
+more surprising results, such as the ineffectiveness of the                      Object-Oriented Programs,” IEEE Trans. Software Eng., vol. 18,
+                                                                                 no. 12, pp. 1045-1052, Dec. 1992.
+code reading strategy, and the fact that a methodical                     [16]   S. Letovsky and E. Soloway, “Delocalized Plans and Program
+approach to program investigation does not require more                          Comprehension,” IEEE Software, vol. 3, no. 3, pp. 41-49, May 1986.
+time than an opportunistic approach.                                      [17]   A. Mack and I. Rock, Inattentional Blindness. MIT Press, 1998.
+   The contributions of our research to the software                      [18]   R. Mosemann and S. Wiedenbeck, “Navigation and Comprehen-
+                                                                                 sion of Programs by Novice Programmers,” Proc. Ninth Int’l
+engineering community are twofold. First, we provide a                           Workshop Program Comprehension, pp. 79-88, May 2001.
+set of detailed observations about the characteristics of                 [19]   Object Technology International, Inc., “Eclipse Platform Technical
+effective program investigation behavior. Although our                           Overview,” white paper, July 2001.
+                                                                          [20]   P.D. O’Brien, D.C. Halbert, and M.F. Kilian, “The Trellis
+observations are descriptive, they are accompanied by                            Programming Environment,” Proc. Conf. Object-Oriented Program-
+hypotheses that can be validated by additional research                          ming, Systems, and Applications, pp. 91-102, Oct. 1987.
+and practical experience. Second, we provide a detailed                   [21]   D.L. Parnas, “Sofware Aging,” Proc. 16th Int’l Conf. Software Eng.,
+                                                                                 pp. 279-287, May 1994.
+methodology for performing empirical studies of program-                  [22]   S.L. Pfleeger, “Experimental Design and Analysis in Software
+mers where it is important that programmer behavior be                           Engineering—Part 3: Types of Experimental Design,” Software
+studied in detail. Researchers can reuse our study to help                       Eng. Notes, vol. 20, no. 2, pp. 14-16, Apr. 1995.
+                                                                          [23]   D.F. Redmiles, “Reducing the Variability of Programmers’
+validate our hypotheses, or to study other aspects of
+                                                                                 Performance Through Explained Examples,” Proc. Conf. Human
+programmer behavior.                                                             Factors in Computing Systems, pp. 67-73, 1993.
+                                                                          [24]   H. Sackman, W.J. Erikson, and E.E. Grant, “Exploratory Experi-
+                                                                                 mental Studies Comparing Online and Offline Programming
+ACKNOWLEDGMENTS                                                                  Performance,” Comm. ACM, vol. 11, no. 1, pp. 3-11, 1968.
+                                     ubranic and to the                 [25]   M. Sanella, The Interlisp-D Reference Manual. Xerox Corporation,
+The authors are grateful to Davor C                                              Palo Alto, Calif., 1983.
+anonymous reviewers for their valuable comments. This                     [26]   C.B. Seaman, “Qualitative Methods in Empirical Studies of
+research was funded by the Natural Sciences and Engineer-                        Software Engineering,” IEEE Trans. Software Eng., vol. 25, no. 4,
+                                                                                 pp. 557-572, July/Aug. 1999.
+ing Research Council of Canada (NSERC) and by IBM.                        [27]   J. Singer, T. Lethbridge, N. Vinson, and N. Anquetil, “An
+                                                                                 Examination of Software Engineering Work Practices,” Proc.
+                                                                                 1997 Conf. Centre for Advanced Studies on Collaborative Research,
+REFERENCES                                                                       pp. 209-223, 1997.
+[1]   V.R. Basili, R.W. Selby, and D.H. Hutchens, “Experimentation in     [28]   E. Soloway, J. Pinto, S. Letovsky, D. Littman, and R. Lampert,
+      Software Engineering,” IEEE Trans. Software Eng., vol. 12, no. 7,          “Designing Documentation to Compensate for Delocalized
+      pp. 733-743, July 1986.                                                    Plans,” Comm. ACM, vol. 31, no. 11, pp. 1259-1267, Nov. 1988.
+[2]   B.W. Boehm, “Software Engineering,” IEEE Trans. Computers,          [29]   B. Teasley, L.M. Leventhal, K. Instone, and D.S. Rohlman,
+      vol. 12, no. 25, pp. 1226-1242, Dec. 1976.                                 “Longitudinal Studies of the Relation of Programmer Expertise
+[3]   L. Bratthall and M. Jørgensen, “Can You Trust a Single Data                and Role-Expressiveness to Program Comprehension,” Proc.
+      Source Exploratory Software Engineering Case Study?” Empirical             NATO Advanced Research Workshop User-Centred Requirements for
+      Software Eng., vol. 7, no. 1, pp. 9-26, Mar. 2002.                         Software Eng. Environments, NATO Advanced Science Institutes
+[4]   Y.-F. Chen, M.Y. Nishimoto, and C.V. Ramamoorthy, “The C                   Series-Computer and Systems Science, vol. 123, pp. 143-163, Sept.
+      Information Abstraction System,” IEEE Trans. Software Eng.,                1991.
+      vol. 16, no. 3, pp. 325-334, Mar. 1990.                             [30]   W. Teitelman and L. Masinter, “The Interlisp Programming
+[5]   C.L. Corritore and S. Wiedenbeck, “Mental Representation of                Environment,” Computer, vol. 14, no. 4, pp. 25-33, Apr. 1981.
+      Expert Procedural and Object-Oriented Programmers in a Soft-        [31]   A.M. Vans, A. von Mayrhauser, and G. Somlo, “Program
+      ware Maintenance Task,” Int’l J. Human-Computer Studies, vol. 50,          Understanding Behavior during Corrective Maintenance of
+      no. 1, pp. 61-83, Jan. 1999.                                               Large-Scale Software,” Int’l J. Human-Computer Studies, vol. 51,
+[6]   C.L. Corritore and S. Wiedenbeck, “Direction and Scope of                  no. 1, pp. 31-70, July 1999.
+      Comprehension-Related Activities by Procedural and Object-          [32]   A. von Mayrhauser and A.M. Vans, “Identification of Dynamic
+      Oriented Programmers: An Empirical Study,” Proc. Eighth Int’l              Comprehension Processes during Large Scale Maintenance,” IEEE
+      Workshop Program Comprehension, pp. 139-148, June 2000.                    Trans. Software Eng., vol. 22, no. 6, pp. 424-437, 1996.
+[7]   C.L. Corritore and S. Wiedenbeck, “An Exploratory Study of          [33]   A. von Mayrhauser, A.M. Vans, and A.E. Howe, “Program
+      Program Comprehension Strategies of Procedural and Object-                 Understanding Behaviour during Enhancement of Large-Scale
+      Oriented Programmers,” Int’l J. Human-Computer Studies, vol. 54,           Software,” J. Software Maintenance: Research and Practice, vol. 9,
+      no. 1, pp. 1-23, Jan. 2001.                                                no. 5, pp. 299-327, Sept./Oct. 1997.
+ROBILLARD ET AL.: HOW EFFECTIVE DEVELOPERS INVESTIGATE SOURCE CODE: AN EXPLORATORY STUDY                                                          903
+
+[34] S. Wiedenbeck, V. Fix, and J. Scholtz, “Characteristics of the                                 Martin P. Robillard received the BEng degree
+     Mental Representations of Novice and Expert Programmers: An                                    in computer engineering from E   cole Polytechni-
+     Empirical Study,” Int’l J. Man-Machine Studies, vol. 39, pp. 793-812,                          que de Montréal in 1997 and the MSc and PhD
+     1993.                                                                                          degrees in computer science from the University
+[35] R.K. Yin, “Case Study Research: Design and Methods,” Applied                                   of British Columbia in 1999 and 2004, respec-
+     Social Research Methods Series, vol. 5, second ed. 1989.                                       tively. He is currently an assistant professor in
+                                                                                                    the School of Computer Science at McGill
+                                                                                                    University. His research interests are in software
+                                                                                                    evolution, aspect-oriented software develop-
+                                                                                                    ment, and empirical software engineering.
+
+
+                                                                                                    Wesley Coelho received the Bachelor of
+                                                                                                    Commerce degree from the University of Victor-
+                                                                                                    ia in 2000. He is currently a master’s student in
+                                                                                                    the Department of Computer Science at the
+                                                                                                    University of British Columbia. His research
+                                                                                                    interests are in aspect-oriented programming
+                                                                                                    and model-based development tools.
+
+
+
+
+                                                                                                     Gail C. Murphy received the BSc degree in
+                                                                                                     computing science from the University of Alberta
+                                                                                                     in 1987 and the MS and PhD degrees in
+                                                                                                     computer science and engineering from the
+                                                                                                     University of Washington in 1994 and 1996,
+                                                                                                     respectively. From 1987 to 1992, she worked as
+                                                                                                     a software designer in industry. She is currently
+                                                                                                     an associate professor in the Department of
+                                                                                                     Computer Science at the University of British
+                                                                                                     Columbia. Her research interests are in software
+                                                                             evolution, software design, and source code analysis. She is a member
+                                                                             of the IEEE Computer Society.
+
+
+                                                                             . For more information on this or any other computing topic,
+                                                                             please visit our Digital Library at www.computer.org/publications/dlib.
+

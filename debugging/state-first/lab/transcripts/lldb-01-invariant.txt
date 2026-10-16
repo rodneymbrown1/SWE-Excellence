@@ -1,0 +1,39 @@
+(lldb) target create "./gateway"
+Current executable set to '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64).
+(lldb) command source -s 0 'lldb/01-invariant.lldb'
+Executing commands in '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/lldb/01-invariant.lldb'.
+(lldb) # Probe 1 (FILTER): stop the first time a Heartbeat leaves missed_ non-zero.   Requirement R5.
+(lldb) # Run from the lab/ directory:   lldb -b -s lldb/01-invariant.lldb ./gateway
+(lldb) settings set auto-confirm true
+(lldb) breakpoint set -f gateway.cpp -l 81 -c 'e.type == EventType::Heartbeat && missed_ != 0'
+Breakpoint 1: where = gateway`LinkMonitor::on_event(Event const&) + 136 at gateway.cpp:81:3, address = 0x0000000100000b14
+(lldb) run --max 400
+[t=  3] Down     -> Up       (missed=0 good=3)
+[t= 23] Up       -> Degraded (missed=4 good=0)
+Process 82947 launched: '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64)
+Process 82947 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+    frame #0: 0x0000000100000b14 gateway`LinkMonitor::on_event(this=0x000000016fdfefec, e=0x000000016fdfef90) at gateway.cpp:81:3
+   78  	      case EventType::Heartbeat: on_heartbeat(); break;
+   79  	      case EventType::Data:      ++data_seen_;   break;
+   80  	    }
+-> 81  	  }
+    	  ^
+   82  	
+   83  	  LinkState state() const { return state_; }
+   84  	  int data_seen() const { return data_seen_; }
+Target 0: (gateway) stopped.
+(lldb) bt
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+  * frame #0: 0x0000000100000b14 gateway`LinkMonitor::on_event(this=0x000000016fdfefec, e=0x000000016fdfef90) at gateway.cpp:81:3
+    frame #1: 0x0000000100000964 gateway`Gateway::dispatch(this=0x000000016fdfefe0, e=0x000000016fdfef90) at gateway.cpp:159:14
+    frame #2: 0x0000000100000634 gateway`Gateway::run(this=0x000000016fdfefe0) at gateway.cpp:147:7
+    frame #3: 0x0000000100000544 gateway`main(argc=3, argv=0x000000016fdff280) at gateway.cpp:186:6
+    frame #4: 0x00000001913ec274 dyld`start + 2840
+(lldb) frame variable
+(LinkMonitor *) this = 0x000000016fdfefec
+(const Event &) e = 0x000000016fdfef90 (type = Heartbeat, tick = 26, payload = 0)
+(lldb) p *this
+(LinkMonitor)  (state_ = Degraded, missed_ = 7, good_ = 1, now_ = 26, data_seen_ = 8)
+(lldb) kill
+Process 82947 exited with status = 9 (0x00000009) killed

@@ -1,0 +1,1506 @@
+<title>GDB Investigation Playbook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky section bar, one reading column (max 1040px); playbooks are collapsible cards filtered by pillar + search. */
+:root{
+  --bg:#EEF2F0; --surface:#FFFFFF; --ink:#14201B; --muted:#55665E; --line:#CBD6D0; --code:#E3EAE6; --codeink:#10211A;
+  --accent:#0B6B5C; --accent-ink:#FFFFFF; --warn:#9A5B00; --bad:#B3261E; --good:#2F7A1F;
+  --p-u:#0B6B5C; --p-r:#B3261E; --p-d:#2457B3; --p-t:#9A5B00; --p-m:#7A3FB0; --p-b:#00708F; --p-v:#3F7D1E;
+  --f-display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1613; --surface:#15201C; --ink:#E3ECE8; --muted:#92A59C; --line:#2B3B35; --code:#0A110E; --codeink:#D5E6DE;
+  --accent:#4CC9AE; --accent-ink:#06130F; --warn:#E0A33C; --bad:#FF8A80; --good:#8FD16B;
+  --p-u:#4CC9AE; --p-r:#FF8A80; --p-d:#7FA8FF; --p-t:#E0A33C; --p-m:#C79BFF; --p-b:#5CC8E8; --p-v:#9ED67B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1613; --surface:#15201C; --ink:#E3ECE8; --muted:#92A59C; --line:#2B3B35; --code:#0A110E; --codeink:#D5E6DE;
+  --accent:#4CC9AE; --accent-ink:#06130F; --warn:#E0A33C; --bad:#FF8A80; --good:#8FD16B;
+  --p-u:#4CC9AE; --p-r:#FF8A80; --p-d:#7FA8FF; --p-t:#E0A33C; --p-m:#C79BFF; --p-b:#5CC8E8; --p-v:#9ED67B; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);padding-block:0 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.25rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.75rem;font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+code,pre,kbd{font-family:var(--f-mono)}
+code{background:var(--code);padding:.1em .35em;border-radius:3px;font-size:.88em;color:var(--codeink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.eyebrow{font:500 .75rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+
+/* sticky bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.bar nav{max-width:1040px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding-block:8px}
+.bar a{white-space:nowrap;text-decoration:none;color:var(--muted);font:500 .85rem var(--f-mono);padding:6px 10px;border-radius:4px}
+.bar a:hover{color:var(--ink);background:var(--code)}
+
+/* hero */
+.hero{padding-block:48px 24px;display:grid;gap:20px}
+.hero p.lede{max-width:62ch;font-size:1.1rem}
+.status{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 .75rem var(--f-mono);padding:4px 9px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted)}
+.chip.warn{color:var(--warn);border-color:var(--warn)}
+
+section.sec{padding-block:40px 8px;display:grid;gap:20px}
+.sec-head{display:grid;gap:6px}
+.sec-head p{max-width:68ch;color:var(--muted)}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.grid2>*{min-width:0}
+
+/* code blocks */
+.code{position:relative;margin:0}
+.code pre{margin:0;background:var(--code);color:var(--codeink);border-radius:4px;padding:14px 16px;overflow-x:auto;font-size:.82rem;line-height:1.55;tab-size:2}
+.copy{position:absolute;top:6px;right:6px;font:500 .7rem var(--f-mono);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:3px 8px;cursor:pointer}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+
+/* triage */
+.finder{display:grid;gap:16px}
+.finder .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.finder .row>.eyebrow{width:100%}
+.btn{font:500 .85rem var(--f-body);padding:7px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:4px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.results{display:grid;gap:8px}
+.res{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--pc,var(--accent));border-radius:4px;text-decoration:none;color:var(--ink);background:var(--bg)}
+.res:hover{border-color:var(--pc,var(--accent))}
+.res b{font:600 .8rem var(--f-mono);color:var(--pc)}
+.res span{min-width:0}
+.res small{grid-column:2;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 .72rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td a{font:600 .85rem var(--f-mono);text-decoration:none;margin-right:6px;white-space:nowrap}
+svg{max-width:100%;height:auto;display:block}
+figure{margin:0;display:grid;gap:8px}
+figcaption{color:var(--muted);font-size:.9rem;max-width:68ch}
+svg .nd{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+svg .q{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+svg text{fill:currentColor;font:500 13px var(--f-body)}
+svg .lab{font:600 11px var(--f-mono);fill:var(--muted)}
+svg .ln{stroke:var(--ink);stroke-width:1.5;fill:none}
+
+/* playbooks */
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tools input[type=search]{flex:1 1 220px;min-width:0;font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+.pf{border-left:4px solid var(--pc);padding-left:9px}
+.pb{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:5px}
+.pb>.sum{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline}
+
+.pb>.sum:hover{background:var(--bg)}
+.pb .id{font:600 .85rem var(--f-mono);color:var(--pc)}
+.pb .t{font:700 1.05rem var(--f-display)}
+.pb .s{grid-column:2;color:var(--muted);font-size:.92rem}
+.pb>.sum{border-bottom:1px solid var(--line)}
+.pbody{padding:16px;display:grid;gap:18px}
+.pbody h4{margin:0 0 6px;font:500 .72rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--pc)}
+.pbody ul{margin:0;padding-left:1.15rem;display:grid;gap:4px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cols>*{min-width:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.list{display:grid;gap:10px}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+
+/* stepper */
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.stage{display:grid;gap:14px}
+.hyps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.hyp{border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-size:.9rem;display:grid;gap:2px}
+.hyp b{font:600 .72rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase}
+.hyp.open b{color:var(--muted)}
+.hyp.out{opacity:.7;text-decoration:line-through;text-decoration-color:var(--muted)}
+.hyp.out b{color:var(--good);text-decoration:none;display:inline-block}
+.hyp.root{border-color:var(--bad);background:var(--bg)}
+.hyp.root b{color:var(--bad)}
+
+/* builder */
+.form{display:grid;gap:12px}
+.form label{display:grid;gap:4px;font:500 .72rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.form input,.form textarea{font:400 .92rem/1.5 var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:100%;min-width:0}
+.form textarea{min-height:76px;resize:vertical}
+.form .mono{font-family:var(--f-mono);font-size:.84rem}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.note{font-size:.88rem;color:var(--muted)}
+.callout{border-left:4px solid var(--warn);background:var(--surface);padding:12px 14px;border-radius:0 4px 4px 0;font-size:.93rem}
+.callout.g{border-color:var(--accent)}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;display:grid;gap:6px}
+
+/* ===== PRINT: US Letter, 0.6in margins (DeskJet 2900 needs >= ~0.125in sides/top, ~0.5in bottom) ===== */
+@page{size:letter;margin:0.6in;@bottom-center{content:"GDB Investigation Playbook  \00B7  page " counter(page) " of " counter(pages);font:7pt "IBM Plex Mono",monospace;color:#555}}
+:root:root:root{--bg:#fff;--surface:#fff;--ink:#111;--muted:#444;--line:#bbb;--code:#f1f1f1;--codeink:#111;--accent:#0B6B5C;--warn:#8a4f00;color-scheme:light}
+html{scroll-behavior:auto}
+body{font-size:9.5pt;line-height:1.4;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.wrap{max-width:none}
+.bar,.tools,.finder,.copy,.actions,#mdOut,.stage .steps,.stage>.note,#stepBtns{display:none!important}
+.hero{padding-block:0 8pt}
+h1{font-size:24pt}h2{font-size:15pt;break-after:avoid}h3{font-size:11pt;break-after:avoid}
+section.sec{padding-block:14pt 0;gap:10pt}
+.grid2{grid-template-columns:1fr;gap:10pt}
+.cols{grid-template-columns:repeat(3,1fr)}
+.panel{padding:10pt;break-inside:avoid}
+.code pre{font-size:7.4pt;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;overflow:visible;break-inside:avoid;padding:8pt 9pt}
+.tbl{overflow:visible}
+table{font-size:8.8pt}tr{break-inside:avoid}
+svg{max-width:100%}
+.pb{break-inside:auto;margin-bottom:8pt}.pb>.sum{break-after:avoid}.pbody>div:first-child{break-before:avoid}
+
+
+.pbody{padding:10pt;gap:9pt}
+.pbody>div{break-inside:avoid}
+.form textarea{min-height:56pt}.form input{min-height:20pt}
+.form ::placeholder{color:transparent}
+.sec,.list,.grid2,.printsteps,.hero{display:block!important}
+.sec>*,.list>*,.grid2>*,.printsteps>*{margin-bottom:9pt}
+.panel.list>*{margin-bottom:6pt}
+.pbody{display:block}.pbody>*{margin-bottom:8pt}
+.pbody>.cols{display:grid}
+.stage{display:none}
+.printsteps{display:grid;gap:9pt}
+.pstep{border:1px solid var(--line);border-radius:5px;padding:10pt;display:grid;gap:7pt;break-inside:avoid}
+footer{margin-top:14pt}
+
+/* ===== PRINT LAYOUT v2: legend, pillar bands, compact unsplit cards ===== */
+.legend{display:grid!important;grid-template-columns:repeat(7,1fr);gap:6pt;margin:2pt 0 10pt}
+.lg{display:flex;align-items:center;gap:6pt;border:1px solid var(--pc);border-radius:4pt;padding:0 6pt 0 0;overflow:hidden;min-width:0}
+.lg b{font:800 20pt/1 var(--f-display);background:var(--pc);color:#fff;width:28pt;text-align:center;padding:6pt 0;flex:none}
+.lg span{font:700 8.4pt/1.15 var(--f-display);color:var(--ink)}
+.hero .status{margin-bottom:0}
+.band{display:flex!important;align-items:center;gap:8pt;margin:10pt 0 7pt;padding:4pt 8pt;background:var(--pc);color:#fff;border-radius:4pt;break-after:avoid;break-inside:avoid}
+.band b{font:800 16pt/1 var(--f-display)}
+.band span{font:700 11pt var(--f-display);letter-spacing:.02em}
+.pb{break-inside:avoid!important;margin-bottom:8pt;border-left-width:4pt}
+.pb>.sum{padding:6pt 10pt;display:grid;grid-template-columns:auto 1fr;gap:0 10pt}
+.pb .t{font-size:11pt}.pb .s{font-size:8.4pt}
+.pbody{display:grid!important;grid-template-columns:36% 1fr;column-gap:12pt;row-gap:5pt;padding:8pt 10pt;font-size:8.6pt;line-height:1.33}
+.pbody>*{margin-bottom:0!important}
+.pbody>div:nth-child(1){grid-column:1;grid-row:1}
+.pbody>div:nth-child(2){grid-column:2;grid-row:1/5;align-self:start}
+.pbody>.cols{display:contents!important}
+.pbody>.cols>div{grid-column:1}
+.pbody h4{font-size:6.6pt;margin-bottom:2pt}
+.pbody ul{padding-left:11pt;gap:1pt}
+.pbody .code pre{font-size:6.9pt;line-height:1.36;padding:6pt 7pt}
+.sec{break-before:auto}
+.grid2{display:grid!important;grid-template-columns:1fr 1fr;gap:9pt}
+.grid2>*{margin-bottom:0!important}
+.grid2 .code pre{font-size:6.7pt}
+.panel{break-inside:avoid!important}
+
+/* ===== v3: tighter page 1, section starts, compact worked example ===== */
+.hero{padding-block:0 4pt!important}
+#triage .sec-head p{font-size:8.6pt}
+#triage table th,#triage table td{padding:3.5pt 8pt;font-size:8.4pt}
+#triage .panel{padding:7pt 9pt}
+#triage ol{font-size:8.6pt;margin-top:4pt!important}
+#triage figure svg{max-width:560px}
+#triage figure{margin-bottom:0}
+#triage .grid2{grid-template-columns:1fr 1fr}
+#playbooks,#reverse,#capture,#sandbox{break-before:page}
+#playbooks.sec,#reverse.sec,#capture.sec,#sandbox.sec{padding-top:0}
+.sec-head{break-after:avoid-page;break-inside:avoid}
+.hyps{grid-template-columns:repeat(4,1fr)!important;gap:5pt}
+.hyp{padding:4pt 6pt;font-size:7.6pt}
+.pstep{padding:7pt 9pt;gap:4pt}
+.pstep h3{font-size:10pt}
+.pstep p{font-size:8.4pt}
+.pstep .code pre{font-size:6.8pt;padding:5pt 7pt}
+footer{font-size:7.6pt;margin-top:8pt;padding-top:8pt}
+
+/* ===== v4: legend tiles never clip; page 1 holds the tree; tighter reverse page ===== */
+.lg{display:grid!important;grid-template-rows:auto 1fr;gap:0;padding:0;text-align:center}
+.lg b{width:auto;padding:4pt 0;font-size:18pt}
+.lg span{display:flex;align-items:center;justify-content:center;padding:4pt 3pt;font-size:8pt;min-height:22pt}
+#triage figure svg{max-width:440px!important;margin:0 auto}
+#triage figure.panel{padding:6pt 9pt}
+#triage figcaption{font-size:7.8pt}
+#reverse .note{font-size:7.8pt}
+#reverse .code pre{font-size:6.4pt;padding:5pt 6pt}
+#reverse .panel{padding:8pt}
+#reverse h3{font-size:10pt}
+#reverse table{font-size:8.2pt}
+</style>
+
+<div class="bar"><nav aria-label="Sections">
+  <a href="#triage">Triage</a><a href="#playbooks">Playbooks</a><a href="#reverse">Reverse</a><a href="#capture">Capture</a><a href="#screen">Screen</a><a href="#embedded">Target</a><a href="#sandbox">Worked example</a>
+</nav></div>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">SWE-excellence · debugging · embedded C/C++</div>
+  <h1>GDB Investigation Playbook</h1>
+  <div class="legend" aria-label="Pillar legend"><div class="lg" style="--pc:var(--p-u)"><b>U</b><span>Understand</span></div><div class="lg" style="--pc:var(--p-r)"><b>R</b><span>Root cause</span></div><div class="lg" style="--pc:var(--p-d)"><b>D</b><span>Data and state</span></div><div class="lg" style="--pc:var(--p-t)"><b>T</b><span>Time and tasks</span></div><div class="lg" style="--pc:var(--p-m)"><b>M</b><span>Memory</span></div><div class="lg" style="--pc:var(--p-b)"><b>B</b><span>Boundaries</span></div><div class="lg" style="--pc:var(--p-v)"><b>V</b><span>Verify</span></div></div>
+  <div class="status">
+    <span class="chip">26 playbooks · 7 pillars</span>
+    <span class="chip">reverse commands in every pillar that needs them</span>
+  </div>
+</header>
+
+<!-- ============ TRIAGE ============ -->
+<section class="sec" id="triage">
+  <div class="sec-head">
+    <div class="eyebrow">Start here</div>
+    <h2>What do I need to learn, and about what?</h2>
+    <p>Two axes cover almost every ticket. Choose what you are trying to learn, then what kind of thing you are looking at. The matching playbooks appear below.</p>
+  </div>
+
+  <div class="panel finder">
+    <div class="row"><span class="eyebrow">I want to…</span><span id="goalBtns" style="display:contents"></span></div>
+    <div class="row"><span class="eyebrow">…about this kind of thing</span><span id="subjBtns" style="display:contents"></span></div>
+    <div class="results" id="finderOut" aria-live="polite"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Your day-to-day questions</h3>
+      <div class="tbl"><table>
+        <tr><th>The question</th><th>Playbook</th></tr>
+        <tr><td>What code handles this behavior?</td><td><a href="#U1">U1</a></td></tr>
+        <tr><td>Where should I put this feature?</td><td><a href="#U4">U4</a></td></tr>
+        <tr><td>Where did this value come from? Who changed it?</td><td><a href="#D1">D1</a> <a href="#D4">D4</a></td></tr>
+        <tr><td>Why wasn't this code executed?</td><td><a href="#R4">R4</a></td></tr>
+        <tr><td>Why did the wrong code execute?</td><td><a href="#R3">R3</a></td></tr>
+        <tr><td>Why did it happen at the wrong time?</td><td><a href="#T1">T1</a> <a href="#T2">T2</a> <a href="#T5">T5</a></td></tr>
+        <tr><td>Why did it crash or corrupt state?</td><td><a href="#R1">R1</a> <a href="#M1">M1</a> <a href="#M2">M2</a></td></tr>
+        <tr><td>Did my change do what I meant?</td><td><a href="#V1">V1</a> <a href="#V2">V2</a> <a href="#V3">V3</a></td></tr>
+      </table></div>
+    </div>
+
+    <div class="panel">
+      <h3>Before touching the debugger</h3>
+      <ol style="margin:10px 0 0;padding-left:1.2rem;display:grid;gap:8px">
+        <li><b>Write the symptom as one sentence</b> with the exact text, value, or tick count you saw.</li>
+        <li><b>List three possible causes.</b> "Heartbeat lost" could be never generated, generated wrong, dropped in the queue, received late, rejected by the handler, or timeout set too low.</li>
+        <li><b>Pick the observation that separates them.</b> Which single breakpoint or watchpoint would be true under one cause and false under the others?</li>
+        <li><b>Make one observation. Cross off causes.</b> Repeat. If nothing got crossed off, the observation was a bad one.</li>
+      </ol>
+    </div>
+  </div>
+
+  <figure class="panel">
+    <svg viewBox="0 0 760 330" role="img" aria-label="Decision tree: did the expected code run, was the data right, was the timing right, otherwise boundary or environment" style="max-width:760px;margin:0 auto">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g color="currentColor">
+        <rect class="q" x="20" y="10" width="250" height="52" rx="4"/><text x="145" y="34" text-anchor="middle">Did the expected code run?</text><text x="145" y="51" text-anchor="middle" class="lab">breakpoint hit counts</text>
+        <line class="ln" x1="270" y1="36" x2="448" y2="36" marker-end="url(#ar)"/><text x="360" y="28" class="lab" text-anchor="middle">NO</text>
+        <rect class="nd" x="450" y="10" width="290" height="52" rx="4"/><text x="595" y="32" text-anchor="middle">Execution problem</text><text x="595" y="50" text-anchor="middle" class="lab">R4 · R3 · U1</text>
+
+        <line class="ln" x1="145" y1="62" x2="145" y2="108" marker-end="url(#ar)"/><text x="157" y="90" class="lab">YES</text>
+        <rect class="q" x="20" y="110" width="250" height="52" rx="4"/><text x="145" y="134" text-anchor="middle">Was the data right when it ran?</text><text x="145" y="151" text-anchor="middle" class="lab">print, watch, finish</text>
+        <line class="ln" x1="270" y1="136" x2="448" y2="136" marker-end="url(#ar)"/><text x="360" y="128" class="lab" text-anchor="middle">NO</text>
+        <rect class="nd" x="450" y="110" width="290" height="52" rx="4"/><text x="595" y="132" text-anchor="middle">Data problem</text><text x="595" y="150" text-anchor="middle" class="lab">D1 · D3 · D4 · R2</text>
+
+        <line class="ln" x1="145" y1="162" x2="145" y2="208" marker-end="url(#ar)"/><text x="157" y="190" class="lab">YES</text>
+        <rect class="q" x="20" y="210" width="250" height="52" rx="4"/><text x="145" y="234" text-anchor="middle">Was the timing right?</text><text x="145" y="251" text-anchor="middle" class="lab">dprintf with tick or thread id</text>
+        <line class="ln" x1="270" y1="236" x2="448" y2="236" marker-end="url(#ar)"/><text x="360" y="228" class="lab" text-anchor="middle">NO</text>
+        <rect class="nd" x="450" y="210" width="290" height="52" rx="4"/><text x="595" y="232" text-anchor="middle">Timing problem</text><text x="595" y="250" text-anchor="middle" class="lab">T1 – T5 · R5</text>
+
+        <line class="ln" x1="145" y1="262" x2="145" y2="288" marker-end="url(#ar)"/><text x="157" y="279" class="lab">YES</text>
+        <rect class="nd" x="20" y="290" width="720" height="36" rx="4"/><text x="380" y="313" text-anchor="middle">Boundary, memory or environment · B1 · B2 · M1 – M3 · compare both sides of every interface</text>
+      </g>
+    </svg>
+    <figcaption>Each question needs one observation to answer. Answer them in this order because every later question assumes the earlier ones came back clean.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ PLAYBOOKS ============ -->
+<section class="sec" id="playbooks">
+  <div class="sec-head">
+    <div class="eyebrow">The library</div>
+    <h2>Playbooks</h2>
+    <p>Each card has the prompts to answer first, a paste-ready GDB block, how to read the result, how to go backwards when you overshoot, and what to write down. Angle brackets like <code>&lt;Function&gt;</code> are yours to fill in.</p>
+  </div>
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search: heartbeat, watch, deadlock, hang, units…" aria-label="Search playbooks">
+    <span id="pillarBtns" style="display:contents"></span>
+  </div>
+  <div class="list" id="pbList"></div>
+</section>
+
+<!-- ============ REVERSE ============ -->
+<section class="sec" id="reverse">
+  <div class="sec-head">
+    <div class="eyebrow">Mistakes happen</div>
+    <h2>Going backwards</h2>
+    <p>You will type <code>next</code> one time too many. Plan for it. There are four levels of undo, from cheap to heavy. Pick the cheapest one that still works for your target.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel list">
+      <h3>1 · Free, always available</h3>
+      <p class="note">Print before you change, and let GDB remember.</p>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) p total              # $7 = 15  (every print is saved as $N)
+(gdb) set var total = 0    # experiment
+(gdb) p $7                 # old value is still there
+(gdb) set var total = $7   # put it back
+(gdb) p $                  # last value;  $$ = the one before;  $$3 = three back
+(gdb) tbreak &lt;line&gt; ; run # cheapest "rewind" of a short program: start over
+(gdb) info breakpoints     # shows "already hit 37 times"
+(gdb) ignore 1 36          # rerun, skip the first 36 hits, stop on #37</pre></div>
+      <p class="note">The hit-count trick is the most useful rewind on targets that cannot record. Crash on hit 37? Rerun with <code>ignore 1 36</code> and you land one step before it, every time, if the run is deterministic.</p>
+    </div>
+
+    <div class="panel list">
+      <h3>2 · Checkpoint (native Linux, single thread)</h3>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) break &lt;Function&gt;
+(gdb) run
+(gdb) checkpoint            # fork a snapshot of the process here
+(gdb) next                  # try something risky…
+(gdb) restart 1             # …and jump back to the snapshot
+(gdb) info checkpoints
+(gdb) delete checkpoint 1</pre></div>
+      <p class="note">It forks the process, so it does not capture other threads and does not work on a remote target. Use it to try several <code>set var</code> experiments from the same state.</p>
+    </div>
+
+    <div class="panel list">
+      <h3>3 · Record and reverse (native, slow)</h3>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) start
+(gdb) break &lt;a few lines before the suspect area&gt;
+(gdb) continue
+(gdb) record full           # recording starts HERE, not earlier
+(gdb) next
+(gdb) reverse-next          # undo one line
+(gdb) reverse-step          # step backwards INTO the call that just returned
+(gdb) reverse-finish        # run back to where this function was called
+(gdb) reverse-continue      # back to the previous breakpoint or watchpoint
+(gdb) reverse-stepi
+(gdb) info record
+(gdb) record goto begin     # also: end, or an instruction number
+(gdb) record stop           # discard the history, keep the state</pre></div>
+      <p class="note">Turn recording on late, as close to the problem as you can. It is very slow and uses memory for every instruction. Cap it with <code>set record full insn-number-max 200000</code>. Some modern instructions are unsupported and GDB will say so.</p>
+    </div>
+
+    <div class="panel list">
+      <h3>4 · Full replay (rr, UDB)</h3>
+      <div class="code"><button class="copy">Copy</button><pre>$ rr record ./app &lt;args&gt;          # run once, any number of threads
+$ rr record --chaos ./app           # randomize scheduling to expose races
+$ rr replay                         # opens gdb on the recording
+(rr) continue                       # runs to the crash
+(rr) watch -l obj-&gt;field
+(rr) reverse-continue               # stops at the last write, deterministically</pre></div>
+      <p class="note">rr is Linux (mostly x86) and needs access to hardware performance counters, so it often fails inside VMs. UDB is the commercial option from the talk's sponsor. On a bare-metal target, hardware trace (ETM or a probe vendor's trace tool) is the equivalent.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Which one when?</h3>
+    <div class="tbl"><table>
+      <tr><th>You just…</th><th>Do this</th></tr>
+      <tr><td>Stepped past the interesting line</td><td>If recording: <code>reverse-next</code>. If not: <code>tbreak</code> the line, <code>run</code>, or <code>ignore</code> by hit count.</td></tr>
+      <tr><td>Stepped into a library function you do not care about</td><td><code>finish</code> forward, or <code>reverse-finish</code> if recording.</td></tr>
+      <tr><td>Hit a watchpoint, but it is the 3rd write and you need the 1st</td><td><code>reverse-continue</code> under <code>record</code> or rr. Otherwise add a condition and rerun.</td></tr>
+      <tr><td>Crashed and want to know who set the bad pointer</td><td>rr: <code>watch -l ptr</code> then <code>reverse-continue</code>. Core file only: you cannot reverse a core, so rerun with a watchpoint.</td></tr>
+      <tr><td>Changed a variable with <code>set var</code> and forgot the old value</td><td><code>p $</code> history if you printed first. Otherwise restart.</td></tr>
+      <tr><td>Want to try three different values from the same state</td><td><code>checkpoint</code> before the first one.</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ CAPTURE ============ -->
+<section class="sec" id="capture">
+  <div class="sec-head">
+    <div class="eyebrow">Don't lose it in the terminal</div>
+    <h2>Capturing findings</h2>
+    <p>Terminal scrollback is not evidence. Capture at three layers: the raw session, the repeatable script, and the written conclusion.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel list">
+      <h3>Layer 1 · Raw session</h3>
+      <div class="code"><button class="copy">Copy</button><pre># put in ~/.gdbinit or a project investigate.gdb
+set pagination off
+set confirm off
+set print pretty on
+set print object on          # real (derived) type behind a base pointer
+set print elements 200
+set logging file gdb-session.log
+set logging overwrite off
+set logging enabled on       # GDB 12+.  Older GDB: set logging on</pre></div>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) bt full 25                      # on screen AND in the log
+(gdb) pipe bt | wc -l                 # GDB 8.3+: pipe output to a shell command
+(gdb) shell date                      # timestamp a finding in the log
+(gdb) python print(gdb.execute("info threads", to_string=True))</pre></div>
+    </div>
+    <div class="panel list">
+      <h3>Layer 2 · Repeatable script</h3>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) save breakpoints bp.gdb          # every break, watch, dprintf and condition
+$ gdb -x bp.gdb --args ./app &lt;args&gt;    # next engineer replays your setup
+$ gdb -batch -x trace.gdb ./app &gt; run1.log 2&gt;&amp;1   # unattended run</pre></div>
+      <div class="code"><button class="copy">Copy</button><pre># define your own shortcuts once
+define where3
+  bt 3
+  info locals
+end
+document where3
+Short backtrace plus locals.
+end</pre></div>
+      <p class="note">A <code>.gdbinit</code> in the project directory is ignored unless you allow it: add <code>set auto-load safe-path /path/to/project</code> to your user <code>~/.gdbinit</code>.</p>
+    </div>
+    <div class="panel list">
+      <h3>Layer 3 · Snapshots to hand off</h3>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) gcore state-at-fault.core         # core of the live process
+(gdb) dump binary memory msg.bin &lt;start&gt; &lt;end&gt;   # raw bytes of a buffer
+(gdb) info registers
+(gdb) info sharedlibrary
+(gdb) info proc mappings
+$ ulimit -c unlimited                    # so the next crash leaves a core</pre></div>
+      <p class="note">A core file is useless without the exact binary that produced it. Record the git SHA, the compiler flags, and keep the unstripped binary beside it.</p>
+    </div>
+    <div class="panel list">
+      <h3>Handoff packet checklist</h3>
+      <ul style="margin:0;padding-left:1.2rem;display:grid;gap:4px">
+        <li>One-line symptom, expected versus actual</li>
+        <li>Exact command to reproduce, and how often it fails</li>
+        <li>Build: git SHA, compiler, flags, <code>-g</code> present</li>
+        <li><code>bp.gdb</code> or <code>trace.gdb</code> that reproduces your observation</li>
+        <li>Log of the run plus <code>bt full</code> at the point of interest</li>
+        <li>Hypotheses you eliminated, and the observation that eliminated each</li>
+        <li>Root cause and the file:line where the fix belongs</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-bottom:6px">Findings builder</h3>
+    <p class="note" style="margin-bottom:14px">Fill this in as you investigate. It saves in this browser only and turns into Markdown you can paste into the journal, a ticket, or a message to the next engineer.</p>
+    <div class="grid2">
+      <form class="form" onsubmit="return false">
+        <label for="f-ticket">Ticket and symptom<input id="f-ticket" placeholder="ENG-1234: heartbeat lost after mode change"></label>
+        <label for="f-exp">Expected versus actual<textarea id="f-exp" placeholder="Expected: HB every 100 ms. Actual: gap of 300 ms at tick 4200."></textarea></label>
+        <label for="f-repro">Repro command<input id="f-repro" class="mono" placeholder="gdb -x bp.gdb --args ./sim --scenario 7"></label>
+        <label for="f-build">Build<input id="f-build" class="mono" placeholder="a1b2c3d · gcc 12.2 · -Og -g3"></label>
+        <label for="f-hyp">Hypotheses (one per line, prefix with + confirmed, - eliminated, ? open)<textarea id="f-hyp" class="mono" placeholder="- queue overflow (hit count of post = hit count of handle)&#10;? receiver woke late&#10;+ sender skipped on stale mode flag"></textarea></label>
+      </form>
+      <form class="form" onsubmit="return false">
+        <label for="f-obs">Observations (command → what it showed)<textarea id="f-obs" class="mono" placeholder="break Hb::send if mode==SAFE → hit at tick 4200, sender frame #1 Mgr::tick&#10;p *this → mode_=SAFE (expected ACTIVE)"></textarea></label>
+        <label for="f-root">Root cause<textarea id="f-root" placeholder="Mgr::tick reads mode_ before onModeChange runs…"></textarea></label>
+        <label for="f-fix">Where the fix belongs<input id="f-fix" class="mono" placeholder="src/mgr.cpp:88"></label>
+        <label for="f-next">Open questions and notes for the next engineer<textarea id="f-next"></textarea></label>
+      </form>
+    </div>
+    <div class="actions" style="margin-top:14px">
+      <button class="btn primary" id="mdCopy">Copy as Markdown</button>
+      <button class="btn" id="mdClear">Clear form</button>
+      <span class="note" id="mdMsg" role="status"></span>
+    </div>
+    <div class="code" style="margin-top:12px"><pre id="mdOut" style="max-height:280px"></pre></div>
+  </div>
+</section>
+
+<!-- ============ SCREEN ============ -->
+<section class="sec" id="screen">
+  <div class="sec-head">
+    <div class="eyebrow">Easier on the eyes</div>
+    <h2>A better screen than the bare prompt</h2>
+    <p>GDB ships a text user interface. If you want more than that, there are friendlier front ends.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel list">
+      <h3>Built-in TUI</h3>
+      <div class="code"><button class="copy">Copy</button><pre>$ gdb -tui ./app            # or inside GDB:  tui enable
+(gdb) layout src            # source with the current line marked
+(gdb) layout split          # source + assembly
+(gdb) layout regs           # registers on top
+(gdb) focus cmd             # keys go to the command line   (focus src to scroll code)
+(gdb) refresh               # redraw if output smears   (or Ctrl-L)
+(gdb) tui new-layout dbg src 2 cmd 1   # GDB 10+: your own layout</pre></div>
+      <p class="note"><kbd>Ctrl-x a</kbd> leaves or enters the TUI, <kbd>Ctrl-x o</kbd> switches the active window, <kbd>Ctrl-x 1</kbd> and <kbd>Ctrl-x 2</kbd> pick one or two windows, <kbd>Ctrl-x s</kbd> toggles single-key mode (n, s, c, and so on). Pressing Enter repeats the last command, which is how the video steps through a program.</p>
+    </div>
+    <div class="panel list">
+      <h3>Pick by situation</h3>
+      <div class="tbl"><table>
+        <tr><th>Situation</th><th>Use</th></tr>
+        <tr><td>Over SSH to a lab box</td><td>TUI inside tmux. Survives a dropped connection.</td></tr>
+        <tr><td>Want locals, watches, stack always visible</td><td><b>gdb-dashboard</b>: a single <code>.gdbinit</code> that draws panes. Send it to a second tmux pane with <code>dashboard -output /dev/pts/N</code>.</td></tr>
+        <tr><td>Local build, want clicks and a watch window</td><td><b>VS Code</b> with the C/C++ extension (<code>cppdbg</code> uses gdb). For a microcontroller probe, the Cortex-Debug extension.</td></tr>
+        <tr><td>Browser view of a remote session</td><td><b>gdbgui</b></td></tr>
+        <tr><td>Emacs user</td><td><code>M-x gdb</code> then <code>gdb-many-windows</code></td></tr>
+      </table></div>
+    </div>
+    <div class="panel list">
+      <h3>tmux layout for debugging</h3>
+      <div class="code"><button class="copy">Copy</button><pre>┌─────────────────────┬────────────────────┐
+│ gdb (TUI, src+cmd)  │ tail -f gdb-session.log │
+│                     ├────────────────────┤
+│                     │ vim journal.md      │
+└─────────────────────┴────────────────────┘
+$ tmux new -s dbg \; split-window -h 'tail -f gdb-session.log' \; split-window -v 'vim journal.md' \; select-pane -t 0</pre></div>
+    </div>
+    <div class="panel list">
+      <h3>Make C++ readable</h3>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) info pretty-printer          # are the STL printers loaded?
+(gdb) p myVector                   # should show {size = 3, ...} not raw _M_impl
+(gdb) set print object on
+(gdb) set print static-members off
+(gdb) set print frame-arguments all
+(gdb) set print demangle on
+(gdb) p dynamic_cast&lt;Derived*&gt;(basePtr)
+(gdb) info vtbl obj                # which virtuals does this object really have</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EMBEDDED ============ -->
+<section class="sec" id="embedded">
+  <div class="sec-head">
+    <div class="eyebrow">Your target is not a laptop</div>
+    <h2>Embedded and RTOS specifics</h2>
+    <p>What changes when the program runs on a board, a simulator, or a Linux target. Check which of these applies to your project and skip the rest.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel list">
+      <h3>Connect and control</h3>
+      <div class="code"><button class="copy">Copy</button><pre># on the target (Linux/RTOS with network):
+target$ gdbserver :2345 ./app
+host$   gdb ./app
+(gdb) target remote 10.0.0.5:2345
+
+# through a probe (OpenOCD shown):
+(gdb) target extended-remote :3333
+(gdb) monitor reset halt        # "monitor" passes text to the probe server
+(gdb) load                      # flash the ELF
+(gdb) continue
+(gdb) set remote hardware-watchpoint-limit 4   # match your core's comparator count
+(gdb) show can-use-hw-watchpoints</pre></div>
+      <p class="note">Always load the ELF built with <code>-g</code> on the host. The board runs the stripped image; GDB reads symbols from the file.</p>
+    </div>
+    <div class="panel list">
+      <h3>Optimized builds</h3>
+      <p class="note">If you see <code>&lt;optimized out&gt;</code>, rebuild the one file with <code>-Og -g3</code>, or the whole target with <code>-O0</code> for the investigation.</p>
+      <div class="code"><button class="copy">Copy</button><pre>$ gcc -Og -g3 -fno-omit-frame-pointer ...
+(gdb) info macro MAX_MSGS          # works with -g3
+(gdb) set substitute-path /build/ci/src /home/me/src   # sources moved since the build
+(gdb) directory /home/me/src</pre></div>
+    </div>
+    <div class="panel list">
+      <h3>RTOS awareness</h3>
+      <p class="note">With a probe that understands your RTOS (for example OpenOCD <code>-rtos FreeRTOS</code>), <code>info threads</code> lists tasks instead of one CPU context. Without it, read the kernel's own structures.</p>
+      <div class="code"><button class="copy">Copy</button><pre># FreeRTOS example. Names depend on your port and config.
+(gdb) p pxCurrentTCB-&gt;pcTaskName
+(gdb) p pxCurrentTCB-&gt;uxPriority
+(gdb) p uxCurrentNumberOfTasks
+(gdb) p xTickCount                  # your own timeline for deadlines
+(gdb) x/64xw pxCurrentTCB-&gt;pxStack  # 0xa5a5a5a5 = stack never touched; count what remains</pre></div>
+    </div>
+    <div class="panel list">
+      <h3>Cortex-M fault (if you are on ARM M-class)</h3>
+      <div class="code"><button class="copy">Copy</button><pre>(gdb) x/wx 0xE000ED28     # CFSR: which fault (memory, bus, usage)
+(gdb) x/wx 0xE000ED2C     # HFSR
+(gdb) x/wx 0xE000ED34     # MMFAR  (valid if CFSR says so)
+(gdb) x/wx 0xE000ED38     # BFAR
+(gdb) p/x $lr             # EXC_RETURN: bit 2 set = frame on PSP, clear = MSP
+(gdb) x/8wx $psp          # stacked: r0 r1 r2 r3 r12 lr pc xpsr
+(gdb) info symbol *(int*)($psp+24)   # stacked PC = the faulting instruction</pre></div>
+    </div>
+    <div class="panel callout" style="grid-column:1/-1">
+      <b>Halting changes time.</b> While the target is stopped, hardware timers may keep running and other peers keep talking. A timeout that fires right after you resume might be your breakpoint, not the bug. Use <code>dprintf</code> plus the system tick for timing questions, and trust the tick counter rather than wall-clock time.
+    </div>
+  </div>
+</section>
+
+<!-- ============ SANDBOX ============ -->
+<section class="sec" id="sandbox">
+  <div class="sec-head">
+    <div class="eyebrow">Worked example</div>
+    <h2>A bug the compiler cannot explain</h2>
+    <p>Most GDB tutorials crash on a null pointer and the compiler already hinted at it. This one is built to look like real work. It compiles without warnings and the assertion fires in the wrong place: <code>Tracker</code> ends up negative, but <code>Tracker</code> is not at fault. It is the <code>practice-sandbox</code> project already in your handbook. Step through the investigation and watch the hypotheses get crossed off.</p>
+  </div>
+  <div class="panel stage">
+    <div class="steps" id="stepBtns" role="tablist"></div>
+    <div class="hyps" id="hyps"></div>
+    <div>
+      <h3 id="stepTitle" style="margin-bottom:4px"></h3>
+      <p id="stepWhy" class="muted"></p>
+    </div>
+    <div class="code"><button class="copy">Copy</button><pre id="stepCmd"></pre></div>
+    <div class="code"><pre id="stepOut" style="background:var(--bg);border:1px solid var(--line)"></pre></div>
+    <p id="stepRead"></p>
+    <p class="note">The command blocks are GDB syntax. The output blocks show the shape of what you should expect. They are adapted from the LLDB run recorded in handbook chapter 07, with made-up addresses, and were not captured from GDB.</p>
+  </div>
+</section>
+
+<footer>
+  <div>Built from <code>context.txt</code>, the GDB Beginner Masterclass transcript, and the existing fire handbook chapters (symptom playbook, debugger fundamentals, follow the data, time-travel debugging, memory and concurrency, journal).</div>
+  <div>Verify every command on your Linux build host before depending on it. Syntax differences between GDB versions are called out where known.</div>
+</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+var R = String.raw;
+
+var PILLARS = [
+  {k:'U', n:'Understand', c:'--p-u'},
+  {k:'R', n:'Root cause', c:'--p-r'},
+  {k:'D', n:'Data and state', c:'--p-d'},
+  {k:'T', n:'Time and tasks', c:'--p-t'},
+  {k:'M', n:'Memory', c:'--p-m'},
+  {k:'B', n:'Boundaries', c:'--p-b'},
+  {k:'V', n:'Verify', c:'--p-v'}
+];
+var GOALS = [['u','Understand it'],['l','Locate it'],['e','Explain why'],['v','Verify my change']];
+var SUBJ = [['execution','Execution path'],['data','Data and state'],['objects','Objects'],['messages','Messages'],['tasks','Tasks and threads'],['timing','Timing'],['memory','Memory and resources'],['interfaces','Interfaces']];
+
+var PB = [
+/* ---------------- UNDERSTAND ---------------- */
+{id:'U1',p:'U',g:['u','l'],s:['execution'],title:'Execution path discovery',
+ sounds:'"What code handles this?" "What actually runs when I do X?"',
+ ask:['What input can I trigger myself: a message, a command, a button, a timer?','Which function do I know for sure is involved, even loosely?','Is the path static (direct calls) or dynamic (callbacks, virtuals, function pointers, a registry)? Dynamic is where reading fails and running wins.'],
+ run:R`$ gdb --args ./app <args>
+(gdb) start                       # stops at main
+(gdb) break <KnownFunction>
+(gdb) continue                    # now trigger X
+(gdb) bt                          # who called it, innermost first
+(gdb) bt -full 3                  # top 3 frames with their locals
+(gdb) up                          # climb to the caller, then:
+(gdb) info locals
+(gdb) info frame
+
+# Log the path downstream without stopping (narrow the regex!):
+(gdb) rbreak ^Heartbeat::
+(gdb) info breakpoints            # note the number range, e.g. 4-19
+(gdb) commands 4-19
+> silent
+> bt 1
+> continue
+> end
+(gdb) continue`,
+ read:'The first frame that is framework code (scheduler, dispatcher, <code>std::function</code>) marks where your application path begins. The frame just inside it is your entry point.',
+ back:'Overshot the interesting call? With recording on: <code>reverse-finish</code> to the call site. Without: <code>tbreak</code> it and rerun.',
+ keep:'Paste the <code>bt</code> into your journal as a call path with file:line for each frame. It is your map of this feature.'},
+
+{id:'U2',p:'U',g:['u'],s:['tasks','objects'],title:'Runtime architecture discovery',
+ sounds:'"What are the pieces of this system?" "Which tasks and queues exist?"',
+ ask:['Who creates tasks or threads, and with what entry function and priority?','Which queues, semaphores or mailboxes connect them?','Which task blocks on what, right now?'],
+ run:R`# Linux threads
+(gdb) break pthread_create
+(gdb) commands
+> silent
+> info args
+> bt 3
+> continue
+> end
+(gdb) run
+(gdb) info threads
+(gdb) thread apply all bt 8
+
+# RTOS: swap in your kernel's create call
+(gdb) break xTaskCreate           # or osThreadNew, taskSpawn, ...
+(gdb) commands
+> silent
+> printf "task %s prio %d\n", pcName, uxPriority
+> continue
+> end`,
+ read:'Build one table: task name, entry function, priority, what it blocks on, what it posts to. After one run of startup you will know more than the source tree told you.',
+ back:'Missed startup? Restart and set the breakpoints before <code>run</code>. Create-calls are one-shot events.',
+ keep:'The task table. It becomes the legend for every later timing or deadlock investigation.'},
+
+{id:'U3',p:'U',g:['u','l'],s:['objects','data'],title:'Which instance am I looking at?',
+ sounds:'"There are 100 of these." "Which Controller handles my case?"',
+ ask:['How many instances exist, and who creates them?','What identifies mine: an id, a name, a config value, an owner pointer?','Who owns it, and what is its configuration?'],
+ run:R`# 1. Enumerate instances as they are born
+(gdb) break Controller::Controller
+(gdb) commands
+> silent
+> printf "ctor this=%p\n", this
+> bt 4
+> continue
+> end
+(gdb) run
+
+# 2. Pin to ONE instance by address from then on
+(gdb) break Controller::handle if this == 0x5555556a4eb0
+(gdb) continue
+(gdb) p *this
+(gdb) p *this->owner_
+(gdb) ptype this
+(gdb) ptype/o Controller          # field offsets and padding
+(gdb) info vtbl this`,
+ read:'The address is the identity. The class name is ambiguous, the address is not. From here on, condition everything on <code>this == address</code> and the other 99 instances disappear.',
+ back:'Addresses change on every run. Heap addresses are stable run to run only when ASLR is off (GDB turns it off by default).',
+ keep:'A small table: address, id or name, owner, config. Note it is for this run only.'},
+
+{id:'U4',p:'U',g:['l','u'],s:['execution','data','messages'],title:'Find the feature insertion point',
+ sounds:'"Add behavior when heartbeat status changes." "Where do I put this?"',
+ ask:['Where does the triggering input enter the system?','Where is the decision made, and where is its result consumed?','Where is the state stored?','What is the smallest frame where I have every input I need and can still affect the output?'],
+ run:R`(gdb) break <where the input enters>     # receiver, ISR handler, API entry
+(gdb) run
+(gdb) bt                                    # call path A
+(gdb) break <where the output leaves>       # transmit, actuator write
+(gdb) continue
+(gdb) bt                                    # call path B
+# The frames common to both backtraces are your candidate zone.
+(gdb) up
+(gdb) info locals                           # do I already have everything here?
+(gdb) p <the condition you plan to write>   # evaluate your new code BEFORE writing it
+(gdb) call <existing_helper>(<args>)        # does the helper return what I assume?`,
+ read:'If your intended expression prints the right value at this frame, this is a viable hook. If you have to reach through three pointers to build it, look one frame up or down.',
+ back:'Moved past the zone? <code>up</code> and <code>down</code> are free. With recording, <code>reverse-step</code>.',
+ keep:'A short design note: "Input at A:line, decision at B:line, output at C:line, hook at B."'},
+
+/* ---------------- ROOT CAUSE ---------------- */
+{id:'R1',p:'R',g:['e','l'],s:['memory','execution'],title:'Crash: segfault, abort, assertion',
+ sounds:'"SIGSEGV in …" "Assertion failed" "terminate called"',
+ ask:['Which signal? Which address was touched: near zero, garbage, or a stack address?','Which frame owns the bad pointer? It is often not frame 0.','Who set that pointer last?'],
+ run:R`(gdb) run                                  # or: gdb ./app core
+(gdb) bt full
+(gdb) p $_siginfo._sifields._sigfault.si_addr  # faulting address (Linux)
+(gdb) frame 1
+(gdb) info locals
+(gdb) p *ptr
+(gdb) x/6i $pc-12                             # instructions around the fault
+(gdb) info registers
+
+# abort() or assert(): climb out of libc to your code
+(gdb) bt
+(gdb) frame function <YourFunction>
+
+# C++ exceptions and aborts, stop at the source
+(gdb) catch throw
+(gdb) catch signal SIGABRT`,
+ read:'A fault address like <code>0x18</code> means a null object with a member at offset 24. Confirm with <code>ptype/o</code>. A fault in libc usually means your code passed it something bad one or two frames up.',
+ back:'Crash site is not bug site. Rerun with <code>watch -l ptr</code> to catch the write that broke it, or use rr and <code>reverse-continue</code> from the crash.',
+ keep:'Save <code>bt full</code> to a file. Note: signal, fault address, the owning frame, and who last wrote the pointer.'},
+
+{id:'R2',p:'R',g:['l','e'],s:['data'],title:'Wrong result: first point of divergence',
+ sounds:'"Expected 42, got 37." "Output is off."',
+ ask:['What are the stages between input and output?','What is the last stage where the value is definitely right, and the first where it is definitely wrong?','Is the wrongness a bad computation, a stale input, or an overwrite?'],
+ run:R`# Bisect the pipeline. Condition on the bad case so you stop only there.
+(gdb) break stageB if input_id == 1337
+(gdb) run
+(gdb) p value                       # right or wrong at B's entry?
+(gdb) finish                        # prints "Value returned is $1 = ..."
+(gdb) p $                           # that value again
+# Halve the interval: right at B, wrong at D? Look at C next.
+(gdb) tbreak stageC
+(gdb) continue
+(gdb) display value                 # shown after every stop from now on
+
+# Or: stop on the first wrong write wherever it happens
+(gdb) watch -l obj->result if obj->result != 42`,
+ read:'You are done when you have a stage where input is right and output is wrong. Everything upstream is innocent.',
+ back:'<code>reverse-finish</code>, <code>reverse-next</code>. Without recording: <code>ignore</code> the first N-1 hits and rerun.',
+ keep:'A stage table: stage, value, right or wrong. The culprit is the row where it flips.'},
+
+{id:'R3',p:'R',g:['e'],s:['execution','objects'],title:'Wrong code ran',
+ sounds:'"Wrong handler." "State machine went to the wrong state." "Wrong branch."',
+ ask:['What does the condition evaluate to, and is it correct?','If the value is right but the dispatch is wrong: virtual call, function pointer, or table lookup?','Who made the choice: this function or its caller?'],
+ run:R`(gdb) break <function with the branch>
+(gdb) run
+(gdb) info locals
+(gdb) p <the condition expression>
+(gdb) p/d state_                      # enum as a number, in case of mismatch
+(gdb) p handler_                      # function pointer: where does it point?
+(gdb) info symbol handler_
+(gdb) set print object on
+(gdb) p *obj                          # real dynamic type
+(gdb) info vtbl obj
+
+# Experiment: does forcing the expected value fix the downstream behavior?
+(gdb) set var state_ = <Expected>
+(gdb) next
+
+# Who dispatched into the wrong handler?
+(gdb) tbreak <WrongHandler>
+(gdb) continue
+(gdb) bt`,
+ read:'If forcing the value fixes the symptom, the bug is whoever set <code>state_</code>. Go to D1 and watch it. If the value was right, the bug is in the lookup.',
+ back:'<code>set var</code> is an experiment, not a fix. Print first (<code>p state_</code>), so <code>$N</code> remembers the old value. Or <code>checkpoint</code> before experimenting.',
+ keep:'"At file:line, <code>state_</code> was X, expected Y. Forcing Y made the test pass."'},
+
+{id:'R4',p:'R',g:['e','l'],s:['execution','messages','tasks'],title:'Expected event never happened',
+ sounds:'"Heartbeat never sent." "Callback not called." "Task never wakes."',
+ ask:['What is the chain of calls that should have happened, in order?','Where did it last definitely work?','Is the missing step blocked, never reached, filtered by a guard, or run but silent?'],
+ run:R`# Put a breakpoint on every link in the expected chain, in order
+(gdb) break Sender::build
+(gdb) break Sender::enqueue
+(gdb) break Dispatcher::deliver
+(gdb) break Receiver::onHeartbeat
+(gdb) run                           # then trigger the scenario and let it run
+^C                                  # interrupt after a while if it hangs
+(gdb) info breakpoints              # read the "already hit N times" column
+
+# The first link with fewer hits than the one before it is the gap.
+# Now look inside the link BEFORE the gap:
+(gdb) break Sender::enqueue
+(gdb) run
+(gdb) next                          # watch for an early return
+(gdb) p <each guard condition>
+(gdb) thread apply all bt           # or is something simply blocked?`,
+ read:'Hit counts form a ladder: 10, 10, 10, 0. The break is between the third and fourth rung. Absence of execution has a place; find the place.',
+ back:'The hit count tells you the iteration. Rerun with <code>ignore</code> to land on the last good one.',
+ keep:'The ladder: link, hit count. Paste it into the ticket.'},
+
+{id:'R5',p:'R',g:['e'],s:['timing','tasks'],title:'Intermittent failure',
+ sounds:'"Works 99 times." "Only under load." "Only after a few minutes."',
+ ask:['Can I make it happen more often: a loop, stress, one core, a fixed seed?','What differs between runs: timing, input order, uninitialized memory, ASLR?','Does a breakpoint hide it? Then use <code>dprintf</code>, not <code>break</code>.'],
+ run:R`# Unattended loop until it fails; keep the evidence
+$ for i in $(seq 1 500); do
+>   gdb -batch -ex run -ex 'bt full' --args ./app <args> > run.$i.log 2>&1
+>   grep -q 'SIGSEGV\|Assertion' run.$i.log && { echo "failed on run $i"; break; }
+> done
+
+# Bugs hidden by GDB turning ASLR off:
+(gdb) set disable-randomization off
+
+# Observe without stopping
+(gdb) dprintf Worker::step,"tid=%d seq=%d\n", $_thread, seq
+(gdb) catch signal SIGSEGV
+$ ulimit -c unlimited                 # leave a core for the failure you can't attach to
+
+# Race suspected? Replay it deterministically
+$ rr record --chaos ./app`,
+ read:'Compare a failing log with a passing log. The first line that differs is the first clue. If adding output "fixes" it, you are likely looking at a race or undefined behavior.',
+ back:'rr is the real answer here: record a failing run once, then reverse as much as you like.',
+ keep:'Failure rate before and after any change. "1 in 40" becoming "0 in 500" is a result.'},
+
+/* ---------------- DATA ---------------- */
+{id:'D1',p:'D',g:['l','e'],s:['data','memory'],title:'Who changed this value?',
+ sounds:'"Why is mode SAFE?" "Where did 523 come from?" A variable named in 100 places.',
+ ask:['What value is bad, and what value would be good?','Which instance, by address?','Is the write I will catch the first bad one, or did an earlier write set it up?'],
+ run:R`(gdb) break <line after the object exists>
+(gdb) run
+(gdb) p &obj->mode_                       # the address IS the identity
+(gdb) watch -l obj->mode_                 # every write
+(gdb) watch -l obj->mode_ if obj->mode_ == 3     # only the interesting one
+(gdb) rwatch -l obj->mode_                # reads
+(gdb) awatch -l obj->mode_                # reads and writes
+(gdb) continue
+# Watchpoint 2: Old value = 1 / New value = 3, stopped in the writer
+(gdb) bt
+(gdb) frame 1
+(gdb) info locals
+
+# If the condition cannot see your locals, use the raw address:
+(gdb) watch *(int*)0x7ffe4d2c if *(int*)0x7ffe4d2c == 3
+(gdb) info watchpoints`,
+ read:'The backtrace at the stop is the answer to "who touched it". Read the arguments of the writer frame: was the value wrong when it arrived? If so, the writer is innocent. Move up the chain, or to D4 if a message queue sits in between.',
+ back:'With recording or rr, put the watch on the final bad value and <code>reverse-continue</code> to land on the last write. No guessing which hit.',
+ keep:'Writer frame, its arguments, the old and new values, and the path above it.'},
+
+{id:'D2',p:'D',g:['u','v'],s:['data'],title:'Where does this value go?',
+ sounds:'"What consumes heartbeat status?" "What breaks if I change this?"',
+ ask:['Who reads this field, and under what conditions?','Does it get copied into something else (a message, a cache, a log)?'],
+ run:R`(gdb) break <line after the object exists>
+(gdb) run
+(gdb) rwatch -l obj->status_
+(gdb) commands
+> silent
+> bt 3
+> continue
+> end
+(gdb) continue                    # a list of every reader, in order
+
+# Then find the copy: where does the value end up?
+(gdb) awatch -l obj->status_      # spot copies by value, print and compare
+(gdb) p/x obj->status_`,
+ read:'The distinct frame-1 callers in the log are the consumers. If you only saw one reader, note whether your scenario reached the others at all.',
+ back:'Hardware watchpoints are limited (often 4). Delete finished ones: <code>delete 3</code>.',
+ keep:'Consumer list with file:line. This is your impact map for a change.'},
+
+{id:'D3',p:'D',g:['e','u'],s:['data','interfaces'],title:'How did A become B? (transformation chain)',
+ sounds:'"Sensor reads 4095 but display shows -1." "Scaled value is off."',
+ ask:['What are the stages (scale, filter, convert, clamp) and what unit does each use?','Where could a cast, truncation, sign change, or integer promotion happen?','Is each stage correct in isolation, and wrong in combination?'],
+ run:R`# One labelled trace line per stage, same format, then compare
+(gdb) dprintf Sensor::read,"S1 raw=%d\n", raw
+(gdb) dprintf scale,"S2 scaled=%f\n", out
+(gdb) dprintf toFixed,"S3 fixed=%d\n", out
+(gdb) dprintf clampTo,"S4 clamped=%d\n", out
+
+# Inspect types where a surprise is likely
+(gdb) ptype expr
+(gdb) whatis (a * b)
+(gdb) p sizeof(x)
+(gdb) p/x x
+(gdb) p/t x
+(gdb) p (short)x
+(gdb) finish                       # shows "Value returned" for any function`,
+ read:'The stage where the value stops matching your hand calculation is the stage to read. Common culprits: signed versus unsigned, integer divide before float multiply, 16-bit truncation, a clamp that is applied twice.',
+ back:'<code>reverse-step</code> into the stage. Or rerun with a conditional break on that stage only.',
+ keep:'A table: stage, input, output, units, hand-computed expected.'},
+
+{id:'D4',p:'D',g:['l','e'],s:['messages'],title:'Message flow trace',
+ sounds:'"Message lost." "Command not received." "Wrong destination."',
+ ask:['Which hop failed? Use the list below.','Break at the sender, not the receiver. After a queue the receiver\'s stack shows only the dispatcher; the sender is gone.','Is there a message id or sequence number I can follow?'],
+ run:R`# Stop at the PRODUCER, filtered on the bad payload
+(gdb) break Bus::post if m.value < 0
+(gdb) run
+(gdb) bt                           # frame 1 is the sender
+(gdb) frame 1
+(gdb) p *this                      # why did it build this message?
+
+# Follow one message through every hop without stopping
+(gdb) dprintf Bus::post,"POST   type=%d val=%d\n", m.type, m.value
+(gdb) dprintf Bus::pump,"PUMP\n"
+(gdb) dprintf Tracker::onMessage,"HANDLE type=%d val=%d\n", m.type, m.value
+(gdb) set logging file msgs.log
+(gdb) set logging enabled on
+(gdb) run`,
+ read:'Compare the POST and HANDLE streams. A POST without a HANDLE: dropped or queued but never pumped. A HANDLE with a different value: changed in transit. Also avoid calling container methods like <code>size()</code> inside <code>dprintf</code>; use fields or pretty printers.',
+ back:'<code>reverse-continue</code> from a bad HANDLE lands on the matching POST if you are recording.',
+ keep:'The failing hop. The ten categories: not created · created wrong · not sent · wrong destination · queued wrong · dropped · delayed · received wrong · dispatched wrong · handled wrong.'},
+
+/* ---------------- TIME ---------------- */
+{id:'T1',p:'T',g:['e'],s:['timing','tasks','messages'],title:'Wrong order of events',
+ sounds:'"Received before subscribed." "Init ran after first use."',
+ ask:['What order should hold, and what guarantees it: a lock, a queue, startup sequence, or luck?','Which event do I need to see first, second and third?'],
+ run:R`(gdb) dprintf Mgr::init,"T%d INIT\n", $_thread
+(gdb) dprintf Bus::subscribe,"T%d SUBSCRIBE\n", $_thread
+(gdb) dprintf Bus::onReceive,"T%d RECEIVE\n", $_thread
+(gdb) set logging file order.log
+(gdb) set logging enabled on
+(gdb) run
+
+# Which thread reaches X first?  Gate on the thread:
+(gdb) break Bus::onReceive thread 2
+(gdb) tbreak Mgr::init thread 1`,
+ read:'Write the observed sequence next to the expected one. The first mismatch is the missing ordering guarantee. Fix it with a real synchronization point, not a sleep.',
+ back:'rr replay with <code>reverse-continue</code> shows what executed before. Without it, rerun and compare logs across runs.',
+ keep:'Two lines: expected order, observed order(s).'},
+
+{id:'T2',p:'T',g:['e','l'],s:['tasks','data'],title:'Race condition',
+ sounds:'"Sometimes stale." "Data torn." "Only fails with two tasks."',
+ ask:['What is the shared state, and who writes and reads it?','Which lock or critical section is supposed to protect it?','Can I force the bad interleaving by hand?'],
+ run:R`(gdb) awatch -l shared->count
+(gdb) commands
+> silent
+> printf "tid=%d count=%d\n", $_thread, shared->count
+> bt 2
+> continue
+> end
+(gdb) run
+
+# Force an interleaving by hand
+(gdb) info threads
+(gdb) set scheduler-locking on        # only the thread you step will run
+(gdb) thread 2
+(gdb) next                            # advance thread 2 to just before the read
+(gdb) thread 1
+(gdb) next                            # let thread 1 write in between
+(gdb) set scheduler-locking off
+
+# Find the race automatically, then replay it
+$ cmake -DCMAKE_CXX_FLAGS="-fsanitize=thread -g" ...
+$ rr record --chaos ./app`,
+ read:'A read-modify-write without the lock in both threads is the signature. If it only fails when you step in a particular order, you have found the window.',
+ back:'rr is the right tool for races, because a recorded failure replays the same way every time.',
+ keep:'The sequence of thread, operation, value that reproduces the failure.'},
+
+{id:'T3',p:'T',g:['e','l'],s:['tasks'],title:'Hang or deadlock',
+ sounds:'"It freezes." "Task stopped responding." CPU idle.',
+ ask:['Who is waiting on whom?','For each blocked thread: which lock, queue or semaphore, and who owns it?','Is it a cycle, or is the owner simply never going to run?'],
+ run:R`$ gdb -p <pid>                   # attach to the frozen process
+(gdb) info threads
+(gdb) thread apply all bt             # EVERY stack: the hang command
+(gdb) thread 3
+(gdb) frame 2                         # the frame that called lock/wait
+(gdb) p *mutex
+(gdb) p mutex->__data.__owner         # glibc: kernel thread id of the holder
+(gdb) info threads                    # match that id to the LWP column
+
+# After a Ctrl-C in a live session the same commands work.
+# RTOS: print the semaphore or queue handle and read its holder field.`,
+ read:'Draw it: A waits for L2 held by B; B waits for L1 held by A. That is a cycle. If the holder is waiting on something else, follow the chain to its end.',
+ back:'You cannot reverse a hang, but you can find the first acquisition with rr, or log lock and unlock with <code>dprintf</code>.',
+ keep:'The wait-for graph, as text: <code>T1 → L2 (held by T3) → ...</code>'},
+
+{id:'T4',p:'T',g:['e','u'],s:['tasks','timing'],title:'Starvation and scheduling',
+ sounds:'"Task never gets CPU." "Low priority task starved." "Why is this running?"',
+ ask:['Which task is running now, and what priority?','Is something spinning, or blocked in a driver or ISR?','What is the lower task waiting on?'],
+ run:R`# Poor man's profiler: sample where each thread is, many times
+$ for i in $(seq 1 20); do
+>   gdb -p <pid> -batch -ex 'thread apply all bt 4' ; sleep 0.2
+> done > samples.txt
+$ grep -E '^#0|^#1' samples.txt | sort | uniq -c | sort -rn | head
+
+# RTOS: what is running, and at what priority?
+(gdb) p pxCurrentTCB->pcTaskName
+(gdb) p pxCurrentTCB->uxPriority
+(gdb) info threads`,
+ read:'If one function dominates every sample, that is where the CPU goes. Compare with where the starved task is parked.',
+ back:'Samples are independent, so there is nothing to reverse. Keep the sample file.',
+ keep:'Top 5 sampled frames with counts, and the blocked task\'s stack.'},
+
+{id:'T5',p:'T',g:['e'],s:['timing','messages'],title:'Deadline or heartbeat timing',
+ sounds:'"Heartbeat missed." "Timeout fired." "Latency too high."',
+ ask:['What is the period and the tolerance, and which clock decides?','Where is the timestamp taken, and where is it checked?','Is the producer late, the transport late, or the checker too strict?'],
+ run:R`(gdb) dprintf Heartbeat::send,"HB-TX tick=%u\n", g_tick
+(gdb) dprintf Monitor::onHeartbeat,"HB-RX tick=%u\n", g_tick
+(gdb) dprintf Monitor::declareFault,"FAULT tick=%u last=%u\n", g_tick, last_rx_
+(gdb) set logging file hb.log
+(gdb) set logging enabled on
+(gdb) run
+
+# afterwards, in a shell: gap between consecutive events
+$ grep HB-TX hb.log | awk '{split($2,a,"="); t=a[2]; if (NR>1) print "TX gap", t-prev; prev=t}'
+$ grep HB-RX hb.log | awk '{split($2,a,"="); t=a[2]; if (NR>1) print "RX gap", t-prev; prev=t}'`,
+ read:'Late TX gap: the producer. Late RX with on-time TX: transport or queue. FAULT before the gap exceeds the threshold: the checker\'s constant or reference time is wrong.',
+ back:'Timing does not rewind. Use the log. If you must stop on an event, expect timeouts when you resume.',
+ keep:'Three gap series (TX, RX, FAULT) and the threshold they were measured against.'},
+
+/* ---------------- MEMORY ---------------- */
+{id:'M1',p:'M',g:['e'],s:['memory','objects'],title:'Lifetime: use-after-free, dangling pointer',
+ sounds:'"Garbage in a field." "Crashes in a destructor." "Works in debug."',
+ ask:['Who owns the object and when is it destroyed?','Who still holds a pointer after that?','Is it a stack address that escaped?'],
+ run:R`# Make freed memory visible (glibc)
+(gdb) set environment MALLOC_PERTURB_=165     # freed bytes become 0xa5
+(gdb) set environment MALLOC_CHECK_=3
+(gdb) run
+
+# When is it destroyed?
+(gdb) break Foo::~Foo if this == 0x5555556a4eb0
+(gdb) continue
+(gdb) bt
+# Who nulls or reuses the pointer?
+(gdb) watch -l holder->ptr
+(gdb) info symbol 0x7ffe4d2c                  # a stack address? a heap address?
+(gdb) info proc mappings
+
+# Best first tool: rebuild with ASan, it prints alloc and free stacks
+$ cmake -DCMAKE_CXX_FLAGS="-fsanitize=address -g" ...`,
+ read:'Fields full of <code>0xa5a5a5a5</code> mean you are reading freed memory. The backtrace at the destructor tells you who destroyed it. The holder is who forgot.',
+ back:'rr: <code>watch -l</code> the object, <code>reverse-continue</code> to the free.',
+ keep:'Allocation site, free site, and the stale holder. Three stacks.'},
+
+{id:'M2',p:'M',g:['l','e'],s:['memory','data'],title:'Corrupted memory',
+ sounds:'"foo = 839201382." "Neighbouring variable changed." "Object looks scrambled."',
+ ask:['What should the value be, and what do the neighbours look like?','Who legitimately writes this field? Is the culprit something else (a buffer next door)?','Does the damage pattern look like ASCII, a counter, or zeros?'],
+ run:R`(gdb) p &var
+(gdb) info symbol &var
+(gdb) x/16xw (char*)&var - 16          # look at the neighbours
+(gdb) x/s &buf                         # ASCII bytes where numbers should be?
+(gdb) ptype/o struct Msg               # layout with padding and offsets
+
+# The watch catches the writer even if its code never mentions "var"
+(gdb) watch -l var if var != 0
+(gdb) continue
+(gdb) bt                               # memcpy, strcpy, or loop writer frame
+(gdb) frame 1
+(gdb) p len
+(gdb) p sizeof(buf)`,
+ read:'A bytewise writer (<code>memcpy</code>, <code>strcpy</code>) in the watch stack means an overrun from an adjacent object. Compare its length with the destination size.',
+ back:'rr or <code>record</code>: <code>reverse-continue</code> from the corruption to the last write.',
+ keep:'Victim address, writer frame, length versus capacity.'},
+
+{id:'M3',p:'M',g:['e'],s:['memory','tasks'],title:'Exhaustion: stack, heap, pool, queue',
+ sounds:'"Works for 20 minutes then dies." "Allocation fails." "Queue full."',
+ ask:['Which resource, and what is its capacity?','Is it a leak (grows steadily) or a burst (spikes)?','Who consumes and who releases?'],
+ run:R`# Stack depth and use
+(gdb) bt -5                           # outermost frames
+(gdb) pipe bt | wc -l                 # depth
+(gdb) p $sp
+(gdb) info frame
+(gdb) x/64xw <stack_base>             # painted stack? count untouched words (0xa5a5a5a5)
+
+# Heap (glibc)
+(gdb) call (void)malloc_stats()       # prints to stderr
+
+# Pool, queue, buffer counters
+(gdb) p pool.free_count
+(gdb) p queue.count
+(gdb) p queue.capacity
+
+# Stop where allocation fails
+(gdb) catch throw                     # std::bad_alloc
+(gdb) break <the failure branch line>`,
+ read:'Run the same print at three points in time. Growth that never shrinks is a leak; a spike is a burst. Find the producer faster than the consumer.',
+ back:'A leak is cumulative, so rewinding does not help. Compare the counters before and after one cycle of the suspect operation.',
+ keep:'Resource, capacity, counter values at three times.'},
+
+/* ---------------- BOUNDARIES ---------------- */
+{id:'B1',p:'B',g:['e','v'],s:['interfaces','data'],title:'Contract mismatch across components',
+ sounds:'"Each side looks right." "Off by a factor of 1000." "Enum means different things."',
+ ask:['What unit, range and meaning does each side assume?','Who documents it, and does the code agree?','Is the enum or constant defined twice?'],
+ run:R`# Same logical value, one breakpoint on each side
+(gdb) break Sender::send
+(gdb) break Receiver::onMsg
+(gdb) run
+(gdb) p timeout_ms                    # sender: milliseconds?
+(gdb) p/d msg.mode ; p msg.mode       # number and name
+(gdb) continue
+(gdb) p timeout_us                    # receiver: microseconds?
+(gdb) ptype enum Mode
+(gdb) p sizeof(Msg)
+(gdb) p (enum Mode)3`,
+ read:'Print the SAME quantity on both sides. A factor of 1000 or a shifted enum name is the entire bug. Check where each side gets its definition.',
+ back:'<code>reverse-step</code> into the conversion if you passed it. Otherwise breakpoint on the conversion function.',
+ keep:'Two lines: "A sends X in unit U", "B expects Y in unit V".'},
+
+{id:'B2',p:'B',g:['l','e'],s:['interfaces','memory'],title:'Serialization, byte layout, endianness',
+ sounds:'"Bytes arrive scrambled." "Wrong field offsets." "Works between our boxes, not theirs."',
+ ask:['Is the struct packed, padded, or reordered by the compiler?','What is the byte order on each end?','Is there a version field, and does the receiver check it?'],
+ run:R`(gdb) ptype/o struct Msg                # offsets, sizes, holes
+(gdb) p sizeof(struct Msg)
+(gdb) show endian
+(gdb) x/32xb buf                           # raw wire bytes
+(gdb) x/8xw buf
+(gdb) p/x *(struct Msg*)buf                # reinterpret the bytes
+(gdb) dump binary memory msg.bin buf buf+len
+$ xxd msg.bin
+$ xxd expected.bin | diff - <(xxd msg.bin)`,
+ read:'Match the hex against the spec byte by byte. A hole in <code>ptype/o</code> is padding the sender wrote and the receiver did not expect.',
+ back:'Serialization is a function, so <code>reverse-finish</code> from the first wrong byte back into the writer.',
+ keep:'The annotated hex dump: offset, field, value, expected.'},
+
+/* ---------------- VERIFY ---------------- */
+{id:'V1',p:'V',g:['v'],s:['execution','data','messages'],title:'Prove my new code runs',
+ sounds:'"Is my feature actually hit?" "Does this only fire in the scenario I think?"',
+ ask:['In which scenario should it fire, and exactly how many times?','What observable changes: output, state, message?','Can I force the scenario instead of waiting for it?'],
+ run:R`(gdb) break MyNewFunction
+(gdb) run
+(gdb) bt                              # reached from the path I expected?
+(gdb) p state_before
+(gdb) finish
+(gdb) p state_after
+(gdb) info breakpoints                # "already hit N times": matches expectation?
+
+# Force the branch if the scenario is rare
+(gdb) break Mgr::tick
+(gdb) run
+(gdb) set var input_flag = 1
+(gdb) continue
+
+# Negative test: it must NOT fire here
+(gdb) tbreak MyNewFunction if mode == IDLE`,
+ read:'Exactly the expected hit count, reached from the expected path, with the expected before and after. A zero or a surprise count is a failure of the change, however the output looks.',
+ back:'Overshot? <code>reverse-finish</code>, or <code>tbreak</code> and rerun.',
+ keep:'"Fires N times in scenario S, from path P, changes A to B." This goes in the PR description.'},
+
+{id:'V2',p:'V',g:['v','e'],s:['execution','data','timing'],title:'Before and after (regression)',
+ sounds:'"It worked before my change." "What behavior changed between A and B?"',
+ ask:['What input makes the old and new builds comparable?','Which values or events summarize behavior?','Where is the first line where the traces differ?'],
+ run:R`# trace.gdb: same script, run against both builds
+set pagination off
+dprintf Bus::post,"POST type=%d val=%d\n", m.type, m.value
+dprintf Tracker::applyDelta,"APPLY %d\n", v
+dprintf Mgr::onModeChange,"MODE %d\n", newMode
+run
+quit
+
+$ gdb -batch -x trace.gdb ./app_old > before.log 2>&1
+$ gdb -batch -x trace.gdb ./app_new > after.log  2>&1
+$ diff before.log after.log | head -40`,
+ read:'The first differing line is where behavior forked. Print values, not pointers, since addresses differ between runs.',
+ back:'Rerun with <code>ignore</code> on the line before the fork and step from there.',
+ keep:'before.log, after.log and the diff. Attach all three.'},
+
+{id:'V3',p:'V',g:['v','u'],s:['objects','execution','data','messages','interfaces','tasks'],title:'Impact discovery',
+ sounds:'"What else uses what I changed?" "Who calls this?"',
+ ask:['Which function, field or message am I changing?','Which scenarios exercise it: the test suite, the sim, a replay?','Who are the distinct callers or readers?'],
+ run:R`(gdb) break ChangedFunction
+(gdb) commands
+> silent
+> bt 3
+> continue
+> end
+(gdb) set logging file callers.log
+(gdb) set logging enabled on
+(gdb) run                             # run the biggest scenario you have
+
+$ grep -h '^#1' callers.log | sort | uniq -c | sort -rn
+(gdb) info breakpoints                # total hit count for the function`,
+ read:'The sorted list of frame-1 callers is the set of paths your change touches in this scenario. Anything not in the list is a path your testing did not exercise, not proof of safety.',
+ back:'Nothing to rewind. Rerun with a different scenario and merge the lists.',
+ keep:'Caller list with counts, and which scenarios you ran.'}
+];
+
+/* ---------------- helpers ---------------- */
+function $(id){return document.getElementById(id)}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function pil(k){for(var i=0;i<PILLARS.length;i++)if(PILLARS[i].k===k)return PILLARS[i]}
+function store(op,k,v){try{if(op==='get')return localStorage.getItem(k);if(op==='set')localStorage.setItem(k,v);if(op==='del')localStorage.removeItem(k)}catch(e){}return null}
+
+function copyText(text,btn){
+  var done=function(ok){var o=btn.textContent;btn.textContent=ok?'Copied':'Select + copy';setTimeout(function(){btn.textContent=o},1400)};
+  var fallback=function(){
+    var pre=btn.parentNode.querySelector('pre');
+    if(pre){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r)}
+    done(false)};
+  try{navigator.clipboard.writeText(text).then(function(){done(true)},fallback)}catch(e){fallback()}
+}
+function codeBlock(text){
+  var w=el('div','code'),b=el('button','copy','Copy'),pre=el('pre');
+  b.type='button';pre.textContent=text;w.appendChild(b);w.appendChild(pre);return w;
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('.copy');
+  if(!b)return;
+  var pre=b.parentNode.querySelector('pre');
+  if(pre)copyText(pre.textContent,b);
+});
+
+/* ---------------- playbook list ---------------- */
+var state={pillar:'',q:''};
+function section(h,node){var d=el('div');d.appendChild(el('h4',null,h));d.appendChild(node);return d}
+function html(tag,markup){var e=el(tag);e.innerHTML=markup;return e}  /* markup is authored above, never user input */
+
+function buildCard(p){
+  var P=pil(p.p);
+  var d=el('details','pb');d.id=p.id;d.style.setProperty('--pc','var('+P.c+')');d.dataset.p=p.p;
+  var sm=el('summary');
+  sm.appendChild(el('span','id',p.id));
+  sm.appendChild(el('span','t',p.title));
+  sm.appendChild(el('span','s',p.sounds));
+  d.appendChild(sm);
+  var body=el('div','pbody');
+  var ul=el('ul');p.ask.forEach(function(a){ul.appendChild(html('li',a))});
+  body.appendChild(section('Ask yourself first',ul));
+  body.appendChild(section('GDB boilerplate',codeBlock(p.run)));
+  var cols=el('div','cols');
+  cols.appendChild(section('Reading the result',html('p',p.read)));
+  cols.appendChild(section('If you overshoot',html('p',p.back)));
+  cols.appendChild(section('Write this down',html('p',p.keep)));
+  body.appendChild(cols);
+  d.appendChild(body);
+  d._text=(p.id+' '+p.title+' '+p.sounds+' '+p.ask.join(' ')+' '+p.run+' '+p.read+' '+p.back+' '+p.keep).toLowerCase();
+  return d;
+}
+var cards=PB.map(buildCard);
+var list=$('pbList');
+cards.forEach(function(c){list.appendChild(c)});
+var emptyEl=el('div','empty','No playbook matches. Try a shorter search or clear the pillar filter.');emptyEl.hidden=true;list.appendChild(emptyEl);
+
+function applyFilter(){
+  var n=0,q=state.q.toLowerCase().trim();
+  cards.forEach(function(c){
+    var ok=(!state.pillar||c.dataset.p===state.pillar)&&(!q||c._text.indexOf(q)>-1);
+    c.hidden=!ok;if(ok)n++;
+  });
+  emptyEl.hidden=n>0;
+}
+(function(){
+  var host=$('pillarBtns');
+  var mk=function(k,label){
+    var b=el('button','btn',label);b.type='button';b.setAttribute('aria-pressed',String(state.pillar===k));b.dataset.k=k;
+    b.addEventListener('click',function(){
+      state.pillar=k;
+      host.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',String(x.dataset.k===k))});
+      applyFilter();
+    });host.appendChild(b);
+  };
+  mk('','All');
+  PILLARS.forEach(function(P){mk(P.k,P.k+' · '+P.n)});
+  host.querySelector('button').setAttribute('aria-pressed','true');
+  $('q').addEventListener('input',function(e){state.q=e.target.value;applyFilter()});
+})();
+
+function openFromHash(){
+  var id=decodeURIComponent((location.hash||'').slice(1));
+  var c=id&&document.getElementById(id);
+  if(c&&c.classList&&c.classList.contains('pb')){
+    state.pillar='';state.q='';$('q').value='';
+    $('pillarBtns').querySelectorAll('button').forEach(function(x,i){x.setAttribute('aria-pressed',String(i===0))});
+    applyFilter();c.open=true;
+    setTimeout(function(){c.scrollIntoView({block:'start'})},30);
+  }
+}
+window.addEventListener('hashchange',openFromHash);
+openFromHash();
+
+/* ---------------- finder ---------------- */
+var fs={g:'',s:''};
+function drawFinder(){
+  var out=$('finderOut');out.textContent='';
+  if(!fs.g&&!fs.s){out.appendChild(el('p','note','Pick one or both. For example "Explain why" + "Timing" returns the deadline and ordering playbooks.'));return}
+  var exact=[],near=[];
+  PB.forEach(function(p){
+    var g=!fs.g||p.g.indexOf(fs.g)>-1, s=!fs.s||p.s.indexOf(fs.s)>-1;
+    if(g&&s)exact.push(p);else if((fs.g&&p.g.indexOf(fs.g)>-1)||(fs.s&&p.s.indexOf(fs.s)>-1))near.push(p);
+  });
+  var add=function(p,label){
+    var a=el('a','res');a.href='#'+p.id;a.style.setProperty('--pc','var('+pil(p.p).c+')');
+    a.appendChild(el('b',null,p.id));a.appendChild(el('span',null,p.title));a.appendChild(el('small',null,p.sounds));
+    if(label){var t=el('small',null,label);t.style.color='var(--warn)';a.appendChild(t)}
+    out.appendChild(a);
+  };
+  exact.forEach(function(p){add(p)});
+  if(!exact.length)out.appendChild(el('p','note','No exact match. These share one of your two choices:'));
+  if(!exact.length)near.slice(0,6).forEach(function(p){add(p,'closest match')});
+}
+function toggles(hostId,items,key){
+  var host=$(hostId);
+  items.forEach(function(it){
+    var b=el('button','btn',it[1]);b.type='button';b.setAttribute('aria-pressed','false');
+    b.addEventListener('click',function(){
+      var on=b.getAttribute('aria-pressed')==='true';
+      host.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false')});
+      fs[key]=on?'':it[0];if(!on)b.setAttribute('aria-pressed','true');
+      drawFinder();
+    });host.appendChild(b);
+  });
+}
+toggles('goalBtns',GOALS,'g');toggles('subjBtns',SUBJ,'s');drawFinder();
+
+/* ---------------- findings builder ---------------- */
+var FIELDS=['ticket','exp','repro','build','hyp','obs','root','fix','next'];
+function val(k){return $('f-'+k).value}
+function md(){
+  var h=val('hyp').split('\n').filter(Boolean).map(function(l){
+    l=l.trim();var m=l.charAt(0);
+    if(m==='+')return '- [x] **Confirmed:** '+l.slice(1).trim();
+    if(m==='-')return '- [x] ~~'+l.slice(1).trim()+'~~ (eliminated)';
+    if(m==='?')return '- [ ] '+l.slice(1).trim();
+    return '- [ ] '+l;
+  }).join('\n');
+  var o=val('obs').split('\n').filter(Boolean).map(function(l){return '- '+l.trim()}).join('\n');
+  var parts=['# '+(val('ticket')||'Investigation')];
+  var add=function(t,b){if(b&&b.trim())parts.push('## '+t+'\n'+b.trim())};
+  add('Expected versus actual',val('exp'));
+  add('Reproduce','```\n'+val('repro').trim()+'\n```');
+  if(!val('repro').trim())parts.pop();
+  add('Build',val('build'));
+  add('Hypotheses',h);
+  add('Observations',o);
+  add('Root cause',val('root'));
+  add('Fix belongs at',val('fix'));
+  add('Open questions',val('next'));
+  return parts.join('\n\n')+'\n';
+}
+function refresh(){
+  $('mdOut').textContent=md();
+  FIELDS.forEach(function(k){store('set','gdbpb-'+k,val(k))});
+}
+FIELDS.forEach(function(k){
+  var node=$('f-'+k),v=store('get','gdbpb-'+k);
+  if(v!=null)node.value=v;
+  node.addEventListener('input',refresh);
+});
+$('mdCopy').addEventListener('click',function(){
+  var m=$('mdMsg');
+  try{navigator.clipboard.writeText(md()).then(function(){m.textContent='Copied.'},function(){m.textContent='Select the preview below and copy.'})}
+  catch(e){m.textContent='Select the preview below and copy.'}
+  setTimeout(function(){m.textContent=''},2200);
+});
+$('mdClear').addEventListener('click',function(){
+  FIELDS.forEach(function(k){$('f-'+k).value='';store('del','gdbpb-'+k)});refresh();
+});
+refresh();
+
+/* ---------------- worked example stepper ---------------- */
+var H=[['H1','Tracker does the arithmetic wrong'],['H2','Reset was handled in the wrong order'],['H3','Controller sent an overshooting delta'],['H4','Something overwrote the memory']];
+var STEPS=[
+ {t:'Symptom',why:'The build is clean. The program runs and then the assertion fires. The failing line is in main, far from whatever went wrong.',
+  cmd:R`$ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build
+$ ./build/sandbox`,
+  out:R`total = -10
+Assertion failed: (tracker.total() >= 0 && "total must never be negative")`,
+  read:'Nothing here points at a cause. Four plausible ones, so pick the observation that separates them. A watchpoint on the bad value separates H1 and H4 from the other two in one run.',
+  h:['open','open','open','open']},
+ {t:'Get the live object',why:'A name is ambiguous. An address is not. Run to just after construction and take the address of the field.',
+  cmd:R`$ gdb ./build/sandbox
+(gdb) break main.cpp:13           # after Bus, Tracker, Controller exist
+(gdb) run
+(gdb) p &tracker.m_total`,
+  out:R`Breakpoint 1, main () at src/main.cpp:13
+$1 = (int *) 0x7ffe4d2c3a18`,
+  read:'You now hold the identity of the one variable that matters.',
+  h:['open','open','open','open']},
+ {t:'Watch it go bad',why:'Hardware watchpoint, conditioned on the bad value, so the 0 → 10 → 15 → 0 writes do not stop you. The address form avoids a scope problem, since <code>tracker</code> is not visible inside <code>applyDelta</code>.',
+  cmd:R`(gdb) watch *(int*)0x7ffe4d2c3a18 if *(int*)0x7ffe4d2c3a18 < 0
+(gdb) continue`,
+  out:R`Hardware watchpoint 2: *(int*)0x7ffe4d2c3a18
+Old value = 0
+New value = -10
+Tracker::applyDelta (this=0x7ffe4d2c3a18, v=-10) at src/tracker.cpp:14`,
+  read:'The write came through the legitimate path and added exactly what it was told. H1 is out. A proper writer with a proper argument also rules out H4. The value arrived already wrong.',
+  h:['out','open','open','out']},
+ {t:'Read the stack: the sender is gone',why:'The backtrace shows who delivered the message, not who sent it.',
+  cmd:R`(gdb) bt`,
+  out:R`#0  Tracker::applyDelta (v=-10)         tracker.cpp:14
+#1  Tracker::onMessage (m=...)             tracker.cpp:9
+#2  <lambda>::operator()                   tracker.cpp:4
+#3  Bus::pump                              bus.hpp:26
+#4  main                                   main.cpp:19`,
+  read:'Frame 3 is a dispatcher. The message was posted earlier by someone else. Do not read more code. Move the breakpoint to the producer.',
+  h:['out','open','open','out']},
+ {t:'Break at the producer',why:'Filter on the bad payload so you stop only on the message that matters.',
+  cmd:R`(gdb) delete 2
+(gdb) break Bus::post if m.value < 0
+(gdb) run
+(gdb) bt
+(gdb) frame 1
+(gdb) p *this`,
+  out:R`Breakpoint 3, Bus::post (m={type = Delta, value = -10}) at src/bus.hpp:20
+#1  Controller::rebalance (target=5)       controller.cpp:12
+#2  main                                   main.cpp:18
+$2 = {bus_ = ..., believedTotal_ = 15}`,
+  read:'<code>Controller::rebalance</code> computed <code>5 - 15 = -10</code> from its own <code>believedTotal_</code>. H3 is confirmed as the sender. The remaining question is why Controller believes 15.',
+  h:['out','open','root','out']},
+ {t:'Why does it believe 15?',why:'Check whether Tracker was reset before this point.',
+  cmd:R`(gdb) break Tracker::reset
+(gdb) run
+(gdb) p m_total
+(gdb) p m_resets
+(gdb) bt 2`,
+  out:R`Breakpoint 4, Tracker::reset (this=0x7ffe4d2c3a18) at src/tracker.cpp:16
+$3 = 15
+$4 = 0
+#1  Tracker::onMessage (m=...)             tracker.cpp:10`,
+  read:'Reset ran, and it reset Tracker to 0. H2 is out. Controller never learned about the Reset, so its copy of the total went stale. Root cause: two components keep their own copy of one number, and only one hears about the Reset. Fix in Controller (or subscribe it to Reset), not in <code>applyDelta</code>.',
+  h:['out','out','root','out']}
+];
+(function(){
+  var btns=$('stepBtns'),cur=0;
+  function draw(i){
+    cur=i;var s=STEPS[i];
+    btns.querySelectorAll('button').forEach(function(b,j){b.setAttribute('aria-pressed',String(j===i))});
+    $('stepTitle').textContent=(i+1)+'. '+s.t;
+    $('stepWhy').innerHTML=s.why;
+    $('stepCmd').textContent=s.cmd;
+    $('stepOut').textContent=s.out;
+    $('stepRead').innerHTML='<b>Reading it: </b>'+s.read;
+    var hy=$('hyps');hy.textContent='';
+    H.forEach(function(h,j){
+      var st=s.h[j];var d=el('div','hyp '+st);
+      d.appendChild(el('b',null,h[0]+' · '+(st==='out'?'eliminated':st==='root'?'root cause':'open')));
+      d.appendChild(el('span',null,h[1]));hy.appendChild(d);
+    });
+  }
+  STEPS.forEach(function(s,i){
+    var b=el('button','btn',(i+1)+' · '+s.t);b.type='button';b.setAttribute('aria-pressed','false');
+    b.addEventListener('click',function(){draw(i)});btns.appendChild(b);
+  });
+  draw(0);
+})();
+})();
+</script>
+<script>
+document.querySelectorAll('details.pb').forEach(function(d){
+ var n=document.createElement('div');n.className=d.className;n.id=d.id;n.style.cssText=d.style.cssText;
+ while(d.firstChild){var c=d.firstChild;if(c.tagName==='SUMMARY'){var sm=document.createElement('div');sm.className='sum';while(c.firstChild)sm.appendChild(c.firstChild);d.removeChild(c);n.appendChild(sm)}else n.appendChild(c)}
+ d.parentNode.replaceChild(n,d);
+});
+(function(){
+ var stage=document.querySelector('#sandbox .stage'),btns=document.querySelectorAll('#stepBtns button'),host=document.createElement('div');
+ host.className='printsteps';
+ btns.forEach(function(b){
+  b.click();var p=document.createElement('div');p.className='pstep';
+  Array.prototype.forEach.call(stage.children,function(c){
+   if(c.id==='stepBtns'||c.classList.contains('note'))return;
+   var n=c.cloneNode(true);n.removeAttribute('id');n.querySelectorAll('[id]').forEach(function(x){x.removeAttribute('id')});p.appendChild(n);
+  });host.appendChild(p);
+ });
+ stage.parentNode.insertBefore(host,stage.nextSibling);
+ var n=document.createElement('p');n.className='note';n.textContent='Command blocks are GDB syntax. Output blocks show the expected shape (adapted from an LLDB run, made-up addresses), not captured GDB output.';
+ host.appendChild(n);
+})();
+</script>
+<script>
+(function(){
+ var N={U:'Understand',R:'Root cause',D:'Data and state',T:'Time and tasks',M:'Memory',B:'Boundaries',V:'Verify'},C={U:'u',R:'r',D:'d',T:'t',M:'m',B:'b',V:'v'},seen={};
+ document.querySelectorAll('.pb').forEach(function(c){
+  var k=c.dataset.p;if(seen[k])return;seen[k]=1;
+  var b=document.createElement('div');b.className='band';b.style.setProperty('--pc','var(--p-'+C[k]+')');
+  b.innerHTML='<b>'+k+'</b><span>'+N[k]+'</span>';c.parentNode.insertBefore(b,c);
+ });
+})();
+</script>

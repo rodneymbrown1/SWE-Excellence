@@ -1,0 +1,11 @@
+# Probe 2 (LOG + TRAP): log every write to state_ and who made it, without stopping.
+settings set auto-confirm true
+command script import lldb/probes.py
+breakpoint set -n Gateway::run
+breakpoint set -n Gateway::summary
+run --max 400
+watchpoint set variable this->monitor_.state_
+watchpoint command add -F probes.log_state_write 1
+breakpoint command add -o "watchpoint delete 1" 2
+continue
+kill

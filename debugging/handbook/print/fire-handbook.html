@@ -1,0 +1,1127 @@
+<title>SWE-Excellence Fire Handbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout concept: a field manual. One numbered sheet per problem type; sheet number = chapter number in handbook/chapters/.
+   Each sheet reads top to bottom: USE WHEN, STRATEGY, COMMANDS, WATCH OUT, DOCS. */
+:root {
+  --bg: #F4F6F8;
+  --surface: #FFFFFF;
+  --ink: #14202B;
+  --muted: #566473;
+  --line: #D3DAE1;
+  --accent: #C0301A;
+  --accent-ink: #FFFFFF;
+  --link: #14589F;
+  --code-bg: #EBEFF3;
+  --warn-bg: #FFF1BF;
+  --warn-ink: #4F3C00;
+  --ok: #17753D;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --f-body: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151D; --surface: #162029; --ink: #E4EAF0; --muted: #9AA8B6; --line: #2B3948;
+    --accent: #FF7A5C; --accent-ink: #1A0B07; --link: #7DB8FF; --code-bg: #0B1118;
+    --warn-bg: #3A3010; --warn-ink: #F3DE91; --ok: #5FD68E; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151D; --surface: #162029; --ink: #E4EAF0; --muted: #9AA8B6; --line: #2B3948;
+  --accent: #FF7A5C; --accent-ink: #1A0B07; --link: #7DB8FF; --code-bg: #0B1118;
+  --warn-bg: #3A3010; --warn-ink: #F3DE91; --ok: #5FD68E; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5; margin: 0; padding-inline: 16px; padding-block: 0 48px; }
+a { color: var(--link); }
+code, pre { font-family: var(--f-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+
+/* sticky quick-jump */
+.jump { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 8px; margin-inline: -16px; padding-inline: 16px; }
+.jump .wrap { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.jump a { font: 600 13px/1 var(--f-mono); text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+.jump a:hover, .jump a:focus-visible { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); outline: none; }
+.jump .lab { font: 600 12px var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+
+/* sheets */
+.sheet { margin-block: 28px 0; background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--accent); border-radius: 2px; padding: 20px 20px 16px; }
+.sheet-head { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 12px; }
+.num { font: 700 44px/1 var(--f-display); color: var(--accent); min-width: 2ch; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+h2 { font-size: 32px; line-height: 1.05; text-transform: uppercase; letter-spacing: .02em; }
+h3 { font-size: 17px; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin-bottom: 6px; }
+.use { flex-basis: 100%; margin: 4px 0 0; font-size: 15px; color: var(--muted); }
+.use b { font: 700 12px var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin-right: 6px; }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px 22px; align-items: start; }
+.blk { min-width: 0; break-inside: avoid; }
+.span { grid-column: 1 / -1; }
+
+ol.steps { margin: 0 0 8px; padding-left: 1.3em; }
+ol.steps li, ul.tight li { margin-block: 2px; }
+ul.tight { margin: 0 0 8px; padding-left: 1.1em; }
+p { margin: 0 0 8px; }
+.small { font-size: 14px; color: var(--muted); }
+
+pre { position: relative; margin: 0 0 10px; background: var(--code-bg); border: 1px solid var(--line); border-left: 3px solid var(--muted); border-radius: 2px; padding: 22px 10px 8px; font-size: 12.5px; line-height: 1.45; overflow-x: auto; white-space: pre; tab-size: 2; }
+pre[data-v="t"] { border-left-color: var(--ok); }
+pre::before { position: absolute; top: 3px; right: 8px; font: 600 10px var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+pre[data-v="t"]::before { content: "✓ run on this Mac"; color: var(--ok); }
+pre[data-v="d"]::before { content: "from docs · try once first"; }
+pre[data-v="m"]::before { content: "mixed · marked inline"; }
+pre .c { color: var(--muted); }
+button.copy { position: absolute; top: 2px; left: 6px; font: 600 10px var(--f-body); letter-spacing: .06em; text-transform: uppercase; background: transparent; color: var(--link); border: 0; padding: 2px 4px; cursor: pointer; }
+button.copy:focus-visible { outline: 2px solid var(--link); }
+:not(pre) > code { background: var(--code-bg); padding: 0 4px; border-radius: 2px; font-size: .9em; }
+
+.warn { background: var(--warn-bg); color: var(--warn-ink); border-left: 4px solid var(--accent); padding: 8px 10px; margin: 0 0 10px; font-size: 14.5px; break-inside: avoid; }
+.warn b { text-transform: uppercase; letter-spacing: .06em; font-family: var(--f-display); font-size: 14px; }
+.docs { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; font-size: 14px; color: var(--muted); }
+.docs b { font: 700 12px var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin-right: 6px; }
+.docs a { margin-right: 10px; white-space: normal; overflow-wrap: anywhere; }
+
+/* tables */
+.tw { overflow-x: auto; margin-bottom: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { font: 700 12px var(--f-display); letter-spacing: .1em; text-transform: uppercase; text-align: left; border-bottom: 2px solid var(--ink); padding: 5px 8px 5px 0; white-space: nowrap; }
+td { border-bottom: 1px solid var(--line); padding: 5px 8px 5px 0; vertical-align: top; }
+td.sh { font: 700 13px var(--f-mono); white-space: nowrap; }
+td.sh a { color: var(--accent); text-decoration: none; }
+table.idx td { padding-block: 3px; font-size: 14px; }
+td code { font-size: 12px; overflow-wrap: break-word; }
+.search { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.search label { font: 700 12px var(--f-display); letter-spacing: .1em; text-transform: uppercase; }
+.search input { flex: 1; min-width: 0; font: 400 15px var(--f-body); padding: 7px 9px; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); border-radius: 3px; }
+tr[hidden] { display: none; }
+
+/* cover */
+.cover { margin-top: 28px; }
+.cover h1 { font-size: clamp(44px, 9vw, 84px); line-height: .92; text-transform: uppercase; letter-spacing: .01em; }
+.cover h1 span { color: var(--accent); }
+.cover .tag { font-size: 20px; max-width: 46ch; margin: 10px 0 0; }
+.loop { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 125px), 1fr)); gap: 8px; margin: 14px 0 6px; padding: 0; list-style: none; counter-reset: l; }
+.loop li { counter-increment: l; border: 1px solid var(--ink); padding: 8px 10px; background: var(--surface); }
+.loop li::before { content: counter(l); display: block; font: 700 24px/1 var(--f-display); color: var(--accent); }
+.loop b { font: 700 16px var(--f-display); text-transform: uppercase; letter-spacing: .05em; }
+.loop span { display: block; font-size: 13px; color: var(--muted); line-height: 1.3; }
+
+.pager { display: none; }
+
+/* ---------- PRINT: US Letter, one sheet per page, light tokens, URLs written out ---------- */
+@page { size: letter; margin: 0.42in 0.45in; }
+@media print {
+  :root:root:root { --bg:#fff; --surface:#fff; --ink:#111; --muted:#4a4a4a; --line:#bbb; --accent:#B02A15; --accent-ink:#fff; --link:#0b3f7a; --code-bg:#f1f1f1; --warn-bg:#fff3c4; --warn-ink:#3b2c00; --ok:#116530; color-scheme: light; }
+  body { font-size: 8.6pt; line-height: 1.32; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .jump, .search, button.copy, .noprint { display: none !important; }
+  .wrap { max-width: none; }
+  .sheet { break-before: page; margin: 0; border: 0; border-top: 5pt solid var(--accent); padding: 8pt 0 0; }
+  .cover { break-before: auto; margin: 0; }
+  .cover + .sheet { break-before: page; }
+  .num { font-size: 30pt; }
+  h2 { font-size: 21pt; }
+  h3 { font-size: 10.5pt; margin-bottom: 3pt; }
+  .use { font-size: 9pt; }
+  .sheet-head { margin-bottom: 6pt; padding-bottom: 4pt; }
+  .cols { grid-template-columns: 1fr 1fr; gap: 6pt 14pt; }
+  .span { grid-column: 1 / -1; }
+  pre { font-size: 6.9pt; line-height: 1.34; padding: 12pt 5pt 4pt; margin-bottom: 5pt; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; }
+  pre::before { font-size: 5.6pt; top: 2pt; }
+  table.idx td { padding-block: 1.4pt; font-size: 8pt; }
+  table { font-size: 7.6pt; } th { font-size: 8pt; } td { padding: 2.2pt 5pt 2.2pt 0; } td code { font-size: 6.6pt; white-space: nowrap; } td.sh { font-size: 7.4pt; }
+  tr { break-inside: avoid; }
+  .tw { overflow: visible; }
+  .warn { font-size: 8pt; padding: 3pt 6pt; margin-bottom: 5pt; }
+  .small, .docs { font-size: 7.6pt; }
+  .docs a { color: var(--link); text-decoration: none; margin-right: 6pt; }
+  .docs a::after { content: " \2192 " attr(href); font: 6.1pt var(--f-mono); color: var(--muted); overflow-wrap: anywhere; }
+  .docs a.nourl::after { content: none; }
+  .cover h1 { font-size: 54pt; }
+  .cover .tag { font-size: 12pt; }
+  .loop li { padding: 4pt 6pt; } .loop li::before { font-size: 15pt; } .loop b { font-size: 10pt; } .loop span { font-size: 7.4pt; }
+  .pager { display: block; position: fixed; bottom: 0; right: 0; font: 6.5pt var(--f-mono); color: var(--muted); }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<nav class="jump noprint" aria-label="Sheets">
+  <div class="wrap">
+    <span class="lab">Sheets</span>
+    <a href="#s0">0 Start</a><a href="#s1">1 Triage</a><a href="#s2">2 Loop</a><a href="#s3">3 New repo</a><a href="#s4">4 Search</a><a href="#s5">5 Build</a><a href="#s6">6 Debugger</a><a href="#s7">7 Data</a><a href="#s8">8 Rewind</a><a href="#s9">9 Profile</a><a href="#s10">10 Map</a><a href="#s11">11 Shrink</a><a href="#s12">12 Crash</a><a href="#s13">13 Notes</a><a href="#s14">14 AI</a><a href="#s15">15 Links</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- =============== 0 START =============== -->
+<header class="cover sheet" id="s0">
+  <h1>Fire <span>Handbook</span></h1>
+  <p class="tag"><b>Find the root cause fast: pick the angle, then pick the tool.</b> Do not re-read code you can run. Measure it.</p>
+  <ol class="loop">
+    <li><b>Reproduce</b><span>make it fail on demand, as small as you can</span></li>
+    <li><b>Localize</b><span>which commit, layer, data, or moment? Halve it.</span></li>
+    <li><b>Observe</b><span>debugger, profiler, sanitizer. Facts, not guesses.</span></li>
+    <li><b>Hypothesize</b><span>one sentence that an experiment could disprove</span></li>
+    <li><b>Test</b><span>cheapest experiment. Change one thing.</span></li>
+    <li><b>Fix at root</b><span>the decision, not the crash line</span></li>
+    <li><b>Prove</b><span>failing test goes green; revert fix and it goes red</span></li>
+    <li><b>Record</b><span>one paragraph in the journal</span></li>
+  </ol>
+  <div class="cols" style="margin-top:14px">
+    <div class="blk">
+      <h3>Five rules of the road</h3>
+      <ol class="steps">
+        <li><b>Run it first.</b> Build, run, watch what it really does.</li>
+        <li><b>Follow the data, not the code.</b> A watchpoint beats 100 grep hits (S7).</li>
+        <li><b>Crash site is not bug site.</b> Walk backwards from the bad value.</li>
+        <li><b>No symbols, no debugger.</b> <code>-g</code> first (S5).</li>
+        <li><b>25 minutes, no falsified hypothesis?</b> Change angle or ask, and bring what you tried (S2).</li>
+      </ol>
+      <div class="warn"><b>Before you install anything at work:</b> ask which tools are already approved. Never paste program code or logs into an AI tool that security has not approved (S14).</div>
+    </div>
+    <div class="blk">
+      <h3>60-second triage</h3>
+<pre data-v="t"><span class="c"># 1 Can I make it fail on demand?   2 Copy the exact error text.
+# 3 Did it ever work?  yes -> git bisect (S4)   4 Symbols? (S5)</span>
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build build -j
+./build/app            <span class="c"># run it, see the failure</span></pre>
+      <h3>How to read the tags</h3>
+      <p class="small"><b>✓ run on this Mac</b> (zsh, Apple clang, LLDB) while building this handbook. <b>from docs</b> came from official docs or the talk and was not run here (no GDB, perf, or valgrind on Apple Silicon). Try those once somewhere safe before you rely on them under pressure. <b>S#</b> = sheet number = chapter number in <code>handbook/chapters/</code>.</p>
+      <p class="small">Source: <em>Understanding Large and Unfamiliar Codebases</em>, Mike Shah and Chris Croft-White, C++ on Sea 2025, extended with standard best practice.</p>
+    </div>
+  </div>
+  <h3 style="margin-top:14px">Sheet index <span class="small" style="text-transform:none;letter-spacing:0">(sheet number = chapter number)</span></h3>
+  <div class="tw"><table class="idx">
+    <tbody>
+      <tr><td class="sh"><a href="#s1">1</a></td><td><b>Symptom to angle to tool</b></td><td>Something is wrong; which kind of problem is it?</td></tr>
+      <tr><td class="sh"><a href="#s2">2</a></td><td><b>The debug loop</b></td><td>Thrashing; need a process. 25-minute rule, ask-for-help template.</td></tr>
+      <tr><td class="sh"><a href="#s3">3</a></td><td><b>First 30 minutes</b></td><td>New repo or component: cloc, build, run, find main, find tests.</td></tr>
+      <tr><td class="sh"><a href="#s4">4</a></td><td><b>Search, navigate, history</b></td><td>Where is it? Who touches it? When did it change? git bisect.</td></tr>
+      <tr><td class="sh"><a href="#s5">5</a></td><td><b>Build and debug symbols</b></td><td>No symbols, CMake maze, "works in release."</td></tr>
+      <tr><td class="sh"><a href="#s6">6</a></td><td><b>Debugger fundamentals</b></td><td>GDB and LLDB side by side; break, step, attach, inspect.</td></tr>
+      <tr><td class="sh"><a href="#s7">7</a></td><td><b>Follow the data</b></td><td><b>One variable, 100 places, a message queue.</b> Watchpoints.</td></tr>
+      <tr><td class="sh"><a href="#s8">8</a></td><td><b>Time-travel debugging</b></td><td>"How did I get here?" Who wrote it last? Races you can replay.</td></tr>
+      <tr><td class="sh"><a href="#s9">9</a></td><td><b>Profilers and call graphs</b></td><td>What runs when I do X? Where is the time going?</td></tr>
+      <tr><td class="sh"><a href="#s10">10</a></td><td><b>Structure, docs, dependencies</b></td><td>Doxygen, include and target graphs, libraries you do not own.</td></tr>
+      <tr><td class="sh"><a href="#s11">11</a></td><td><b>Shrink the problem</b></td><td>Tests, thin slices, first tasks, minimal repros.</td></tr>
+      <tr><td class="sh"><a href="#s12">12</a></td><td><b>Crashes, memory, hangs, races</b></td><td>Sanitizers, core dumps, thread dumps, valgrind.</td></tr>
+      <tr><td class="sh"><a href="#s13">13</a></td><td><b>Workspace and journal</b></td><td>tmux, vim, the journal template, shadowing a senior.</td></tr>
+      <tr><td class="sh"><a href="#s14">14</a></td><td><b>AI: trust, but verify</b></td><td>Turn an AI claim into an experiment. Check what is allowed first.</td></tr>
+      <tr><td class="sh"><a href="#s15">15</a></td><td><b>Links and next steps</b></td><td>Primary sources, books, a practice plan.</td></tr>
+    </tbody></table></div>
+</header>
+
+<!-- =============== 1 TRIAGE =============== -->
+<section class="sheet" id="s1">
+  <div class="sheet-head"><span class="num">1</span><h2>Symptom to angle to tool</h2>
+    <p class="use"><b>Use when</b> something is wrong and you do not yet know what kind of problem it is. Find the row. Do the first move.</p></div>
+  <div class="search noprint"><label for="q">Filter</label><input id="q" type="search" placeholder="type: segfault, slow, hang, variable, build, regression..." autocomplete="off"></div>
+  <div class="tw"><table id="triage">
+    <thead><tr><th>You see</th><th>Type</th><th>First move</th><th>Tool</th><th>Sheet</th></tr></thead>
+    <tbody>
+      <tr><td>No idea what this repo or program does</td><td>Orientation</td><td>Build, run it, count code, find <code>main</code></td><td><code>cloc</code> <code>rg</code> debugger <code>start</code></td><td class="sh"><a href="#s3">3</a></td></tr>
+      <tr><td>Where is the code for this feature, message, or button?</td><td>Locate</td><td>Search the <em>visible string</em> (error text, label, flag), then walk to callers</td><td><code>rg</code>, clangd references</td><td class="sh"><a href="#s4">4</a></td></tr>
+      <tr><td>What runs when I do X?</td><td>Control flow</td><td>Break on a function you know is involved; read <code>bt</code></td><td>gdb/lldb, <code>perf record -g</code></td><td class="sh"><a href="#s6">6</a> <a href="#s9">9</a></td></tr>
+      <tr><td>Who changes this variable? Where did this value come from?</td><td>Data flow</td><td>Hardware watchpoint, with a condition on the bad value</td><td><code>watch -l ... if ...</code></td><td class="sh"><a href="#s7">7</a> <a href="#s8">8</a></td></tr>
+      <tr><td>The variable appears 100 times: methods, pointers, messages</td><td>Data flow at scale</td><td>Do not read it. Watch it. Break at the <em>producer</em> (post/send), not the consumer</td><td>conditional watch + conditional break</td><td class="sh"><a href="#s7">7</a></td></tr>
+      <tr><td>Segfault, abort, assert, uncaught exception</td><td>Crash</td><td>Backtrace first; then work backwards from the bad value</td><td>debugger, core, ASan</td><td class="sh"><a href="#s12">12</a> <a href="#s6">6</a></td></tr>
+      <tr><td>Wrong output, no crash</td><td>Logic / data</td><td>Check the value at each stage boundary; bisect the pipeline</td><td><code>dprintf</code>, conditional break</td><td class="sh"><a href="#s7">7</a> <a href="#s8">8</a></td></tr>
+      <tr><td>It worked last week</td><td>Regression</td><td>Script a pass/fail check, let git find the commit</td><td><code>git bisect run</code>, <code>git log -S</code></td><td class="sh"><a href="#s4">4</a></td></tr>
+      <tr><td>Slow, or CPU pegged</td><td>Performance</td><td>Sample first, never guess</td><td><code>perf record -g</code>, callgrind, <code>sample</code></td><td class="sh"><a href="#s9">9</a></td></tr>
+      <tr><td>Hangs or freezes</td><td>Deadlock / blocked</td><td>Attach and dump <em>every</em> thread's stack</td><td><code>thread apply all bt</code>, <code>strace -p</code></td><td class="sh"><a href="#s12">12</a></td></tr>
+      <tr><td>Garbage values, corruption, leak, use-after-free</td><td>Memory</td><td>Rebuild with sanitizers and rerun</td><td><code>-fsanitize=address</code>, valgrind</td><td class="sh"><a href="#s12">12</a></td></tr>
+      <tr><td>Only sometimes, only under load, only in release</td><td>Race / heisenbug</td><td>Make it deterministic: record once, replay forever</td><td>rr, UDB, TSan</td><td class="sh"><a href="#s8">8</a> <a href="#s12">12</a></td></tr>
+      <tr><td>Will not build, link, or CMake is a maze</td><td>Build</td><td>See the real compiler command; list cache variables</td><td><code>--verbose</code>, <code>cmake -LAH</code></td><td class="sh"><a href="#s5">5</a></td></tr>
+      <tr><td>Undefined reference, symbol not found, wrong library loaded</td><td>Link / deps</td><td>What does the binary need, and what does it have?</td><td><code>nm | c++filt</code>, <code>ldd</code> / <code>otool -L</code></td><td class="sh"><a href="#s10">10</a></td></tr>
+      <tr><td>Third-party or closed library misbehaves</td><td>Code I do not own</td><td>Watch the boundary: what goes in, what comes out</td><td>record API calls, <code>ltrace</code>/<code>strace</code></td><td class="sh"><a href="#s10">10</a> <a href="#s8">8</a></td></tr>
+      <tr><td>Cannot hold this class hierarchy in my head</td><td>Structure</td><td>Generate a map instead of reading</td><td>doxygen, clangd call hierarchy</td><td class="sh"><a href="#s10">10</a></td></tr>
+      <tr><td>Is there already a test for this component?</td><td>Shrink scale</td><td>Look in <code>tests/</code> before touching code; run only that test</td><td><code>ctest -N</code>, <code>ctest -R</code></td><td class="sh"><a href="#s11">11</a></td></tr>
+      <tr><td>The task is huge and I am drowning</td><td>Scale</td><td>Find the smallest possible change and a tiny example</td><td>tests, examples, TODO hunt</td><td class="sh"><a href="#s11">11</a></td></tr>
+      <tr><td>AI told me the cause and sounds sure</td><td>Unverified claim</td><td>Make it prove it with debugger evidence</td><td>watchpoint / replay as the judge</td><td class="sh"><a href="#s14">14</a></td></tr>
+      <tr><td>Stuck for 30+ minutes</td><td>Process failure</td><td>Stop. Write hypotheses. Change angle, or ask with what you tried</td><td>journal</td><td class="sh"><a href="#s2">2</a> <a href="#s13">13</a></td></tr>
+    </tbody></table></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Can't tell which row? Decision tree</h3>
+<pre data-v="d">Fails every time?
+ NO  -> make it deterministic first: loop it, fix seeds,
+        pin threads, record it                    (S8, S12)
+ YES -> Crashes?          bt, then walk BACKWARDS from the
+                          bad value               (S12, S7)
+        Wrong value?      watch it; who wrote it last? (S7)
+        Used to work?     git bisect                    (S4)
+        Slow / spinning?  profile                       (S9)
+        Stuck / frozen?   attach + all-thread stacks   (S12)
+        Don't know where the code lives?
+                          run it, grep the visible string,
+                          debugger bt                (S3, S4)</pre>
+    </div>
+    <div class="blk">
+      <h3>Twelve commands to know cold</h3>
+<pre data-v="m">rg -n -w SYMBOL src/                       <span class="c"># ✓ every use of a name</span>
+rg -n 'TODO|FIXME|HACK' src/               <span class="c"># ✓ breadcrumbs</span>
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug  <span class="c"># ✓ get -g</span>
+gdb --args ./build/app ARGS                <span class="c"># docs</span>
+(gdb) start | bt | frame N | info locals | p *ptr
+(gdb) watch -l obj->f if obj->f &lt; 0       <span class="c"># who made it bad</span>
+(gdb) break Bus::post if m.value &lt; 0      <span class="c"># catch the sender</span>
+(gdb) thread apply all bt                  <span class="c"># hang</span>
+git bisect start BAD GOOD &amp;&amp; git bisect run ./check.sh <span class="c"># ✓</span>
+git log -S'symbol' --oneline               <span class="c"># ✓ when it appeared</span>
+perf record -g -p PID -- sleep 20          <span class="c"># docs</span>
+valgrind --leak-check=full --track-origins=yes ./app</pre>
+    </div>
+  </div>
+</section>
+
+<!-- =============== 2 LOOP =============== -->
+<section class="sheet" id="s2">
+  <div class="sheet-head"><span class="num">2</span><h2>The debug loop</h2>
+    <p class="use"><b>Use when</b> you are thrashing: re-reading the same functions, changing three things between runs. You need a process, not another tool.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>Reproduce.</b> Fixed input, fixed seed, one thread if you can. If you cannot reproduce it, <em>making it reproduce</em> is the task.</li>
+        <li><b>Localize by halving.</b> Pick the axis that halves the search fastest (table below).</li>
+        <li><b>Observe with a tool.</b> Debugger state, a profile, a sanitizer report.</li>
+        <li><b>Hypothesize in one sentence</b> that an experiment can falsify. Good: "<code>m_total</code> goes negative in <code>applyDelta</code> because <code>rebalance</code> posts a delta from a stale <code>believedTotal_</code>." Bad: "the messaging is broken."</li>
+        <li><b>Test cheaply.</b> A watchpoint, a conditional break, one <code>dprintf</code>. Change one thing at a time.</li>
+        <li><b>Fix at the root.</b> Ask "why?" until the answer is a decision someone made.</li>
+        <li><b>Prove it.</b> Add a test that fails before and passes after. Revert the fix once and confirm the bug returns.</li>
+        <li><b>Record</b> it in the journal (S13).</li>
+      </ol>
+      <h3>Anti-patterns</h3>
+      <ul class="tight"><li>Re-reading code instead of running it</li><li>A null check at the crash site</li><li>Three changes between runs</li><li>Trusting a confident explanation, human or AI</li><li>Debugging Debug when the bug is in Release (S5)</li><li>Writing nothing down</li></ul>
+    </div>
+    <div class="blk">
+      <h3>Which axis halves the search?</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Axis</th><th>Question</th><th>Tool</th></tr></thead>
+        <tbody>
+          <tr><td>History</td><td>Which commit broke it?</td><td><code>git bisect run</code></td></tr>
+          <tr><td>Code</td><td>Which module or class?</td><td>break + <code>bt</code>, <code>perf</code>, grep visible text</td></tr>
+          <tr><td>Data</td><td>Which stage makes the value bad?</td><td>conditional break, <code>dprintf</code></td></tr>
+          <tr><td>Time</td><td>When in the run does it first go wrong?</td><td>watchpoint, reverse debugging</td></tr>
+          <tr><td>Config</td><td>Debug vs release? Flag? Library version?</td><td>rebuild with one change</td></tr>
+        </tbody></table></div>
+      <h3>Stuck 25 to 30 minutes?</h3>
+      <p>The number is a rule of thumb. If no hypothesis has been falsified, you are not progressing: switch angle (data, flow, history), shrink the repro, or ask. Asking is expected. <em>Bring something to the table.</em></p>
+      <h3>Ask-for-help template</h3>
+<pre>Goal:      one line
+Repro:     exact command, input, commit
+Expected vs actual:
+Tried:     1) ... (learned ...)  2) ...
+Hypothesis now: one falsifiable sentence
+Question:  one concrete thing
+Evidence:  bt, log excerpt, journal link</pre>
+      <p class="small">Best junior tip from the talk: ask a senior, "Can I shadow you for 15 minutes?" You pick up their tools, not just answers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============== 3 FIRST 30 MIN =============== -->
+<section class="sheet" id="s3">
+  <div class="sheet-head"><span class="num">3</span><h2>First 30 minutes in a new codebase</h2>
+    <p class="use"><b>Use when</b> day one on a repo, a new component, or "where do I even start?" Goal: a one-page mental map and a working debug build before you read a single function.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy (talk order)</h3>
+      <ol class="steps">
+        <li><b>Measure</b> size and languages.</li>
+        <li><b>Layout</b>: README, <code>docs/</code>, <code>tests/</code>, top <code>CMakeLists.txt</code>.</li>
+        <li><b>Build with <code>-g</code>.</b></li>
+        <li><b>Run it</b> like a user. "Sounds silly, but a high-level understanding of what your program actually does is key."</li>
+        <li><b>Anchor on <code>main()</code></b>. It hints at the architecture: plugins? event loop? Log what happens <em>before</em> main (init) and <em>after</em> (cleanup).</li>
+        <li><b>Find tests</b> for <em>your</em> component.</li>
+        <li><b>Read the history</b> of your area.</li>
+        <li><b>Journal entry #1</b>: size, entry points, build recipe, three open questions.</li>
+      </ol>
+      <div class="warn"><b>Many <code>main</code>s is normal.</b> OpenTTD had about 33 to 37 hits: shaders, third-party test framework, one per OS, plus the real <code>openttd_main</code>. A tiny <code>main</code> that hands off to a "real main" is a good sign.</div>
+    </div>
+    <div class="blk">
+<pre data-v="m"><span class="c"># size and languages</span>
+cloc .                     <span class="c"># brew/apt install cloc</span>
+cloc --vcs=git             <span class="c"># tracked files only</span>
+<span class="c"># layout</span>
+tree -L 2 -I 'build|.git|third_party'   <span class="c"># ✓</span>
+find . -name CMakeLists.txt | head
+<span class="c"># entry points: the talk's exact grep  ✓</span>
+grep -irn -I --include='*.cpp' "main()" .
+rg -n --type cpp '\bmain\s*\(' .
+<span class="c"># ...or let the debugger land there</span>
+gdb ./build/app   <span class="c"># (gdb) tui enable ; start ; next ; bt</span>
+lldb ./build/app  <span class="c"># (lldb) b main ; run ; n ; bt</span>
+<span class="c"># tests and history</span>
+ctest --test-dir build -N              <span class="c"># ✓ list, run none</span>
+git log --oneline -20 -- path/to/area  <span class="c"># ✓</span>
+git shortlog -sn HEAD -- path/to/area  <span class="c"># ✓ who knows it</span></pre>
+      <p class="small">Lots of CMake, Python, or shell in <code>cloc</code> means the build is part of the problem. Zero docs means you will lean on generated docs (S10). Other entry points to hunt: static initializers (run before main), event handlers, thread start routines, plugin <code>register</code> calls, <code>subscribe</code> calls on a message bus.</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://github.com/philsquared/cpponsea2025-slides">Talk slides repo</a>
+    <a href="https://www.openttd.org/">OpenTTD (the practice codebase)</a>
+    <a href="https://cmake.org/cmake/help/latest/manual/ctest.1.html">ctest(1)</a></div>
+</section>
+
+<!-- =============== 4 SEARCH =============== -->
+<section class="sheet" id="s4">
+  <div class="sheet-head"><span class="num">4</span><h2>Search, navigate, history</h2>
+    <p class="use"><b>Use when</b> you ask "Where is it?", "Who touches it?", or "When did it change?" Text search finds <em>spelling</em>. It cannot tell a read from a write.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>Search the visible thing first</b>: the exact error text, log line, UI label, CLI flag. Users see strings, not identifiers.</li>
+        <li><b>Classify hits, do not read them.</b> Split writers from readers with a regex.</li>
+        <li><b>Over about 20 hits? Stop.</b> Go to the debugger (S7).</li>
+        <li><b>Need callers?</b> Use clangd <em>incoming calls</em>, not more grep.</li>
+        <li><b>Need the "why"?</b> Read the commit message, not just the diff.</li>
+        <li><b>Regression?</b> <code>git bisect run</code>: about 7 test runs for 100 commits.</li>
+      </ol>
+      <div class="warn"><b><code>rg</code> with no path hangs in scripts.</b> If stdin is not a terminal, ripgrep waits to read it. Always end with a path (<code>.</code> or <code>src/</code>). The writers regex also matches the declaration <code>int m_total = 0;</code>; ignore that hit.</div>
+      <div class="warn"><b>Dynamic dispatch hides from grep.</b> Virtual calls, callbacks, <code>std::function</code>, and message buses only show their truth at runtime. Break in the callee and read <code>bt</code>.</div>
+<pre data-v="t">grep -irn -I --include='*.cpp' "main()" .   <span class="c"># the talk's form</span>
+rg -n --type cpp '\bmain\s*\(' .
+rg -n -w m_total src/          <span class="c"># whole word</span>
+rg -n -C3 'applyDelta' src/    <span class="c"># context</span>
+rg -l 'Bus::post' src/         <span class="c"># files only</span>
+rg -n 'TODO|FIXME|HACK|XXX' src/
+rg -n -F 'Connection refused' src/   <span class="c"># literal</span>
+<span class="c"># WRITERS of a member (textual only)</span>
+rg -n 'm_total\s*([-+*/%|&amp;^]|&lt;&lt;|&gt;&gt;)?=[^=]' src/
+rg --files . | rg -i cmake      <span class="c"># ALWAYS give a path (see warning)</span></pre>
+    </div>
+    <div class="blk">
+<pre data-v="t"><span class="c"># history: who, when, why</span>
+git log --oneline -20 -- path/
+git log -S'applyDelta' --oneline   <span class="c"># string count changed</span>
+git log -G'm_total\s*\+=' -p       <span class="c"># diff matches regex</span>
+git log -L :applyDelta:src/tracker.cpp   <span class="c"># one function's history</span>
+git blame -L 10,30 src/tracker.cpp
+git blame -w -C -C src/tracker.cpp <span class="c"># follow moved code</span>
+git show SHA                       <span class="c"># read the message!</span>
+
+<span class="c"># regression: let git find the commit.</span>
+<span class="c"># Keep check.sh OUTSIDE the repo.</span>
+cat &gt; /tmp/check.sh &lt;&lt;'EOF'
+#!/bin/sh
+cmake --build build -j &gt;/dev/null 2&gt;&amp;1 || exit 125  # 125 = skip
+./build/app          # exit 0 good, 1-127 bad
+EOF
+chmod +x /tmp/check.sh
+git bisect start HEAD KNOWN_GOOD_TAG
+git bisect run /tmp/check.sh   <span class="c"># names first bad commit</span>
+git bisect reset               <span class="c"># ALWAYS finish with this</span></pre>
+<pre data-v="d"><span class="c"># semantic navigation: export real compile flags</span>
+cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+ln -sf build/compile_commands.json .
+<span class="c"># editor: go to definition / find references /</span>
+<span class="c"># call hierarchy (incoming).  No LSP?</span>
+ctags -R --c++-kinds=+p --fields=+iaS src/  <span class="c"># Ctrl-] in vim</span></pre>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md">ripgrep guide</a>
+    <a href="https://git-scm.com/docs/git-bisect">git-bisect</a>
+    <a href="https://git-scm.com/docs/git-log">git-log</a>
+    <a href="https://clangd.llvm.org/">clangd</a></div>
+</section>
+
+<!-- =============== 5 BUILD =============== -->
+<section class="sheet" id="s5">
+  <div class="sheet-head"><span class="num">5</span><h2>Build system and debug symbols</h2>
+    <p class="use"><b>Use when</b> the debugger shows <code>??</code> or <code>&lt;optimized out&gt;</code>, CMake is a maze, or "it works in release." The talk's loudest tip: build with debug information.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Two separate dials</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Setting</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>-g -O0</code></td><td><b>Debug.</b> Easiest to debug.</td></tr>
+          <tr><td><code>-g -O2</code></td><td><b>RelWithDebInfo.</b> Ship-like plus symbols. Use when the bug only shows in release.</td></tr>
+          <tr><td><code>-O2</code></td><td><b>Release.</b> No symbols. <code>assert</code> compiled out (<code>-DNDEBUG</code>).</td></tr>
+          <tr><td><code>-g -Og</code></td><td>Optimized but debuggable. A good middle.</td></tr>
+        </tbody></table></div>
+      <div class="warn"><b>"Works in release" proof (run on the sandbox).</b> Debug build: <code>Assertion failed</code>, exit 134. Release build: <code>total = -10</code>, exit <b>0</b>. The bug is still there; the <code>assert</code> was compiled out. A green Release build proves nothing if the check was an assert.</div>
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li>Debug info is separate from optimization. Add <code>-g</code> to the build you ship, if that is the one that fails.</li>
+        <li>Make the compiler tell you its real command (<code>--verbose</code>), not what you think the CMake says.</li>
+        <li>3rd-party libraries must also be built with symbols, or you see assembly when you step into them.</li>
+        <li>One build directory per configuration: <code>build/</code>, <code>build-rel/</code>, <code>build-asan/</code>.</li>
+        <li>Write the working build recipe in the journal the first time it works.</li>
+      </ol>
+    </div>
+    <div class="blk">
+<pre data-v="t"><span class="c"># configure + build with symbols and a compile database</span>
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build build -j
+<span class="c"># SEE the real compiler command (flags, -g, -O, -D)</span>
+cmake --build build --verbose
+<span class="c"># what is this configured with?</span>
+cmake -LAH -N build | less
+grep -E 'CMAKE_BUILD_TYPE|CXX_FLAGS' build/CMakeCache.txt
+cmake --build build --target help     <span class="c"># what can I build?</span>
+cmake --build build --target app -j   <span class="c"># one target</span>
+<span class="c"># map of the maze: target dependency graph</span>
+cmake --graphviz=build/deps.dot build       <span class="c"># writes deps.dot</span></pre>
+<pre data-v="d">dot -Tsvg build/deps.dot -o build/deps.svg   <span class="c"># needs graphviz installed</span>
+cmake -S . -B build-rwdi -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake -S . -B build --trace-expand --trace-source=CMakeLists.txt
+cmake --build build --config Debug   <span class="c"># multi-config generators</span>
+cmake -S . -B build -G Ninja         <span class="c"># faster builds</span>
+cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -S . -B build</pre>
+      <h3>Do I really have symbols?</h3>
+<pre data-v="m">dsymutil build/app &amp;&amp; dwarfdump --debug-info build/app.dSYM | head  <span class="c"># macOS ✓</span>
+<span class="c"># (dwarfdump on the bare macOS binary prints nothing: info lives in .dSYM)</span>
+file build/app          <span class="c"># Linux: "with debug_info, not stripped"</span>
+readelf --debug-dump=info build/app | head                   <span class="c"># Linux</span>
+nm build/app | c++filt | grep Foo                            <span class="c"># ✓</span>
+<span class="c"># in gdb:  info sources | list main | "No symbol table" = none</span>
+<span class="c"># Separate debuginfo (stripped prod binary):</span>
+gdb -ex 'symbol-file /path/app.debug' -ex 'attach PID'
+export DEBUGINFOD_URLS="https://debuginfod.elfutils.org/"</pre>
+      <p class="small">Five CMake commands cover 90% of reading: <code>add_executable/add_library</code>, <code>target_link_libraries</code>, <code>target_include_directories</code>, <code>target_compile_definitions/options</code>, <code>add_subdirectory</code>.</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://cmake.org/cmake/help/latest/manual/cmake.1.html">cmake(1)</a>
+    <a href="https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html">CMAKE_BUILD_TYPE</a>
+    <a href="https://developers.redhat.com/articles/2022/01/10/gdb-developers-gnu-debugger-tutorial-part-2-all-about-debuginfo">Red Hat: all about debuginfo</a>
+    <a href="https://undo.io/resources/guide-to-symbols-debug-info/">Undo: symbols guide</a>
+    <a href="https://sourceware.org/elfutils/Debuginfod.html">debuginfod</a></div>
+</section>
+
+<!-- =============== 6 DEBUGGER =============== -->
+<section class="sheet" id="s6">
+  <div class="sheet-head"><span class="num">6</span><h2>Debugger fundamentals</h2>
+    <p class="use"><b>Use when</b> you need to see what the program does: run, stop, step, inspect. A debugger is a code-understanding tool, not only a bug finder. Land on <code>main</code>, then follow what you care about.</p></div>
+  <div class="cols">
+    <div class="blk span">
+      <div class="tw"><table>
+        <thead><tr><th>Action</th><th>GDB (Linux)</th><th>LLDB (macOS)</th></tr></thead>
+        <tbody>
+          <tr><td>Start</td><td><code>gdb ./app</code> · <code>gdb --args ./app -x 5</code></td><td><code>lldb ./app</code> · <code>lldb -- ./app -x 5</code></td></tr>
+          <tr><td>Attach to running process</td><td><code>sudo gdb -p PID</code></td><td><code>sudo lldb -p PID</code></td></tr>
+          <tr><td>Crash dump</td><td><code>gdb ./app core</code></td><td><code>lldb ./app -c core</code></td></tr>
+          <tr><td>Run to main and stop</td><td><code>start</code></td><td><code>b main</code> then <code>run</code></td></tr>
+          <tr><td>Pause a running program</td><td><code>Ctrl-C</code></td><td><code>Ctrl-C</code></td></tr>
+          <tr><td>Breakpoint</td><td><code>b Foo::bar</code> · <code>b file.cpp:42</code></td><td><code>b Foo::bar</code> · <code>b -f file.cpp -l 42</code></td></tr>
+          <tr><td><b>Conditional breakpoint</b></td><td><code>b Bus::post if m.value &lt; 0</code></td><td><code>b -n Bus::post -c 'm.value &lt; 0'</code> ✓</td></tr>
+          <tr><td>Continue / next / step / finish</td><td><code>c</code> / <code>n</code> / <code>s</code> / <code>finish</code> (Enter repeats last)</td><td><code>c</code> / <code>n</code> / <code>s</code> / <code>finish</code></td></tr>
+          <tr><td>Backtrace · pick frame</td><td><code>bt</code>, <code>bt full</code> · <code>frame 2</code>, <code>up</code>, <code>down</code></td><td><code>bt</code> ✓ · <code>frame select 2</code>, <code>up</code></td></tr>
+          <tr><td>Locals · print</td><td><code>info locals</code> · <code>p *ptr</code>, <code>p/x n</code>, <code>p arr[0]@10</code></td><td><code>frame variable</code> ✓ · <code>p *ptr</code></td></tr>
+          <tr><td>Type of a thing</td><td><code>ptype obj</code> · <code>whatis x</code></td><td><code>p -T -- obj</code></td></tr>
+          <tr><td>Kill, stay in debugger · quit</td><td><code>kill</code> · <code>q</code></td><td><code>process kill</code> · <code>q</code></td></tr>
+          <tr><td>Script it</td><td><code>gdb -batch -x cmds.gdb ./app</code></td><td><code>lldb -b -s cmds.lldb ./app</code> ✓</td></tr>
+        </tbody></table></div>
+    </div>
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><code>start</code> to land at the entry point; step with <code>n</code> to see what happens before the real work. Use <code>s</code> into the "real main".</li>
+        <li><b>Attach</b> to skip startup and dive in <em>after</em> something interesting happened. Needs <code>sudo</code> (or ptrace permission).</li>
+        <li><code>finish</code> gets you out of library code you do not own.</li>
+        <li>Climb to the first frame in <em>your</em> code and print there.</li>
+        <li><code>ptype</code> once you find an object: see the struct.</li>
+        <li>Use <code>set var</code> / <code>return</code> to <em>falsify</em> a hypothesis in seconds. These are experiments, not fixes.</li>
+      </ol>
+      <div class="warn"><b>Scope trap.</b> LLDB conditions run in the frame that stopped. A name from <code>main</code> is "undeclared" inside another method. Use <code>this-&gt;m_total</code> or a raw address. (Found while testing.)</div>
+    </div>
+    <div class="blk">
+<pre data-v="d">(gdb) tui enable                 <span class="c"># source view; the talk's favourite</span>
+(gdb) condition 3 m.value &lt; 0    <span class="c"># add condition to bp #3</span>
+(gdb) ignore 3 99                <span class="c"># skip next 99 hits</span>
+(gdb) tbreak file.cpp:120        <span class="c"># one-shot</span>
+(gdb) rbreak ^Tracker::          <span class="c"># every method of a class</span>
+(gdb) dprintf file.cpp:42,"v=%d\n", v   <span class="c"># log, no stop, no rebuild</span>
+(gdb) commands 3
+  silent
+  bt 3
+  continue
+end
+(gdb) info threads / thread apply all bt
+(gdb) catch throw                <span class="c"># stop where exception is thrown</span>
+(gdb) info sharedlibrary         <span class="c"># code you don't own</span>
+(gdb) set var m_total = 0 / return 5 / call foo(3)</pre>
+<pre data-v="t"><span class="c"># LLDB, run against the sandbox</span>
+breakpoint set -n Bus::post -c 'm.value &lt; 0'
+breakpoint list
+breakpoint modify -c 'm.value &lt; 0' 1
+breakpoint set -r '^Tracker::'   <span class="c"># regex: whole class (7 locations)</span>
+frame variable m</pre>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://sourceware.org/gdb/current/onlinedocs/gdb/">GDB manual</a>
+    <a href="https://lldb.llvm.org/use/map.html">GDB to LLDB map</a>
+    <a href="https://lldb.llvm.org/use/tutorial.html">LLDB tutorial</a>
+    <a href="https://darkdust.net/files/GDB%20Cheat%20Sheet.pdf">GDB cheat sheet PDF</a>
+    <a href="https://aosabook.org/en/v2/gdb.html">How debuggers work (AOSA)</a></div>
+</section>
+
+<!-- =============== 7 FOLLOW THE DATA =============== -->
+<section class="sheet" id="s7">
+  <div class="sheet-head"><span class="num">7</span><h2>Follow the data</h2>
+    <p class="use"><b>Use when</b> one variable shows up 100 times across methods, pointers, and a message queue. This is the sheet for your Raytheon problem. Do not read the code. Watch the memory.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>The idea</h3>
+      <p>A <b>hardware watchpoint</b> makes the CPU stop the instant one address is written. It does not care which of the 100 textual occurrences did it, or whether it went through a pointer, a reference, <code>memcpy</code>, or a message handler. <b>The backtrace at that stop is the answer to "who touched it?"</b></p>
+      <h3>Strategy: six steps</h3>
+      <ol class="steps">
+        <li><b>Get the live object</b> (an address, not a name). Break after construction; <code>p obj</code>, <code>p &amp;obj.field</code>, <code>ptype obj</code>.</li>
+        <li><b>Watch it with a condition</b> so you only stop on the bad write.</li>
+        <li><b>Read the stop.</b> Frame 0 is the writer; the arguments show the wrong value; the stack shows the path.</li>
+        <li><b>Hit a queue?</b> After it, <code>bt</code> shows who <em>delivered</em>, not who <em>sent</em>. Move the breakpoint to the <b>producer</b> (<code>post / send / enqueue / emit</code>) and filter on the bad payload.</li>
+        <li><b>Which write was first?</b> Record and <code>reverse-continue</code> (S8).</li>
+        <li><b>Many hits, no need to stop?</b> Attach <code>commands</code> to log each write plus <code>bt 3</code>, then grep the log.</li>
+      </ol>
+      <div class="warn"><b>Rule:</b> break at the producer, not the consumer. Filter on the bad payload. In the sandbox this one breakpoint lands in <code>Controller::rebalance</code>, the planted bug, without reading it.</div>
+      <div class="warn"><b>Hardware limits.</b> Typically 4 watchpoints, each up to 8 bytes (LLDB here: "supported hardware watchpoints: 4"). A watched local ends when its frame returns. A software fallback is very slow: watch one <code>int</code>, not a struct.</div>
+    </div>
+    <div class="blk">
+<pre data-v="d"><span class="c"># GDB: -l watches the ADDRESS (survives scope change)</span>
+(gdb) break main.cpp:17        <span class="c"># object exists, bug not yet</span>
+(gdb) run
+(gdb) p tracker  ;  ptype tracker  ;  p &amp;tracker.m_total
+(gdb) watch -l tracker.m_total
+(gdb) watch -l tracker.m_total if tracker.m_total &lt; 0
+(gdb) rwatch -l tracker.m_total   <span class="c"># who READS it</span>
+(gdb) awatch -l tracker.m_total   <span class="c"># reads or writes</span>
+(gdb) continue
+(gdb) break Bus::post if m.value &lt; 0   <span class="c"># catch the sender</span>
+(gdb) break Tracker::applyDelta if this-&gt;m_id == 7
+<span class="c"># if GDB can't evaluate the condition, use this-&gt;field</span>
+<span class="c"># or *(int*)0xADDR instead of a local's name</span></pre>
+<pre data-v="t"><span class="c"># LLDB on practice-sandbox: all of this was run</span>
+(lldb) b -f main.cpp -l 17
+(lldb) run
+(lldb) watchpoint set variable tracker.m_total
+(lldb) watchpoint modify -c 'this-&gt;m_total &lt; 0' 1   <span class="c"># NOT 'tracker.m_total'</span>
+(lldb) continue
+Watchpoint 1 hit:  old value: 0  new value: -10
+* frame #0: Tracker::applyDelta(this=..., v=-10)  tracker.cpp:14
+  frame #1: Tracker::onMessage(...)               tracker.cpp:9
+  frame #9: Bus::pump                             bus.hpp:26   <span class="c"># dispatcher</span>
+
+(lldb) breakpoint set -n Bus::post -c 'm.value &lt; 0'
+(lldb) run
+* frame #0: Bus::post(m=(type = Delta, value = -10))
+  frame #1: Controller::rebalance(target=5)   controller.cpp:12  <span class="c"># SENDER</span></pre>
+    </div>
+    <div class="blk span">
+      <h3>Which data tool?</h3>
+      <div class="tw"><table>
+        <thead><tr><th>You know</th><th>You want</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td>Variable is wrong <em>now</em></td><td>who wrote it</td><td><code>watch -l</code> plus a condition</td></tr>
+          <tr><td>Wrong value arrives via a queue, bus, or callback</td><td>the original sender</td><td>conditional <b>break at post/send</b></td></tr>
+          <tr><td>It already crashed or finished wrong</td><td>who wrote it <em>last</em></td><td><code>reverse-continue</code> (S8)</td></tr>
+          <tr><td>Who depends on it</td><td>consumers</td><td><code>rwatch</code> / <code>awatch</code></td></tr>
+          <tr><td>A pointer is dangling or null</td><td>who freed or nulled it</td><td><code>watch -l ptr</code> + <code>bt</code>, or ASan (S12)</td></tr>
+          <tr><td>Only some of N instances are bad</td><td>the bad one</td><td>break with a condition on <code>this</code> or an id field</td></tr>
+          <tr><td>The write is in a hot loop</td><td>skip boring hits</td><td><code>condition</code>, <code>ignore N</code>, <code>until</code></td></tr>
+        </tbody></table></div>
+      <p class="small"><b>Static helper.</b> <code>rg -n 'm_total\s*([-+*/%|&amp;^]|&lt;&lt;|&gt;&gt;)?=[^=]' src/</code> lists the textual writers. Use it as a checklist to cross out once the watchpoint shows the real writer. Writers that never fire in the failing run do not matter for this bug. <b>Practice:</b> <code>handbook/practice-sandbox/</code>, 15 minutes: find the root cause with only a watchpoint and one conditional breakpoint, before reading <code>controller.cpp</code>.</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://sourceware.org/gdb/current/onlinedocs/gdb/Set-Watchpoints.html">GDB watchpoints</a>
+    <a href="https://sourceware.org/gdb/current/onlinedocs/gdb/Conditions.html">GDB conditions</a>
+    <a href="https://lldb.llvm.org/use/tutorial.html">LLDB tutorial</a>
+    <a href="https://www.youtube.com/watch?v=qyGdk6QMpMY">Greg Law: Time Travel Debugging (follow-the-data demo)</a></div>
+</section>
+
+<!-- =============== 8 REWIND =============== -->
+<section class="sheet" id="s8">
+  <div class="sheet-head"><span class="num">8</span><h2>Time-travel debugging</h2>
+    <p class="use"><b>Use when</b> you ask "how did I get here?" or "who wrote this value <em>last</em>?" Record the run, then step and continue <em>backwards</em>, with the whole program state unwound.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>Bad value found?</b> <code>watch -l</code> it, then <code>reverse-continue</code>. It stops at the previous write.</li>
+        <li><b>Crash far from the cause</b> (corruption, use-after-free)? Reverse from the crash to the corrupting write.</li>
+        <li><b>Intermittent or race?</b> Record the failing run <em>once</em> and replay it deterministically forever.</li>
+        <li><b>Unfamiliar flow?</b> Record one feature (a click, a request) and walk it forward and back.</li>
+        <li><b>Third-party library?</b> The recording shows every API call, the arguments, and the results; compare with its docs.</li>
+        <li><b>Record late</b>, near the bug, unless your recorder is fast.</li>
+      </ol>
+      <div class="tw"><table>
+        <thead><tr><th>Tool</th><th>Where</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>GDB <code>record full</code></td><td>Linux</td><td>Free. Very slow; fine for tight loops.</td></tr>
+          <tr><td>rr</td><td>Linux x86</td><td>Free. Low overhead. Needs CPU perf counters (poor in VMs).</td></tr>
+          <tr><td>UDB / LiveRecorder</td><td>Linux</td><td>Commercial, free trial. About 1.5 to 10x slowdown. Same GDB commands.</td></tr>
+          <tr><td>WinDbg TTD</td><td>Windows</td><td>Visual Studio ecosystem.</td></tr>
+        </tbody></table></div>
+      <div class="warn"><b>Apple Silicon:</b> none of these run natively. Use a Linux box or VM. Ask what your team already has licensed.</div>
+    </div>
+    <div class="blk">
+<pre data-v="d"><span class="c"># A) GDB built-in</span>
+(gdb) break main.cpp:17
+(gdb) run
+(gdb) record full               <span class="c"># start recording HERE</span>
+(gdb) continue                  <span class="c"># run until the failure</span>
+(gdb) watch -l tracker.m_total
+(gdb) reverse-continue          <span class="c"># stops at the previous WRITE</span>
+(gdb) bt                        <span class="c"># the writer, as it was then</span>
+(gdb) reverse-next / reverse-step / reverse-finish
+(gdb) record stop
+
+<span class="c"># B) rr</span>
+rr record ./build/app --case 42
+rr replay                       <span class="c"># then the same gdb commands</span>
+rr record --chaos ./build/app   <span class="c"># randomize scheduling: shakes out races</span>
+
+<span class="c"># C) UDB (the talk's tool)</span>
+nm build/app | grep MainLoop    <span class="c"># find the mangled symbol</span>
+live-record --record-on symbol:_Z12PostMainLoopv ./build/app
+udb app-1234-DATE.undo          <span class="c"># replay; reverse-* available</span></pre>
+      <h3>Three recipes to memorize</h3>
+<pre>1 Who wrote this value last?
+  watch -l OBJ.FIELD -> reverse-continue -> bt
+2 How did I get here with this argument?
+  break FUNC if ARG==BAD -> continue -> up -> reverse-continue
+3 Where did this pointer become null or get freed?
+  watch -l PTR -> reverse-continue -> bt</pre>
+      <p class="small"><b>Loop until captured:</b> <code>while rr record ./app; do :; done</code> (stops when the failing run is recorded).</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://sourceware.org/gdb/current/onlinedocs/gdb/Reverse-Execution.html">GDB reverse execution</a>
+    <a href="https://rr-project.org/">rr</a>
+    <a href="https://undo.io/udb-free-trial/">UDB free trial</a>
+    <a href="https://sourceware.org/gdb/wiki/ReverseDebug">GDB ReverseDebug wiki</a></div>
+</section>
+
+<!-- =============== 9 PROFILE =============== -->
+<section class="sheet" id="s9">
+  <div class="sheet-head"><span class="num">9</span><h2>Profilers and call graphs</h2>
+    <p class="use"><b>Use when</b> "what actually runs when I do X?" or "where is the time going?" A profiler also draws a map of an unfamiliar program: its hot paths, its main loop, its threads.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>Explore:</b> start the app idle, start profiling, do <em>exactly one</em> action, stop. The report is that feature's code.</li>
+        <li><b>Perform:</b> profile a release-like build (<code>RelWithDebInfo</code>), never <code>-O0</code>.</li>
+        <li>Sort by <b>self</b> time for hot loops, by <b>inclusive</b> for hot subsystems.</li>
+        <li>A hot function is <em>where to look</em>, not the bug. Take its name to the debugger and set a breakpoint on it.</li>
+        <li>Screenshot the call graph or flame graph into the journal.</li>
+      </ol>
+      <div class="warn"><b>Inlining hides functions.</b> In a test the hot function showed up as <code>main</code> because it was inlined at <code>-O1</code>. Use <code>-fno-inline</code> or <code>-O0</code> when you want the graph to look like the source.</div>
+      <div class="warn"><b>perf says "restricted"?</b> Check <code>sysctl kernel.perf_event_paranoid</code>. Ask IT before changing it.</div>
+    </div>
+    <div class="blk">
+<pre data-v="d"><span class="c"># perf (Linux): the talk's commands</span>
+sudo perf record -g ./build/app
+sudo perf report
+sudo perf record -p $(pgrep -n app) -g -- sleep 20   <span class="c"># attach</span>
+sudo perf report --no-children --stdio | head -60
+sudo perf top -p $(pgrep -n app)     <span class="c"># live, like top</span>
+perf stat -d ./build/app             <span class="c"># counters</span>
+
+<span class="c"># flame graph (one-picture orientation)</span>
+sudo perf record -F 99 -g -p PID -- sleep 30
+sudo perf script | ./FlameGraph/stackcollapse-perf.pl \
+                 | ./FlameGraph/flamegraph.pl &gt; flame.svg
+
+<span class="c"># callgrind + KCachegrind (20-50x slower)</span>
+valgrind --tool=callgrind ./build/app
+kcachegrind callgrind.out.PID
+callgrind_annotate callgrind.out.PID | head -40
+valgrind --tool=callgrind --instr-atstart=no ./build/app &amp;
+callgrind_control --instr=on   <span class="c"># do the action ...</span>
+callgrind_control --instr=off</pre>
+<pre data-v="t"><span class="c"># macOS: sample works on your own processes, no sudo</span>
+sample $(pgrep -n app) 5 -file /tmp/sample.txt
+less /tmp/sample.txt             <span class="c"># "Call graph:" per thread</span></pre>
+<pre data-v="d"><span class="c"># Instruments from the CLI. Needs FULL Xcode, not just</span>
+<span class="c"># Command Line Tools (it errored here for that reason).</span>
+xctrace record --template 'Time Profiler' --output app.trace \
+        --time-limit 10s --launch -- ./build/app</pre>
+      <p class="small">KCachegrind: left list shows inclusive/self cost and the <b>called</b> column; top treemap box size = time; Call Graph tab shows what really called what.</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://perfwiki.github.io/main/">perf wiki</a>
+    <a href="https://www.brendangregg.com/perf.html">Brendan Gregg: perf</a>
+    <a href="https://github.com/brendangregg/FlameGraph">FlameGraph</a>
+    <a href="https://valgrind.org/docs/manual/cl-manual.html">callgrind</a>
+    <a href="https://kcachegrind.sourceforge.net/html/Usage.html">KCachegrind usage</a></div>
+</section>
+
+<!-- =============== 10 MAP =============== -->
+<section class="sheet" id="s10">
+  <div class="sheet-head"><span class="num">10</span><h2>Structure, docs, dependencies</h2>
+    <p class="use"><b>Use when</b> you need a map (classes, libraries, includes), you hit "undefined reference", or a library you do not own misbehaves. No docs? Generate them.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>Generate docs</b> with Doxygen. Seeing the same code drawn differently builds a mental model.</li>
+        <li>Read them for <b>conventions</b>: return types, snake_case or camelCase, error codes or exceptions. This pays off at code review and tells you "my code or a library?"</li>
+        <li><b>Name the pattern.</b> A message bus is Observer / publish-subscribe: who subscribes, who posts, where is the dispatch loop?</li>
+        <li><b>Library you do not own:</b> (1) ask for a debug build; (2) record the run and compare API calls to the docs; (3) intercept at the boundary; (4) disassembly is a last resort.</li>
+        <li><b>Offline docs</b> (Zeal, Dash) beat web search: no latency, fuzzy search.</li>
+      </ol>
+<pre data-v="m">doxygen -g                 <span class="c"># writes Doxyfile</span>
+doxygen Doxyfile           <span class="c"># writes html/</span>
+open html/index.html       <span class="c"># xdg-open on Linux</span>
+<span class="c"># Doxyfile: make it useful for undocumented code</span>
+RECURSIVE=YES  EXTRACT_ALL=YES  EXTRACT_PRIVATE=YES
+HAVE_DOT=YES   CALL_GRAPH=YES   CALLER_GRAPH=YES
+CLASS_GRAPH=YES  COLLABORATION_GRAPH=YES  GENERATE_LATEX=NO
+
+cmake --graphviz=build/deps.dot build   <span class="c"># ✓ target graph</span>
+clang++ -std=c++17 -MM -Isrc src/foo.cpp   <span class="c"># ✓ headers foo.cpp includes</span>
+clang++ -H -fsyntax-only -Isrc src/foo.cpp 2&gt;&amp;1 | head   <span class="c"># ✓ include tree</span>
+rg -n '#include\s+"bus.hpp"' src/          <span class="c"># who includes me</span></pre>
+    </div>
+    <div class="blk">
+      <h3>Code you do not own</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Question</th><th>Linux</th><th>macOS</th></tr></thead>
+        <tbody>
+          <tr><td>Libraries needed</td><td><code>ldd app</code> · <code>readelf -d app | grep NEEDED</code></td><td><code>otool -L app</code> ✓</td></tr>
+          <tr><td>Symbols defined</td><td><code>nm -C --defined-only app</code></td><td><code>nm app | c++filt</code> ✓</td></tr>
+          <tr><td>Symbols needed</td><td><code>nm -C -u app</code></td><td><code>nm -u app | c++filt</code> ✓</td></tr>
+          <tr><td>Exports of a lib</td><td><code>nm -D --defined-only -C libfoo.so</code></td><td><code>nm -gU libfoo.dylib</code></td></tr>
+          <tr><td>Which lib got loaded?</td><td><code>LD_DEBUG=libs ./app</code></td><td><code>DYLD_PRINT_LIBRARIES=1 ./app</code></td></tr>
+          <tr><td>Windows</td><td colspan="2">Dependency Walker · <code>dumpbin /dependents app.exe</code></td></tr>
+        </tbody></table></div>
+<pre data-v="d"><span class="c"># no source? watch the boundary</span>
+ltrace -f -e 'libfoo*' ./app         <span class="c"># library calls</span>
+strace -f -e trace=network ./app     <span class="c"># syscalls</span>
+(gdb) break libfoo_connect
+(gdb) bt  ;  info args
+<span class="c"># reformat a COPY to read it; lint patterns</span>
+clang-format -style=LLVM file.cpp &gt; /tmp/readable.cpp
+clang-tidy file.cpp -- -Isrc</pre>
+      <div class="warn"><b>Do not run <code>ldd</code> on untrusted binaries.</b> It can execute them. Use <code>readelf -d</code>.</div>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://www.doxygen.nl/manual/">Doxygen manual</a>
+    <a href="https://www.youtube.com/watch?v=tLPHQMosF9M">Doxygen 1-minute demo</a>
+    <a href="https://zealdocs.org/">Zeal</a>
+    <a href="https://kapeli.com/dash">Dash</a>
+    <a href="https://aosabook.org/en/">AOSA case studies</a>
+    <a href="https://clang.llvm.org/extra/clang-tidy/">clang-tidy</a></div>
+</section>
+
+<!-- =============== 11 SHRINK =============== -->
+<section class="sheet" id="s11">
+  <div class="sheet-head"><span class="num">11</span><h2>Shrink the problem</h2>
+    <p class="use"><b>Use when</b> the codebase is too big to hold in your head. Your task is not "understand the codebase." It is "understand <em>this path through</em> the codebase."</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>Look for a test of your component first.</b> A passing test is a tiny, deterministic program to run under the debugger.</li>
+        <li><b>No test?</b> Write one that reproduces the bug. It is your repro <em>and</em> your regression test.</li>
+        <li><b>Thin slice.</b> Find the smallest existing feature that behaves like yours. Trace it once end to end. Write the six-line path in the journal.</li>
+        <li><b>Smallest change</b> that takes the test from red to green. Commit. Only then widen.</li>
+        <li><b>Characterization tests</b> before touching scary legacy code: capture what it does <em>now</em>, then change it knowing what you broke.</li>
+        <li><b>Good first tasks:</b> a labeled small issue, a compiler warning, change some text or a config value, add an item to a list. Each teaches one slice.</li>
+        <li><b>Review your diff first:</b> every changed line should trace to the requirement.</li>
+      </ol>
+      <h3>Minimize a repro</h3>
+<pre data-v="d">git bisect start BAD GOOD &amp;&amp; git bisect run ./check.sh  <span class="c"># history</span>
+head -n 500 input.log &gt; half.log &amp;&amp; ./app half.log     <span class="c"># input: halve, back off</span>
+git diff --stat; git diff                              <span class="c"># self-review</span></pre>
+    </div>
+    <div class="blk">
+<pre data-v="t"><span class="c"># find tests</span>
+find . -type d \( -name test -o -name tests -o -name unittests \) -not -path './build/*'
+rg -l 'TEST(_F|_P)?\(|TEST_CASE\(|BOOST_AUTO_TEST_CASE' --glob '!build*' .
+rg -n 'add_test|gtest_discover_tests|enable_testing' --glob 'CMakeLists.txt' .
+<span class="c"># CTest (all run on the sandbox)</span>
+ctest --test-dir build -N          <span class="c"># list only</span>
+ctest --test-dir build -R tracker -V
+ctest --test-dir build --output-on-failure
+ctest --test-dir build --rerun-failed --output-on-failure
+<span class="c"># find first tasks</span>
+rg -n -i 'TODO|FIXME|XXX|HACK|later|workaround|hard-?coded' --type cpp src/</pre>
+<pre data-v="d">rg -n -i 'tracker' tests/            <span class="c"># tests mentioning MY class</span>
+git log --since=3.months --oneline -- path/ | head -30
+./tests --gtest_list_tests
+./tests --gtest_filter='TrackerTest.*'
+./tests --gtest_filter='TrackerTest.Reset*' --gtest_repeat=100  <span class="c"># flaky?</span>
+./tests --list-tests ; ./tests "[tracker]"        <span class="c"># Catch2</span>
+gdb --args ./tests --gtest_filter='TrackerTest.Reset*'
+lldb -- ./tests --gtest_filter='TrackerTest.Reset*'</pre>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://cmake.org/cmake/help/latest/manual/ctest.1.html">ctest(1)</a>
+    <a href="https://google.github.io/googletest/">GoogleTest</a>
+    <a href="https://github.com/catchorg/Catch2">Catch2</a>
+    <a href="https://www.openttd.org/development">OpenTTD: how the talk found first tasks</a></div>
+</section>
+
+<!-- =============== 12 CRASH / MEMORY / HANG / RACE =============== -->
+<section class="sheet" id="s12">
+  <div class="sheet-head"><span class="num">12</span><h2>Crashes, memory, hangs, races</h2>
+    <p class="use"><b>Use when</b> segfault, abort, garbage values, leak, freeze, or "only sometimes." Beyond the talk, but it is the next thing you will meet. Core rule: <b>crash site is not bug site.</b></p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Triage by symptom</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Symptom</th><th>First move</th></tr></thead>
+        <tbody>
+          <tr><td><code>SIGSEGV</code></td><td>debugger <code>bt</code>, then ASan</td></tr>
+          <tr><td><code>terminate called after throwing</code></td><td><code>bt</code>; <code>catch throw</code> for the origin</td></tr>
+          <tr><td>Garbage values, works on my machine</td><td>UBSan + ASan; valgrind <code>--track-origins=yes</code>; <code>-Wall -Wextra</code></td></tr>
+          <tr><td>Memory grows</td><td>LeakSanitizer / <code>leaks</code> / valgrind</td></tr>
+          <tr><td>Frozen, 0% CPU</td><td>attach, <code>thread apply all bt</code></td></tr>
+          <tr><td>Frozen, 100% CPU</td><td><code>perf top</code> / <code>sample</code>, then <code>bt</code></td></tr>
+          <tr><td>Only sometimes; changes when you add a print</td><td>TSan; <code>rr --chaos</code>; fewer threads</td></tr>
+          <tr><td>Fine in Debug, broken in Release</td><td>UB, uninitialized var, or <code>assert</code> doing real work: RelWithDebInfo + sanitizers</td></tr>
+        </tbody></table></div>
+      <h3>Reading a crash</h3>
+      <ol class="steps">
+        <li>Frame 0 is where it <em>died</em>, usually innocent. <code>up</code> to the first frame in <b>your</b> code.</li>
+        <li>Print the pointer. Ask "who last set this or freed it?"</li>
+        <li>Then <code>watch -l ptr</code> (S7), <code>reverse-continue</code> (S8), or ASan's "freed by thread T0 here" stack.</li>
+      </ol>
+<pre data-v="d">ulimit -c unlimited       <span class="c"># allow core files in THIS shell</span>
+cat /proc/sys/kernel/core_pattern
+coredumpctl list ; coredumpctl gdb
+gdb ./build/app core      <span class="c"># bt full ; thread apply all bt</span>
+<span class="c"># macOS crash reports: ~/Library/Logs/DiagnosticReports/</span>
+(gdb) catch throw         <span class="c"># lldb: breakpoint set -E cxx</span></pre>
+    </div>
+    <div class="blk">
+<pre data-v="m"><span class="c"># sanitizers: separate build dir. Lines marked ✓ were run:</span>
+<span class="c"># "heap-buffer-overflow ... WRITE of size 4 ... main leak.cpp:2"</span>
+cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+cmake --build build-asan -j &amp;&amp; ./build-asan/app
+clang++ -g -O0 -fsanitize=address,undefined x.cpp -o x &amp;&amp; ./x   <span class="c"># ✓</span>
+<span class="c"># threads (cannot combine with ASan)</span>
+cmake -S . -B build-tsan -DCMAKE_CXX_FLAGS="-fsanitize=thread -g"
+<span class="c"># macOS leaks (reported "1 leak for 1536 total leaked bytes")</span>
+MallocStackLogging=1 leaks --atExit -- ./build/app   <span class="c"># ✓</span>
+leaks $(pgrep -n app) ; heap $(pgrep -n app) | head</pre>
+<pre data-v="d"><span class="c"># valgrind (Linux, no rebuild)</span>
+valgrind --leak-check=full --track-origins=yes --error-exitcode=1 ./app
+valgrind --tool=helgrind ./app
+<span class="c"># HANG: dump every thread's stack</span>
+sudo gdb -p $(pgrep -n app) -batch -ex 'thread apply all bt'
+sudo eu-stack -p $(pgrep -n app)
+sudo strace -f -p $(pgrep -n app)   <span class="c"># futex = lock wait</span>
+top -H -p $(pgrep -n app)           <span class="c"># which THREAD burns CPU</span>
+<span class="c"># macOS: sample PID 3 -file /tmp/s.txt   (tested)</span>
+lldb -p $(pgrep -n app) -o 'bt all' -o detach -o quit</pre>
+<pre data-v="t"><span class="c"># race: make it deterministic, then loop until it fails</span>
+n=0; while ./build/app &gt;/dev/null 2&gt;&amp;1; do n=$((n+1)); done
+echo "failed after $n runs"
+<span class="c"># rr record --chaos ./app   |   taskset -c 0 ./app</span></pre>
+      <p class="small">Deadlock signature: two threads each in <code>pthread_mutex_lock</code>/<code>futex_wait</code>, each holding what the other needs. Fix with lock ordering (<code>std::scoped_lock(a, b)</code>) or less sharing. A print "fixes" it? That is a race or UB, not a fix.</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://clang.llvm.org/docs/AddressSanitizer.html">AddressSanitizer</a>
+    <a href="https://clang.llvm.org/docs/ThreadSanitizer.html">ThreadSanitizer</a>
+    <a href="https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html">UBSan</a>
+    <a href="https://valgrind.org/docs/manual/manual.html">Valgrind</a>
+    <a href="https://man7.org/linux/man-pages/man1/strace.1.html">strace(1)</a>
+    <a href="https://man7.org/linux/man-pages/man5/core.5.html">core(5)</a></div>
+</section>
+
+<!-- =============== 13 WORKSPACE =============== -->
+<section class="sheet" id="s13">
+  <div class="sheet-head"><span class="num">13</span><h2>Workspace and journal</h2>
+    <p class="use"><b>Use when</b> you want to see more at once, or you keep re-deriving yesterday's findings. Two force multipliers from the talk: a window manager, and a greppable journal.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>Strategy</h3>
+      <ol class="steps">
+        <li><b>More pixels, more context.</b> Ask for a big or portrait 4K monitor. Build and test are remote anyway.</li>
+        <li><b>Split your terminal:</b> editor, debugger, search shell, and a journal window. tmux keeps it all alive if SSH drops.</li>
+        <li><b>Use what works for you.</b> Do not adopt a tool because someone evangelized it.</li>
+        <li><b>Journal as you go</b>: lowest-friction, greppable text. Carmack's <code>.plan</code> files are the model.</li>
+        <li><b>Shadow a senior for 15 minutes.</b> Note the tools you saw.</li>
+      </ol>
+      <div class="warn"><b>Defense-contractor note.</b> Keep the journal where your program approves work notes. Export-controlled or program-specific details do not go in personal cloud notes or public repos. This handbook's generic method notes are fine; code excerpts and program details are not. Ask your lead.</div>
+<pre data-v="m"><span class="c"># tmux (prefix Ctrl-b). Session/window creation ✓; keys from docs</span>
+tmux new -s debug ; tmux ls ; tmux attach -t debug
+<span class="c"># %  split side/side   "  split top/bottom   o  next pane</span>
+<span class="c"># z  zoom pane   c  new window   n/p  next/prev   ,  rename</span>
+<span class="c"># d  detach (everything keeps running)   [  scroll mode (q)</span>
+<span class="c"># vim code-reading keys</span>
+<span class="c"># Ctrl-o / Ctrl-i  jump back/forward    *  search word under cursor</span>
+<span class="c"># gd local def   Ctrl-] tag   :vsplit f   Ctrl-w w   gf   :e +123 f</span>
+<span class="c"># :set grepprg=rg\ --vimgrep  then  :grep X  :copen  :cn</span></pre>
+    </div>
+    <div class="blk">
+      <h3>Journal entry template</h3>
+<pre>## DATE TIME - one-line goal
+Symptom:  exact text / value / exit code
+Repro:    command, input, commit SHA, build dir
+Hypotheses:
+  1. falsifiable sentence -> test ran -> CONFIRMED /
+     FALSIFIED because ...
+Evidence: bt / log lines / call-graph screenshot path
+Root cause (5 whys):
+Fix: commit/PR     Regression test: name
+Learned (tool/idea):          Open questions:</pre>
+<pre data-v="t"><span class="c"># append-only daily journal (add to ~/.zshrc)</span>
+mkdir -p ~/swe-excellence/journal
+jrnl() { printf '\n## %s  %s\n' "$(date '+%Y-%m-%d %H:%M')" "$*" \
+  &gt;&gt; ~/swe-excellence/journal/$(date +%F).md
+  ${EDITOR:-vim} + ~/swe-excellence/journal/$(date +%F).md; }
+<span class="c"># find old notes:</span>
+rg -n 'm_total' ~/swe-excellence/journal/</pre>
+      <h3>Capture on day one in a new area</h3>
+      <ul class="tight"><li>Working build recipe</li><li>Entry points; what happens before and after <code>main</code></li><li>Key data structures (<code>ptype</code> output)</li><li>A call-graph or flame-graph picture</li><li>Questions asked, and who answered</li><li>Which tools are approved at work</li></ul>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://github.com/tmux/tmux/wiki">tmux wiki</a>
+    <a href="https://vimhelp.org/">vim help</a>
+    <a href="https://garbagecollected.org/2017/10/24/the-carmack-plan/">The Carmack plan</a>
+    <a href="https://missing.csail.mit.edu/">MIT Missing Semester</a></div>
+</section>
+
+<!-- =============== 14 AI =============== -->
+<section class="sheet" id="s14">
+  <div class="sheet-head"><span class="num">14</span><h2>AI: trust, but verify</h2>
+    <p class="use"><b>Use when</b> an AI tool (or a confident colleague) gives you a root cause. From the talk: "It sounds authoritative. It's not. It's just good at being convincing."</p></div>
+  <div class="cols">
+    <div class="blk">
+      <div class="warn"><b>First: is it allowed?</b> Use only enterprise-licensed tools your organization has approved for this data. Program code, designs, logs, and error text may be export-controlled (ITAR/EAR) or CUI. Pasting them into a consumer chatbot can be a reportable incident. If unsure, ask security. Practise on this sandbox or open-source repos instead.</div>
+      <h3>The workflow: AI proposes, debugger judges</h3>
+      <ol class="steps">
+        <li>AI claims "the bug is X because Y."</li>
+        <li>Turn the claim into <b>one falsifiable experiment</b> (below).</li>
+        <li>Run it. Evidence agrees: keep it, journal it.</li>
+        <li>Evidence disagrees: give the AI the evidence ("the watchpoint never fired there; the write came from frame Z") and ask for a <em>new</em> hypothesis.</li>
+      </ol>
+      <p>The talk's MySQL case: the AI confidently proposed wrong root causes and a "definitive patch." Time-travel debugging <em>constrained</em> it by forcing it to confirm every hypothesis with evidence.</p>
+      <h3>Good at / bad at</h3>
+      <ul class="tight"><li><b>Good:</b> summarizing a file, searching fast, explaining unfamiliar code, driving tools</li><li><b>Bad:</b> knowing it is wrong, staying on track, challenging you, defending claims with evidence</li></ul>
+    </div>
+    <div class="blk">
+      <h3>Turn a claim into an experiment</h3>
+      <div class="tw"><table>
+        <thead><tr><th>AI says</th><th>Run this</th></tr></thead>
+        <tbody>
+          <tr><td>"<code>m_total</code> goes negative in <code>applyDelta</code>"</td><td><code>watch -l ... if ... &lt; 0</code>; does it stop there, with what <code>v</code>? (S7)</td></tr>
+          <tr><td>"Called once per frame"</td><td><code>break Foo::tick</code> + <code>ignore 1 999</code> + <code>info breakpoints</code> hit count (S6, S9)</td></tr>
+          <tr><td>"Pointer is freed before use"</td><td>ASan: does it report use-after-free, with which stacks? (S12)</td></tr>
+          <tr><td>"This commit introduced it"</td><td><code>git bisect run</code> (S4)</td></tr>
+          <tr><td>"These classes are not coupled"</td><td><code>rg</code> + clangd incoming calls + Doxygen caller graph (S10)</td></tr>
+        </tbody></table></div>
+      <h3>Prompts that work (approved tools, safe code)</h3>
+<pre>Orient: "Explain the control flow from main() to
+FEATURE. Cite file:line for each claim. Mark
+anything inferred rather than read as INFERRED."
+
+Evidence: "Give ONE gdb/lldb command sequence that
+would prove your hypothesis wrong. No fix yet."
+
+Constrain: "Here is the bt and watchpoint output.
+Which of your hypotheses does this falsify?"
+
+Challenge: "What is the strongest alternative
+explanation I have not excluded?"</pre>
+      <p class="small"><b>Avoid:</b> "fix this" with no repro; accepting the first explanation of a stack trace; letting it edit code before you can reproduce the failure. Tools named in the talk: Sourcegraph, ChatDBG, Claude Code, Undo's UDB + AI prototype.</p>
+    </div>
+  </div>
+  <div class="docs"><b>Docs</b>
+    <a href="https://undo.io/resources/time-travel-debugging-tames-complex-codebases-and-overconfident-ai/">Undo: TTD tames complex codebases and overconfident AI</a>
+    <a href="https://github.com/plasma-umass/ChatDBG">ChatDBG</a>
+    <a href="https://sourcegraph.com/">Sourcegraph</a></div>
+</section>
+
+<!-- =============== 15 LINKS =============== -->
+<section class="sheet" id="s15">
+  <div class="sheet-head"><span class="num">15</span><h2>Links and next steps</h2>
+    <p class="use"><b>Use when</b> you want the primary source. Everything below is also in <code>handbook/chapters/15-resources-and-links.md</code>.</p></div>
+  <div class="cols">
+    <div class="blk">
+      <h3>The talk</h3>
+      <ul class="tight small">
+        <li>Slides repo: <a href="https://github.com/philsquared/cpponsea2025-slides">github.com/philsquared/cpponsea2025-slides</a></li>
+        <li>Session page: <a href="https://cpponsea.uk/2025/session/understanding-large-and-unfamiliar-codebases">cpponsea.uk/2025/session/understanding-large-and-unfamiliar-codebases</a></li>
+        <li>Greg Law, Time Travel Debugging (Meeting C++ 2023): <a href="https://www.youtube.com/watch?v=qyGdk6QMpMY">youtube.com/watch?v=qyGdk6QMpMY</a></li>
+        <li>Greg Law, Back to Basics: Debugging in C++: <a href="https://www.youtube.com/watch?v=qgszy9GquRs">youtube.com/watch?v=qgszy9GquRs</a></li>
+        <li>Mike Shah, Back to Basics: Debugging: <a href="https://www.youtube.com/watch?v=YzIBwqWC6EM">youtube.com/watch?v=YzIBwqWC6EM</a></li>
+        <li>Greg Law, GDB: A Lot More Than You Knew: <a href="https://www.youtube.com/watch?v=-n9Fkq1e6sg">youtube.com/watch?v=-n9Fkq1e6sg</a></li>
+        <li>GDB cheat sheet: <a href="https://darkdust.net/files/GDB%20Cheat%20Sheet.pdf">darkdust.net/files/GDB Cheat Sheet.pdf</a></li>
+        <li>How a debugger works: <a href="https://aosabook.org/en/v2/gdb.html">aosabook.org/en/v2/gdb.html</a></li>
+      </ul>
+      <p class="small">Your notes link the video as <code>watch?v=qmte-ZrzBKUm</code>. That ID has one character too many, so it likely will not resolve. Search the title on the C++ on Sea channel.</p>
+    </div>
+    <div class="blk">
+      <h3>Official tool docs</h3>
+      <div class="tw"><table>
+        <tbody>
+          <tr><td>GDB</td><td><a href="https://sourceware.org/gdb/current/onlinedocs/gdb/">sourceware.org/gdb/current/onlinedocs/gdb</a></td></tr>
+          <tr><td>LLDB</td><td><a href="https://lldb.llvm.org/">lldb.llvm.org</a></td></tr>
+          <tr><td>rr</td><td><a href="https://rr-project.org/">rr-project.org</a></td></tr>
+          <tr><td>perf</td><td><a href="https://perfwiki.github.io/main/">perfwiki.github.io/main</a></td></tr>
+          <tr><td>Valgrind</td><td><a href="https://valgrind.org/docs/manual/manual.html">valgrind.org/docs/manual</a></td></tr>
+          <tr><td>Sanitizers</td><td><a href="https://clang.llvm.org/docs/AddressSanitizer.html">clang.llvm.org/docs/AddressSanitizer.html</a></td></tr>
+          <tr><td>CMake</td><td><a href="https://cmake.org/cmake/help/latest/">cmake.org/cmake/help/latest</a></td></tr>
+          <tr><td>ripgrep</td><td><a href="https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md">github.com/BurntSushi/ripgrep GUIDE</a></td></tr>
+          <tr><td>git</td><td><a href="https://git-scm.com/docs">git-scm.com/docs</a></td></tr>
+          <tr><td>cppreference</td><td><a href="https://en.cppreference.com/">en.cppreference.com</a></td></tr>
+        </tbody></table></div>
+    </div>
+    <div class="blk span">
+      <h3>Books worth owning</h3>
+      <p class="small"><i>Debugging: The 9 Indispensable Rules</i> (Agans) · <i>Working Effectively with Legacy Code</i> (Feathers) · <i>Design Patterns</i> (Gang of Four) · <i>Why Programs Fail</i> (Zeller) · <i>The Linux Programming Interface</i> (Kerrisk)</p>
+      <h3>Practice, in order</h3>
+      <ol class="steps">
+        <li><b>Sandbox, 15 min:</b> <code>handbook/practice-sandbox/</code>. Find the planted bug with one watchpoint and one conditional breakpoint.</li>
+        <li><b>OpenTTD or SQLite, 1 hour:</b> do the S3 checklist, then trace one action with the debugger.</li>
+        <li><b>Your task at work:</b> S3, then S11 (is there a test?), then S7 on the variable. Ask what tools are approved first.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+</main>
+<div class="pager">SWE-Excellence Fire Handbook</div>
+
+<script>
+(function () {
+  // Filter the triage table
+  var q = document.getElementById('q');
+  if (q) q.addEventListener('input', function () {
+    var t = q.value.trim().toLowerCase();
+    document.querySelectorAll('#triage tbody tr').forEach(function (tr) {
+      tr.hidden = t !== '' && tr.textContent.toLowerCase().indexOf(t) === -1;
+    });
+  });
+  // Copy buttons on code blocks (clipboard may be refused; fall back to selecting)
+  document.querySelectorAll('pre').forEach(function (pre) {
+    var b = document.createElement('button');
+    b.className = 'copy'; b.type = 'button'; b.textContent = 'Copy';
+    b.addEventListener('click', function () {
+      var text = pre.textContent.replace(/^Copy/, '');
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1200); };
+      var fallback = function () {
+        var r = document.createRange(); r.selectNodeContents(pre);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        b.textContent = 'Selected';
+      };
+      try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+    });
+    pre.insertBefore(b, pre.firstChild);
+  });
+})();
+</script>

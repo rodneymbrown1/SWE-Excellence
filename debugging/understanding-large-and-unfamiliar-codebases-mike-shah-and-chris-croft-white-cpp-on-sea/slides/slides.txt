@@ -1,0 +1,1254 @@
+1
+        Understanding Large and Unfamiliar
+                   Codebases
+         Mike Shah and Chris Croft-White
+Chris Croft-White
+Staff Solutions Architect
+chris@undo.io
+
+Web:     mshah.io                        60 minutes | Intermediate Audience
+         www.youtube.com/c/MikeShah      09:15 - 10:15 Tuesday, June 24, 2025
+Social: mikeshah.bsky.social
+Courses: courses.mshah.io
+Talks:   http://tinyurl.com/mike-talks                                     2
+Abstract (Which you already read :) )
+
+ Talk Abstract: It's your first day on the job as a new employee. You set
+ up your workstation and then download a repository of over 1,000,000
+ lines of code. Even more intimidating, the code has been around for 20
+ years and has parts of it in legacy C++ and also using tentative C++ 26
+ features from various libraries. You feel overwhelmed! Don't fret
+ however! In this talk, I provide you a collection of tools to help software
+ engineers of all levels understand what is going on in large unfamiliar
+ codebases. The audience will leave this talk with a few simple and
+ advanced tricks for navigating large and complicated codebases.
+ https://cpponsea.uk/2025/session/understanding-large-and-unfamiliar-codebases
+
+
+
+                                                                                 3
+              Your Tour Guide(s) for Today
+                                  Chris Croft-White
+
+
+
+
+● Current Role: Staﬀ Solutions Architect at
+  Undo.io (5 years)
+   ○   Supporting new customers and creating content to
+       help people debug software
+   ○   Background: ~20 years a pre-sales engineer
+● Available for:
+   ○   Time Travel Debugging, happy to explain the
+       technology, its uses, and get you started
+   ○   Sleep, it's dreadfully lacking and top of the list if I
+       ever get any of this spare time I keep hearing about
+● Fun:
+   ○   Computer games, travelling, food & drink, learning
+       cool new technologies, meeting new people.
+                                                                 4
+                   Your Tour Guide(s) for Today
+                                               Mike Shah
+
+
+
+●   Current Role: Teaching Faculty at Yale
+    University (Previously Teaching Faculty at Northeastern University)
+     ○    Teach/Research: computer systems, graphics, geometry,
+          game engine development, and software engineering.
+●   Available for:
+     ○ Contract work in Gaming/Graphics Domains
+         ■ e.g. tool building, plugins, code review
+     ○ Technical training (virtual or onsite) in
+                                                                          Web
+          Modern C++, D, and topics in Performance or                     www.mshah.io
+          Graphics APIs
+●   Fun:                                                                  https://www.youtube.com/c/MikeShah
+                                                                          Non-Academic Courses
+     ○ Guitar, running/weights, traveling, video                          courses.mshah.io
+       games, and cooking are fun to talk to me                           Conference Talks
+                                                                          http://tinyurl.com/mike-talks
+                                                                                                      5
+       about!
+         Question to the Audience:
+    What’s the biggest codebase you have ever worked on?
+                (i.e. the approximate lines of code)
+
+
+
+
+                                                           6
+M
+What’s the biggest codebase you have every worked on? (2/3)
+
+
+ Follow-up question(s):
+
+  1. Did that codebase ever get smaller?
+  2. Did that codebase become less complex over time?
+  3. How well was that codebase documented?
+      a.   i.e. Could I go find tutorials, internal wiki pages, or internal/external videos
+           explaining the code or architecture?
+  4. Did anyone say “Scrap the project -- let’s rebuild it from scratch”?
+
+
+
+
+                                                                                              7
+What’s the biggest codebase you have every worked on? (3/3)
+
+
+ Follow-up question(s):
+
+  1. Did that codebase ever get smaller?
+  2. Did that codebase become less complex over time?
+  3. How well was that codebase documented?
+      a.   i.e. Could I go find tutorials, internal wiki pages, or internal/external videos
+           explaining the code or architecture?
+  4. Did anyone say “Scrap the project -- let’s rebuild it from scratch”?
+      a.   ^Sometimes we feel this way -- but it can be hard to convince a business to throw
+           away thousands/millions of lines of code :)
+
+
+
+
+                                                                                               8
+How Big are Codebases (1/2)
+
+ ●   Today we are talking about
+     large and unfamiliar codebases
+ ●   I think we have an idea of what
+     this means, but the scale I’m
+     interested in is anything from
+     tens of thousands of lines, to
+     billions of lines of code (e.g.
+     monorepo)
+      ○   i.e. Big enough you cannot keep the
+          whole design in your head
+ ●   Note:
+      ○   The figure on the right gives a very
+          *rough* approximation of various
+          codebases.                             Figure source:
+                                                 https://external-preview.redd.it/RP36x-Dy-3iZn_CEMh_mEfs7GlgvhjKlasyWAQk2v_M.jpg?auto=webp&s=b6177113412f10a5c9a2672738736d4e8647883d
+                                                 Wired Article for more on code sizes: https://www.wired.com/2015/09/google-2-billion-lines-codeand-one-place/
+                                                                                                                                                                                         9
+How Big are Codebases (2/2)
+
+ ●   For a reference of scale --
+      ○   “A million lines of code, if printed, would be about
+          18,000 pages of text. That’s 14x the length of War
+          and Peace.”
+           ■ https://www.visualcapitalist.com/millions-lin
+               es-of-code/
+ ●   That’s a lot of ‘text’, architecture,
+     subsystems, etc. to keep in our head!
+
+
+
+
+                                                                 Figure source:
+                                                                 https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstac
+                                                                 k-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd6b32b94-f99e-498f-840b-4cf789c6503c_1
+                                                                 536x2048.jpeg
+
+                                                                                                                                                                     10
+    Question to the Audience:
+    What makes a codebase hard to understand?
+
+
+
+
+                                                11
+C
+What makes a codebase hard to understand? (1/3)
+
+ ●   Understanding the logical
+     control flow (and/or data flow)
+      ○   Where are the entry points?
+      ○   Are there threads / fibers / coroutines
+      ○   What are the ‘hot spots’ and important
+          subsystems
+      ○   Where does ‘state’ change in the
+          program
+      ○   What is a specific function doing?
+           ■ Is the name of the function
+               reflective of what it does?
+           ■ Are the parameters named well
+                                                    To the right is a visualization of a ‘Data Flow Analysis’. This is useful once
+               and consistent?                      you know the isolated fragment(s) of code you want to look at (but this
+                                                    visualization technique otherwise does not work on the entire codebase).
+                                                    https://blog.jetbrains.com/clion/2023/11/striving-for-better-cpp-code-part-i
+                                                    -data-flow-analysis-basics/
+                                                                                                                               12
+What makes a codebase hard to understand? (2/3)
+
+ ●   The pure scale of software and its
+     relation to complexity
+      ○   i.e. The number of lines of source code
+ ●   Diﬀerent variations of code
+      ○   e.g. Legacy C++ mixed with C++26
+      ○   Diﬀerent ‘design patterns’ or architecture
+          design within the source code
+
+
+
+
+                                                       ‘source code’ we visualize as text -- printing out the code will
+                                                       look something like the bottom-right image.                 13
+What makes a codebase hard to understand? (3/3)
+
+ ●   Human factors can
+     additionally contribute to
+     making your life harder
+      ○   Team size / structure
+      ○   Accessibility to code that you may
+          not own.
+            ■ (Is all the code in the same
+               repo, or do you need
+               permission to view other
+               libraries?)
+      ○   No version history or
+          documentation of the ‘why’           Every heard of Conway’s law? Organizational
+          something evolved                    structure can potentially impact the very structure
+      ○   Undocumented code that only a        of code itself!
+          ‘senior engineer’ understands, and   https://www.jeffwinterinsights.com/insights/conways-law-enterprise-architecture
+          everyone is afraid to touch.
+
+                                                                                                                                 14
+     Question to the Audience:
+    Why do folks think I’m talking about this topic?
+
+
+
+
+                                                       15
+M
+Why do folks think I’m talking about this topic? (2/3)
+
+  ●   Answer: It was an honest diﬃculty of mine
+      when I started out as a software engineer!
+
+                       -----------
+
+  ●   (more on next slide)
+
+
+
+
+                                                   Ah, I have found memories of
+                                                   TortoiseSVN -- it’s still active as
+                                                   far as I know!                                                                                  16
+                                                   https://preview.redd.it/whatdididone-v0-tv7l0uo8hdyc1.jpeg?width=320&crop=smart&auto=webp&s=5
+                                                   d56747737e31e0cf8ba5caa6cebfbfebb9f173e
+Why do folks think I’m talking about this topic? (3/3)
+
+  ●   Answer: It was an honest diﬃculty of mine
+      when I started out as a software engineer!
+                             -----------
+  ●   I remember the diﬃculty and overwhelming
+      feeling as an intern learning new tools &
+      code!
+       ○   (On occasion I consult on short contracts -- so this is
+           still relevant today!)
+       ○   I suspect there are others in the audience who
+           remember this daunting feeling too
+  ●   It probably feels a bit embarrassing to admit
+      that feeling on the first day of work!                         Ah, I have found memories of
+                                                                     TortoiseSVN -- it’s still active as
+       ○   We should not be afraid to ask questions however!         far as I know!                                                                                  17
+                                                                     https://preview.redd.it/whatdididone-v0-tv7l0uo8hdyc1.jpeg?width=320&crop=smart&auto=webp&s=5
+                                                                     d56747737e31e0cf8ba5caa6cebfbfebb9f173e
+Where do we learn to read code?
+
+  ●   The other reason is that we are are
+      not always taught many tools or
+      how to read large codebases in
+      school or our workplace
+       ○   Let me be clear -- I’m not necessarily
+           blaming schools -- there is a lot of
+           computer science to cover.
+             ■ Some large projects in school are
+                maybe 2-5k lines of code -- but
+                again not quite the scale we are
+                talking about for millions of lines of
+                code
+       ○   Note: I (and many other professors) do
+           often expose students to large codebases
+           at various points -- probably some
+           professors out their doing an excellent       MIT, Tufts, Yale, UMich, etc. have various courses in this spirit
+           job as well!                                  for helping students learn tools that I know of.
+                                                         https://missing.csail.mit.edu/                                   18
+Understanding Large and Unfamiliar Codebases
+
+ ●   Now from this talks title, the word ‘understanding’ is important
+ ●   We might also mean:
+      ○   The performance of some aspect
+      ○   The memory safety or security of a system
+      ○   Or really any other metric about a piece of software.
+ ●   That said -- today we are going to focus more on understanding --
+     what our code is logically doing -- and what tools can help!
+
+
+
+
+                                                                         19
+Today we’ll focus on these 3 categories
+
+ 1. Understanding the control flow
+ 2. The pure scale of software and its relation to complexity
+ 3. Human factors can additionally contribute to making your life
+    harder
+
+
+
+
+                                                                    20
+               Given:
+    An unknown (open-source) codebase
+
+
+
+
+                                        21
+C
+Real World Example: Transport Tycoon (1/2)
+
+ ●   Today I’ll give be giving some tips on
+     understanding larger source code
+     projects.
+ ●   We will look at the video game --
+     Transport Tycoon
+      ○   Some of you may be familiar with it, and it
+          is perhaps better if you are not!
+      ○   (Although, I will say it’s a wonderfully
+          charming game...)
+
+
+
+
+                                                        22
+Real World Example: Transport Tycoon (2/2)
+
+ ●   If you are following along at home, you
+     can follow along by picking Transport
+     Tycoon (https://www.openttd.org/) or
+     a similar project.
+ ●   A good candidate project to practice
+     with is:
+      ○   Open Source
+      ○   Many collaborators, perhaps of diﬀerent
+          levels of seniority/experience
+      ○   Long-lived, and lots of lines of code!
+      ○   Ideally with some ‘git’ history, but not strictly
+          necessary (i.e. may be fun to practice
+          applying patches, fixing bugs, etc.)
+      ○   And again -- perhaps even better if you’re not
+          100% familiar with the project
+            ■ (but perhaps have some domain
+               experience or interest in the domain)          23
+Project Scale
+
+  ●   The ‘cloc’ tool will count
+      the lines of code in a
+      project
+       ○   This may give some insights
+           as well if there are multiple
+           languages used
+  ●   Our stats for the Open
+      Transport Tycoon game
+      for example are:
+       ○   188,428 C++
+       ○   123,108 C/C++ headers
+       ○   670 lines of C
+       ○   etc.
+  ●   Let’s agree this is a large
+      size codebase to
+      investigate!                         24
+    1.   Understanding the control flow
+    2.   The pure scale of software and its relation to complexity
+    3.   Human factors can additionally contribute to making your life harder
+
+
+
+
+                                                                                25
+M
+Understanding Control Flow: Run our program!
+
+ ●   The very first thing to do, is run
+     whatever
+     game/application/service/system/etc
+     you are building
+      ○ This sounds silly and is obvious,
+         but you should have a high level
+         understanding of what your
+         program actually does is key.
+ ●   I will assume that you can build the
+     software using whatever build system
+     you are provided.
+     ○   And I fully acknowledge, this it is not often
+         trivial to build!
+                                                         26
+Understanding Control Flow: Entry Points (1/3)
+
+ ●   One of the first things I like to
+     do -- is to anchor around the
+     ‘main()’ function
+ ●   From the main() function, you
+     will often get hints as to the
+     overall software architecture
+                                                     In my opinion, a good software engineering practice is to keep
+      ○   (i.e. are there plugins loaded, is there   your ‘main’ relatively clean. Observe here, the main entry point
+          an event loop, etc.)                       returns to the ‘real main (openttd_main)’
+      ○   Some things you can actively log are:
+                                                     In this particular software, you’ll observe there are also different
+            ■ What happens before main (any          ‘main’ functions per operating system.
+                 initialization code)
+            ■ What happens after (cleanup
+                 code)
+
+                                                                                                                       27
+Understanding Control Flow: Entry Points (2/3)
+
+ ●   Here’s an example of
+     finding ‘main()’ with
+     grep
+ ●   grep is a tool for
+     searching for patterns
+     within files
+      ○   e.g.
+           ■ grep -irn “main”
+           ■ This does a case
+               insensitive(i) search,
+               recursively through
+               the directory (r), and
+               provides line numbers
+               (n) with the filenames
+      ○   This gives us around 37
+          places to look
+                                                 28
+Understanding Control Flow: Entry Points (3/3)
+
+ ●   grep is quite powerful, so you will want to spend some time playing
+     with it
+ ●   Here’s a more specific search that gives us around 7 places to look
+      ○   grep -irn -I --include=*.cpp "main()" .
+           ■ -I tells us to ignore binary files
+           ■ --include=*.cpp tells us to look at .cpp files
+
+
+
+
+                                                                           29
+Pro Tip: Debug Symbols (1/2)
+
+ ●   grep is going to be quite useful,
+     but it can sometimes be a
+     ‘treasure hunt’ if we do not
+     know what we’re looking for
+ ●   Remember -- we can simply
+     run our program
+      ○   And you did compile with debug
+          symbols (i.e. ‘-g’) right?
+
+
+                                           A nice write up on Debug information is here:
+                                              ●     https://developers.redhat.com/articles/2022/01/10/gdb-develop
+                                                    ers-gnu-debugger-tutorial-part-2-all-about-debuginfo
+                                              ●     https://undo.io/resources/guide-to-symbols-debug-info/
+                                           Note: If you’re in a live system, you can ‘gdb -ex 'attach $PID'
+                                           app.debug’ add debug info as well -- but let’s assume we have our
+                                           debugging symbols in order!                                         30
+Pro Tip: Debug Symbols (2/2)
+
+ ●   Note: A **key** that will make
+     your life easier
+      ○   Build/Compile with debug
+          information!
+            ■ cmake -DCMAKE_BUILD_TYPE=Debug ..
+      ○   In some instances, this may also
+          include making sure to build 3rd
+          party libraries in debug as well
+ ●   Debug information is useful
+     for helping you inspect and
+     gather more information about
+                                                  A nice write up on Debug information is here:
+     your programs execution with                 https://developers.redhat.com/articles/2022/01/10/gdb-develope
+     the tools we will use                        rs-gnu-debugger-tutorial-part-2-all-about-debuginfo
+                                                  Note: If you’re in a live system, you can ‘gdb -ex 'attach $PID'
+                                                  app.debug’ add debug info as well -- but let’s assume we have
+                                                  our debugging symbols in order!                                  31
+Step-by-Step debugging (1/3)
+
+ ●   So now we have a ‘large
+     unfamiliar codebase’ that we
+     have compiled in ‘debug’
+ ●   So we can use a ‘debugger’ to
+     step through the execution
+      ○   And of course use a ‘debug build’ of
+          the source.
+ ●   Let’s repeat our first task of
+     finding main() that we did with
+     ‘grep’, but this time with a
+     debugger
+                                                 You can learn more about how debuggers work
+                                                 here: https://aosabook.org/en/v2/gdb.html
+                                                                                           32
+Step-by-Step debugging (2/3)
+
+ ●   GDB is a good free
+     debugger to start with
+ ●   In this video, I attach
+     a debugger to a
+     running process
+      ○   ps aux | grep ‘openttd’
+           ■ This gives me the
+               name
+      ○   Then I attach to the
+          running process
+           ■ sudo gdb -p pid
+ ●   next slide for more!
+
+                                    33
+Step-by-Step debugging (3/3)
+
+ ●   Once you have the ‘main()’
+     function, you can start stepping
+     through the code.
+ ●   Some important commands in
+     GDB
+      ○   Ctrl+C     // Pause running program
+      ○   br main() // breakpoint in main
+      ○   c          // continue
+      ○   s          // to step into a function
+      ○   n          // next line
+      ○   f          // finish the stack frame
+            ■  Useful if you’re in library code
+               you do not own                     GDB Cheat sheet (page 1 of 2)
+      ○   bt     // print out the backtrace       https://darkdust.net/files/GDB%20Cheat%20Sheet.pdf
+      ○   kill // to exit the process, but stay
+          in GDB
+                                                                                                       34
+    Step-by-Step: Backwards (i.e. Time Travel)
+
+
+
+
+                                                 35
+C
+Reverse debugging (1/5)
+
+ ●   Just a brief aside on
+     debuggers
+ ●   At some point you will
+     probably have this
+     experience.
+      ○   So it’s worth mentioning
+          ‘reverse-debuggers’ or
+          ‘time travel debuggers’ to
+          you :)
+
+
+
+                                       https://preview.redd.it/e4b0jejmlxxz.png?width=1080&crop=smart&auto=webp
+                                       &s=5b03b0d54dbe429bace5820da37a2345682eaada
+                                                                                                                  36
+Reverse debugging (2/5)
+
+ ●   Just a brief aside on
+     debuggers
+ ●   At some point you will
+     probably have this
+     experience.
+      ○   So it’s worth mentioning
+          ‘reverse-debuggers’ or
+          ‘time travel debuggers’ to
+          you :)
+
+
+
+                                       https://preview.redd.it/e4b0jejmlxxz.png?width=1080&crop=smart&auto=webp
+                                       &s=5b03b0d54dbe429bace5820da37a2345682eaada
+                                                                                                                  37
+Reverse debugging (3/5)
+
+     ●   Reverse debuggers (since GDB 7.0) allow you to ‘reverse-step’ or
+         ‘reverse-next’ where you are.
+     ●   This is very useful during your code exploration!
+
+
+
+
+                                                                            38
+https://sourceware.org/gdb/wiki/ReverseDebug
+Reverse debugging (4/5)QR code to UDB
+                                                  trial
+
+  ●   UDB from Undo is another invaluable
+      tool I’ll demonstrate shortly.
+  ●   UDB eﬀectively uses the same GDB
+      commands -- so if you know one, you
+      know both!
+  ●   More information
+      ○   Performance Diﬀerences between UDB and
+          GDB [link]
+      ○   If you can’t use a reversible debugger? , then
+          click this link for the GDB equivalents to try
+
+
+
+
+                                                           39
+Reverse debugging (5/5)QR code to UDB
+                                             trial
+
+  ●   I’ll give you a minute to scan the QR
+      code, or otherwise you may consider
+      visiting this link
+       ○   https://undo.io/udb-free-trial/
+  ●   Okay -- so let’s see how reverse
+      debugging can help us
+
+
+
+
+                                                     40
+Reverse debugging (UDB) (1/3)
+
+ ●   The UDB Suite of tools is quite powerful -- so I will show a sample
+     of ‘recording’ and then traversing that recording
+ ●   First- capture the recording
+      ○   ~/Downloads/Undo-Suite-x86-8.3.0/live-record --record-on
+          symbol:_Z12PostMainLoopv ./build/openttd
+      ○   A few neat things
+           ■ You can trigger the recording to start on a particular symbol
+           ■ Tools like ‘nm’ can be helpful here to find such symbols
+                ● nm build/openttd | grep MainLoop
+ ●   Then- replay the recording
+      ○   ~/Downloads/Undo-Suite-x86-8.3.0/udb
+          openttd-466718-2025-06-10T19-18-20.511.undo
+
+
+                                                                             41
+Reverse debugging (UDB) (2/3)
+
+ ●   Here’s an example of loading up
+     a recording and stepping
+     forward and backward
+ ●   Pretty neat!
+
+
+
+
+                                       42
+Reverse debugging (UDB) (3/3)
+
+ ●   One more demo worth showing
+     -- this one uses watchpoints
+ ●   So instead of hopping around
+     with ‘next’ -- we can pause on
+     data that changes
+ ●   You can find interesting data
+     (e.g. a ‘train data structure that
+     might get modified’) as shown
+     in this example
+      ○   *hint* ‘ptype’ can help here in GDB
+          once you find an object and want to
+          look at the struct.
+
+                  Time Travel Debugging - Greg Law - Meeting C++ 2023   43
+                   https://www.youtube.com/watch?v=qyGdk6QMpMY
+  Pro Tip: Keep a Journal
+
+            ●         Now that you have done a few
+                      investigations -- take some notes!
+                          ○         Making lists about what you learned or need
+                                    to revisit will be useful!
+            ●         I recommend using whatever
+                      journaling tool is the lowest friction
+                      thing for you
+                          ○         e.g. physical notebook perhaps, but a
+                                    ‘Google Doc’ or text file that is ‘greppable’
+                                    may be best
+                          ○         More on note taking systems (e.g. .plan files):
+                                      ■ https://www.youtube.com/watch?v=S
+                                          W1fzrB-UEg
+                                                                                      44
+M
+https://garbagecollected.org/2017/10/24/the-carmack-plan/
+How else can we find what’s important?
+
+                                               sudo perf record ./openttd
+ ●   Sampling profilers can be                 sudo perf report
+     another good tool to see ‘what
+     is going on’
+ ●   A profiler like perf will show
+     you what may be interesting.
+      ○   i.e. the ‘hot paths’ in a codebase
+
+
+
+
+                                                                            45
+Attaching to a Running Process
+
+                                              sudo perf record -p <pid> -g
+ ●   Note: With most of the tools             sudo perf report
+     I’m showing you today (GDB,
+     UDB, etc.) it’s possible to
+     ‘attach to a running process’
+      ○   This allows us to collect
+          information from a specific point
+          and time.
+
+
+
+
+                                                                             46
+Visualization: callgrind and kcachegrind (1/2)
+
+  ●   There’s a good number of tools
+      as well that can help you
+      visualize the profile -
+  ●   The ‘Valgrind’ toolsuite
+      (pronounced: val-grinn) is
+      another dynamic analysis tool
+
+
+
+
+                                                 47
+Visualization: callgrind and kcachegrind (2/2)
+
+  ●   The goal here is to again ‘sample’ where we execute code
+       ○   (The call graphs will look pretty in your journal too)
+  ●   Run:
+       ○   valgrind --tool=callgrind -v --dump-every-bb=10000000 ./openttd
+            ■ This grabs a sample every 10000000 basic blocks executed
+            ■ Note again: There are some mechanisms to turn on/oﬀ sampling if things are
+               too slow
+                ● e.g. callgrind_control --instr=on
+       ○   Documentation for usage:
+            ■ https://kcachegrind.sourceforge.net/html/Usage.html
+
+
+
+
+                                                                                           48
+Visualization: callgrind and kcachegrind (1/3)
+
+
+
+   ●   Here’s an example of the output
+       from ‘callgrind’ visualized in
+       ‘kcachgrind’
+   ●   Simply run:
+        ○   kcachegrind
+        ○   (from the directory where the output
+            of callgrind is dumped)
+
+
+
+
+                                                   49
+Visualization: callgrind and kcachegrind (2/3)
+
+
+
+   ●   Again, as you find things interesting, you can
+       explore the call graph
+   ●   kcachegrind has a way to ‘search’ for
+       functions
+        ○   Using the ‘called’ column, you can find what may be
+            important
+
+
+
+
+                                                                  50
+Visualization: callgrind and kcachegrind (3/3)
+
+
+
+   ●   Note: You can directly view the source from this tool as well
+   ●   However -- I’d recommend doing a debug session with udb or gdb
+       and setting a breakpoint at these points of interest
+
+
+
+
+                                                                        51
+       1.    Understanding the control flow
+       2.    The pure scale of software and its relation to complexity
+       3.    Human factors can additionally contribute to making your life harder
+
+
+
+
+C
+Note: By pure scale that is an expression to mean: “The vast size” of the number of files and lines of code in a project. 52
+Dealing with Pure Scale of Software
+
+ ●   Once you have some idea of the
+     project flow, it may be time to
+     ‘dive into’ the project into more
+     specifics
+ ●   But since we cannot again look at
+     all of the source, we’ll focus on
+     reducing scale to the things you
+     care about
+      ○   i.e. You don’t necessarily have to
+          understand about all of the codebase at
+          once -- often just smaller subsystems
+
+
+                                                    Remember, 300,000+ lines of code -- wow   53
+Source code uses ‘text’ as a visualization
+
+ ●   The pure scale (i.e. the size) of
+     codebases is a challenge, and
+     since we’ll be looking at a lot of
+     text...
+      ○   If at all possible beg / borrow / steal a
+          large 4K+ screen, or two screens...
+
+      ○   This is one of the few real hardware        https://i.pcmag.com/imagery/roundups/01Y9bqNdRmGOzHcetHQG2FW-36.fit_lim.size_1050x.webp
+
+
+          advantages these days for developers
+          as build / test is often remote.
+
+      ○   Dell's 27" 4K screen start £270 - £300
+          (inc. 20% VAT)
+
+                                                                                                                                                54
+Windows/Screen Management
+
+ ●   Another less technical
+     (but important)
+     suggestion
+ ●   Find a good window
+     manager
+      ○   Either for your operating
+          system, or a multiplexer
+          (e.g. tmux) if you’re
+          working in terminal.
+
+ ●   The number of times
+     I’ve needed to compare
+     code side-by-side can
+     be very helpful to see           Tools like tmux and VIM can split and manage all your code
+     ‘what have I missed’             windows. Find some tools you are otherwise comfortable with
+                                                                                                55
+Generate your Documentation (1/3)
+
+    ●   By now hopefully you’ve found a
+        few useful functions
+        ○   Perhaps using udb, kcachegrind, etc.
+    ●   But how to keep notes of what
+        was important?
+    ●   No docs in your project?
+    ●   No problem -- generate them
+                                                   https://www.doxygen.nl/
+        yourself
+        ○   Doxygen, Doxypress, or other
+            documentation generates can be
+            helpful here
+
+
+                                                                             56
+M
+Generate your Documentation (2/3)
+
+ ●   *Example Video* in 1-minute             doxygen -g
+ ●   For more configuration options          doxygen Doxyfile
+
+     check:
+     ○   https://www.youtube.com/watch?v=t
+         LPHQMosF9M
+
+
+
+
+                                                                57
+Generate your Documentation (3/3)
+
+ ●   Some more examples of what is generated
+     ○   left: documentation extracted from functions and members of types
+     ○   right: inheritance diagrams
+
+
+
+
+                                                                             58
+Recap and Some Observations
+
+ ●   No documentation -- no problem
+      ○   Generate your own using Doxygen,
+          Doxypress, or other tools to extract
+          information out.
+      ○   Can often use your compiler to see the
+          dependencies at the least
+ ●   Viewing the ‘doxygen’ files (or any
+     documentation) gives you hints as
+     a developer to a few things
+      ○   How are things named?
+           ■ i.e. the naming convention
+      ○   How are ‘errors’ propagated (return
+          codes or exceptions?)
+ ●   Take a few notes of this -- it will
+     help you when it does become
+     time to submit for code review!
+                                                   Local file from Doxygen generated documentation:                                            59
+                                                   file:///home/mike/Downloads/openttd/openttd-14.1-source/openttd-14.1/html/structCompanyPr
+                                                   operties.html
+Code you do not own
+
+ ●   In any big project, there will also be code that you do not own
+ ●   For example, shared libraries
+ ●   Finding shared libraries is easy
+      ○   Just run a tool like ldd (Dependency Walker on Windows is also quite nice)
+ ●   You’ll often get some hints of what ‘graphics libraries’ to otherwise
+     pay attention to.
+
+
+
+
+                                                                                       60
+Zeal Docs (or Dash)
+
+ ●   For these function calls, I
+     recommend finding fast oﬄine
+     documentation
+     ○   no latency, and usually easier to
+         organize and keep tabs
+     ○   Sometimes more powerful search
+         options as well
+          ■ e.g. fuzzy search
+ ●   Note:
+     ○   These tools in combination with
+         code you own can also be useful
+
+
+
+                                             61
+Still too much? Try Running Examples/tests
+
+ ●   Try to reducing the scale of the
+     project further
+ ●   If you’re working in a
+     framework, then running some
+     of the smaller samples
+      ○   e.g. a graphics library likely has
+          tutorials out there
+ ●   If you’re lucky, there may also
+     be some ‘tests’ that mock or
+     showcase behavior.
+
+
+                                               62
+Some Other Tips (1/3)
+
+  ●   Some of you have the fortune of
+      working on nicely formatted
+      codebases
+       ○   If your codebase is ‘ugly’ -- consider
+           running clang-tidy, indent, or similar
+           formatting tools to reformat and unify
+           the code.
+  ●   There’s a world coming soon
+      where we’ll need diﬀerent
+      abstractions to visualize our code
+      -- perhaps you’ll come up with
+      other neat abstractions (e.g.                 A ‘software city’ is a metaphor for the source code. Blocks
+      “software cities”)                            may represent ‘namespaces’ or ‘directories’ and buildings
+       ○   https://ieeexplore.ieee.org/document     ‘files’ for instance.
+           /4290706
+       ○   https://www.cs.nmt.edu/~jeﬀery/city
+           -surv.pdf
+                                                                                                              63
+Some Other Tips (2/3)
+
+ ●   Study Design Patterns
+      ○   Yes, they’re not perfect, but traditional patterns like ‘observer’, ‘visitor’, etc. tend
+          to show up.
+            ■ These are found in the ‘Design Patterns’ or ‘Gang of Four’ book
+      ○   Other sorts of software design things (e.g. ‘event-loop’, ‘component-pattern’,
+          ‘plugin-system’) are also good to search for examples.
+      ○   Often times writing a toy version of these patterns can help you understand the
+          context in a larger system.
+ ●   In some cases, you can try to find an application that may be similar
+     to what you’re developing, and learn about how that system is
+     documented.
+      ○   There may be some hints within software case studies otherwise if your software
+          has absolutely no documentation on its architecture by looking at related
+          software.
+      ○   See: https://aosabook.org/en/
+
+                                                                                                     64
+Some Other Tips (3/3)
+
+ ●   Text editor and IDE Support continues to improve.
+      ○   i.e. inference of types and other information often available as needed.
+
+
+
+
+                                                                                     65
+    1.   Understanding the control flow
+    2.   The pure scale of software and its relation to complexity
+    3.   Human factors can additionally contribute to making your life harder
+
+
+
+
+                                                                                66
+M
+Human Factors
+
+ ●   We have some tools now to help us
+     understand the control flow and working at
+     scale.
+ ●   But sometimes the hardest problems in
+     software are sometimes -- i.e. human factors
+ ●   What I mean by this is -- how do I get
+     motivated or focused to actually learn a
+     codebase?
+     ○   My best answer is to put a real problem in front of
+                                                               https://miro.medium.com/v2/resize:fit:1400/1*nOZxRBAQwq8FZ-IlNA630w@2x.jpeg
+         you that you will learn from!
+
+
+
+                                                                                                                                       67
+Find a first good task (1/3)
+
+  ●   With a large codebase, we might
+      get some direction by literally just
+      solving a problem.
+       ○   If you’re lucky, your code base will be
+           labeled with ‘good first tasks’
+       ○   Good first tasks are ‘byte sized’ -- i.e.
+           small, and picked out by engineers on
+           your team
+  ●   For our project today -- observe
+      there is a Development tab on the
+      website.
+       ○   https://www.openttd.org/development
+
+                                                       68
+Find a first good task (2/3)
+
+    ●   Searching for ‘bugs’ or ‘issues’ are a great place to start
+    ●   Often time these issues will be labeled
+
+
+
+
+                                                                      69
+https://github.com/OpenTTD/OpenTTD/issues
+Find a first good task (3/3)
+
+    ●   Of the labels for this particular project, I found
+        two that are probably good ‘starting places’
+         ○   i.e. they imply a small amount of work
+
+
+
+
+                                                             70
+https://github.com/OpenTTD/OpenTTD/issues
+If you are not assigned a good ‘first task’:
+
+  ●   Don’t forget about our tool ‘grep’
+       ○   Try searching for ‘TODO’, ‘FIXME’ or
+           ‘Later’ as ‘keywords’
+       ○   If you’re lucky, you may find notes
+           something like:
+              ■   “This is 'hard-coded' and should be
+                  fixed later”
+              ■   “FIXME, this is a ‘magic constant’
+                  that should be loaded from a
+                  config file...”
+              ■   etc.
+  ●   grep -irn -I --include=*.cpp
+      "TODO" ./src/
+       ○   TODO Show an example of how to query
+           for small ‘git diﬀ’ messages in the git log.
+       ○   Ideally can do this in a ‘subsystem’
+           you’re working in or interested in.
+       ○   Thegithub messages should give some
+           hints about what is going on, or at the
+           least the code change.
+
+
+                                                          71
+More ideas for ‘first’ tasks
+
+  ●   Another idea is to try fixing some 'warnings' in the code.
+       ○   Not glorious, but at the least can give you some practice.
+  ●   Probably more exciting is to try to ‘add’ something
+       ○   This might be adding another item to a ‘listbox’ user interface widget
+            ■ That will teach you if this data is hard-coded, comes from a configuration
+                file, is downloaded, etc.
+            ■ Again, it will probably give you an idea of how some system works.
+  ●   Exercise: Try using udb or gdb to ‘track’ what function is called
+      when you click on something.
+       ○   udb has live recorder for tracking changes, and otherwise we can use our grep
+           skills to search the codebase
+
+
+
+                                                                                           72
+Human Factors: Asking for Help (on a team)
+
+ ●   Don't be arrogant, and be always be nice to your teammates.
+      ○   Empathy matters a lot when working on teams, and it helps when you want to ask
+          each other questions!
+ ●   "If you don't know, just ask"
+      ○   If you’re a junior engineer, then bring what you have tried/learned for the
+          problem you have solved
+      ○   If you’re a senior engineer, make a note of where reoccurring questions may be
+          coming from in the project.
+            ■ Generally, don’t put juniors in uncomfortable positions either -- sit down
+               with them when they first join your team to help them get acquainted!
+            ■ Screen record your session if appropriate, or let junior engineers take a
+               picture of the whiteboard
+
+
+
+                                                                                           73
+    1.   Understanding the control flow
+    2.   The pure scale of software is often one factor.
+    3.   Human factors can additionally contribute to making your life harder
+
+    Bonus Round: AI
+
+
+
+
+                                                                                74
+C
+Does AI Solve this problem?
+
+ ●   I’m not sure -- yet (sorry!)
+      ○   But if you have access to enterprise AI tools (i.e. where it’s safe to paste some code
+          in if you’re working at a company) -- they may help summarize what code is doing.
+ ●   Some spaces to watch out for
+      ○   Code/context summarizers (e.g. https://sourcegraph.com/)
+      ○   Debugging assistants chatDBG
+      ○   All of these tools will likely continue to improve, so keep an eye on this space!
+
+
+
+
+                                                                                               75
+Does AI Solve this problem?
+
+ ●   It's getting there, but there's a way to go
+      ○   But if you have access to enterprise AI tools (i.e. where it’s safe to paste some code
+          in if you’re working at a company) -- they can help summarize what code is doing,
+          answer your questions about the codebase, help with basic tasks.
+
+ ●   Some spaces to watch out for
+      ○   Code/context summarizers (e.g. https://sourcegraph.com/)
+      ○   Debugging assistants chatDBG
+      ○   Claude Code terminal based collaborative coder
+      ○   Undo's AI integration coming soon (see the lightning talk by Rashmi time TBC)
+
+ ●   Things to watch out for
+      ○   AIs get distracted if something looks like something it have seen before
+      ○   They can be very convincing, especially when you don't know the codebase either
+      ○   They rarely challenge you or defend their positions with evidence
+      ○   "Trust but verify" is the safest approach today
+
+                                                                                                   76
+Time Travel debugging & AI Vs A MySQL Issue (1/2)
+
+ ●   I recently started
+     looking at an open
+     issue with MySQL
+ ●   I've no knowledge
+     of the codebase, so
+     I had to get started
+     somewhere
+ ●   Again, searching
+     code and setting
+     breakpoints is the
+     way to start
+                                                    77
+Time Travel debugging & AI Vs A MySQL Issue (2/2)
+
+    ●   AI isn't really the topic today
+    ●   AI (Claude and ChatGPT) was
+        hallucinating at first and
+        running oﬀ after any vaguely
+        plausible root cause with
+        intense conviction
+
+    ●   Time Travel debugging allowed
+        me to constrain the AI by
+        making it confirm with evidence
+        every hypothesis
+                      Article documenting my experience analysing this issue:             78
+https://undo.io/resources/time-travel-debugging-tames-complex-codebases-and-overconfident-ai/
+    More Resources
+
+
+
+                     79
+M
+Talks on Tools / Debuggers (Linux Focus)
+
+  ●   Debugging and Tools
+       ○   Time Travel Debugging - Greg Law - Meeting C++ 2023
+            ■ https://www.youtube.com/watch?v=qyGdk6QMpMY
+                  ● Note: Example of following ‘data’
+       ○   Back to Basics: Debugging in Cpp - Greg Law - CppCon 2023
+            ■ https://www.youtube.com/watch?v=qgszy9GquRs
+       ○   Back to Basics: Debugging in C++ - Mike Shah - CppCon 2022
+            ■ https://www.youtube.com/watch?v=YzIBwqWC6EM
+       ○   Cool New Stuﬀ in Gdb 9 and Gdb 10 - Greg Law - CppCon 2021
+            ■ https://www.youtube.com/watch?v=xSnetY3eoIk
+       ○   CppCon 2018: Greg Law “Debugging Linux C++”
+            ■ https://www.youtube.com/watch?v=V1t6faOKjuQ
+       ○   CppCon 2016: Greg Law “GDB - A Lot More Than You Knew"
+            ■ https://www.youtube.com/watch?v=-n9Fkq1e6sg
+  ●   Time Travel Case Studies
+       ○   Quake 2 https://www.jwhitham.org/2015/05/review-undodb-reversible-debugger.html
+       ○   Doom - Reviving a zombie: https://www.youtube.com/watch?v=tjJLZ1da6xs
+
+
+                                                                                             80
+Summary
+
+ We have many tools to help us!
+ ●   For Understanding the control flow
+      ○   Use debuggers and profilers to find what is important and ‘slow down’
+           ■ ‘attaching’ to live running processes is incredibly helpful
+ ●   The pure scale of software is often one factor.
+      ○   Try to reduce the scale
+           ■ Use documentation tools and visualizations
+                 ● docs are also easy to ‘bookmark’ and recall over time as you understand
+                    software
+           ■ Take your own notes as you learn!
+ ●   Human factors can additionally contribute to making your life
+     harder
+      ○   Find ‘small’ problems to understand first
+      ○   Don’t be afraid to ask for help
+
+                                                                                             81
+          Thank you C++ on Sea 2025!
+       Understanding Large and Unfamiliar
+                  Codebases
+Chris Croft-White
+Staff Solutions Architect
+chris@undo.io
+
+Web:     mshah.io                        60 minutes | Intermediate Audience
+         www.youtube.com/c/MikeShah      09:15 - 10:15 Tuesday, June 24, 2025
+Social: mikeshah.bsky.social
+Courses: courses.mshah.io
+Talks:   http://tinyurl.com/mike-talks                                     82
+83
+

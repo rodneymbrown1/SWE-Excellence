@@ -1,0 +1,6 @@
+# Discovery probe: "where does this log line come from?"  Break on the output function, read the backtrace.
+settings set auto-confirm true
+breakpoint set -n printf
+run --max 400
+bt 5
+kill

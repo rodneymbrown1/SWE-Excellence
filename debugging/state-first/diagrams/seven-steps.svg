@@ -1,0 +1,43 @@
+<figure><svg viewBox="0 0 760 430" role="img" aria-labelledby="ss-t ss-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ss-t">The seven steps</title><desc id="ss-d">Row one: 1 Run it, 2 Understand it, 3 State it, 4 Probe it. Row two, right to left: 5 Pin it, 6 Prove it, 7 Log it. Three gates: Confidence, Card, Proof. A dashed arrow returns from step 5 to step 3 when a prediction is wrong.</desc>
+<defs><marker id="ss-ar" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L14,7 L0,14 z" fill="#111"/></marker></defs>
+<rect x="20" y="52" width="150" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+<circle cx="42" cy="74" r="15" fill="#111"/><text x="42" y="81" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">1</text>
+<text x="103.0" y="82" font-size="17" font-weight="800" fill="#111" text-anchor="middle">RUN IT</text>
+<text x="95.0" y="112" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">see the behavior</text>
+<rect x="205" y="52" width="150" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+<circle cx="227" cy="74" r="15" fill="#111"/><text x="227" y="81" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">2</text>
+<text x="288.0" y="82" font-size="17" font-weight="800" fill="#111" text-anchor="middle">UNDERSTAND</text>
+<text x="280.0" y="112" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">purpose · premise</text>
+<text x="280.0" y="131" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">· boundary</text>
+<rect x="390" y="52" width="150" height="100" rx="8" fill="#e4e4e4" stroke="#111" stroke-width="3"/>
+<circle cx="412" cy="74" r="15" fill="#111"/><text x="412" y="81" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">3</text>
+<text x="473.0" y="82" font-size="17" font-weight="800" fill="#111" text-anchor="middle">STATE IT</text>
+<text x="465.0" y="112" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">the Behavior Card</text>
+<rect x="575" y="52" width="150" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+<circle cx="597" cy="74" r="15" fill="#111"/><text x="597" y="81" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">4</text>
+<text x="658.0" y="82" font-size="17" font-weight="800" fill="#111" text-anchor="middle">PROBE IT</text>
+<text x="650.0" y="112" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">break · watch · log</text>
+<rect x="575" y="250" width="150" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+<circle cx="597" cy="272" r="15" fill="#111"/><text x="597" y="279" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">5</text>
+<text x="658.0" y="280" font-size="17" font-weight="800" fill="#111" text-anchor="middle">PIN IT</text>
+<text x="650.0" y="310" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">which instance,</text>
+<text x="650.0" y="329" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">which line</text>
+<rect x="390" y="250" width="150" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+<circle cx="412" cy="272" r="15" fill="#111"/><text x="412" y="279" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">6</text>
+<text x="473.0" y="280" font-size="17" font-weight="800" fill="#111" text-anchor="middle">PROVE IT</text>
+<text x="465.0" y="310" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">change, then</text>
+<text x="465.0" y="329" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">re-run the probes</text>
+<rect x="205" y="250" width="150" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+<circle cx="227" cy="272" r="15" fill="#111"/><text x="227" y="279" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">7</text>
+<text x="288.0" y="280" font-size="17" font-weight="800" fill="#111" text-anchor="middle">LOG IT</text>
+<text x="280.0" y="310" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">journal · save</text>
+<text x="280.0" y="329" font-size="14.5" font-weight="500" fill="#111" text-anchor="middle">the probe scripts</text>
+<g stroke="#111" stroke-width="3" marker-end="url(#ss-ar)" fill="none"><path d="M170,102 H203"/><path d="M355,102 H388"/><path d="M540,102 H573"/><path d="M650,152 V248"/><path d="M575,300 H542"/><path d="M390,300 H357"/></g>
+<rect x="296" y="12" width="152" height="26" rx="13" fill="#111"/><text x="372.0" y="30" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">GATE 1 · Confidence</text>
+<rect x="484" y="12" width="146" height="26" rx="13" fill="#111"/><text x="557.0" y="30" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">GATE 2 · Card</text>
+<rect x="408" y="386" width="148" height="26" rx="13" fill="#111"/><text x="482.0" y="404" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">GATE 3 · Proof</text>
+<g stroke="#111" stroke-width="1.5" stroke-dasharray="3 3"><path d="M372,38 V100"/><path d="M557,38 V100"/><path d="M482,386 V302"/></g>
+<path d="M585,250 C 545,215 505,190 472,154" stroke="#111" stroke-width="3" stroke-dasharray="9 7" fill="none" marker-end="url(#ss-ar)"/>
+<g font-size="15" font-weight="700" fill="#111"><text x="215" y="190">Prediction wrong?</text><text x="215" y="210">Revise the Card (step 3),</text><text x="215" y="230">not your guess.</text></g>
+</svg><figcaption>Figure 3.1. The seven steps and three gates. The dashed arrow is the loop you will use most: a probe disagrees with your prediction, so you revise the Card.</figcaption></figure>

@@ -1,0 +1,44 @@
+<figure class="fit"><svg viewBox="0 0 760 520" role="img" aria-labelledby="in-t in-d" xmlns="http://www.w3.org/2000/svg">
+<title id="in-t">Intake: classify the task</title><desc id="in-d">One question, what is being asked, leads to three families. Family A Understand has four types. Family B Fix has eight types. Family C Build has six types.</desc>
+<defs><marker id="in-ar" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L14,7 L0,14 z" fill="#111"/></marker></defs>
+<rect x="230" y="8" width="300" height="52" rx="26" fill="#111"/><text x="380" y="41" font-size="19" font-weight="800" fill="#fff" text-anchor="middle">What is being asked?</text>
+<path d="M380,60 L125,100" stroke="#111" stroke-width="3" fill="none" marker-end="url(#in-ar)"/>
+<rect x="10" y="102" width="230" height="404" rx="10" fill="#fff" stroke="#111" stroke-width="3"/>
+<rect x="10" y="102" width="230" height="64" rx="10" fill="#e4e4e4" stroke="#111" stroke-width="3"/>
+<text x="125" y="130" font-size="19" font-weight="800" text-anchor="middle" fill="#111">A · UNDERSTAND</text>
+<text x="125" y="154" font-size="14.5" text-anchor="middle" fill="#111" font-style="italic">“explain it to me”</text>
+<text x="24" y="200" font-size="15.5" font-weight="500" fill="#111">A1  Who calls this?</text>
+<text x="24" y="234" font-size="15.5" font-weight="500" fill="#111">A2  How does this module work?</text>
+<text x="24" y="268" font-size="15.5" font-weight="500" fill="#111">A3  What variable controls it?</text>
+<text x="24" y="302" font-size="15.5" font-weight="500" fill="#111">A4  Where does the data go?</text>
+<line x1="20" y1="460" x2="230" y2="460" stroke="#111" stroke-width="1.5"/>
+<text x="125" y="486" font-size="13.5" font-weight="700" text-anchor="middle" fill="#111">first probe: LOG who touches the data</text>
+<path d="M380,60 L380,100" stroke="#111" stroke-width="3" fill="none" marker-end="url(#in-ar)"/>
+<rect x="265" y="102" width="230" height="404" rx="10" fill="#fff" stroke="#111" stroke-width="3"/>
+<rect x="265" y="102" width="230" height="64" rx="10" fill="#e4e4e4" stroke="#111" stroke-width="3"/>
+<text x="380" y="130" font-size="19" font-weight="800" text-anchor="middle" fill="#111">B · FIX</text>
+<text x="380" y="154" font-size="14.5" text-anchor="middle" fill="#111" font-style="italic">“it is wrong”</text>
+<text x="279" y="200" font-size="15.5" font-weight="500" fill="#111">B1  Wrong value</text>
+<text x="279" y="234" font-size="15.5" font-weight="500" fill="#111">B2  Didn’t happen</text>
+<text x="279" y="268" font-size="15.5" font-weight="500" fill="#111">B3  Happened, shouldn’t have</text>
+<text x="279" y="302" font-size="15.5" font-weight="500" fill="#111">B4  Wrong order / timing</text>
+<text x="279" y="336" font-size="15.5" font-weight="500" fill="#111">B5  Stuck, never settles</text>
+<text x="279" y="370" font-size="15.5" font-weight="500" fill="#111">B6  Crash</text>
+<text x="279" y="404" font-size="15.5" font-weight="500" fill="#111">B7  Only sometimes</text>
+<text x="279" y="438" font-size="15.5" font-weight="500" fill="#111">B8  Slow / growing</text>
+<line x1="275" y1="460" x2="485" y2="460" stroke="#111" stroke-width="1.5"/>
+<text x="380" y="486" font-size="13.5" font-weight="700" text-anchor="middle" fill="#111">first probe: FILTER at the first bad state</text>
+<path d="M380,60 L635,100" stroke="#111" stroke-width="3" fill="none" marker-end="url(#in-ar)"/>
+<rect x="520" y="102" width="230" height="404" rx="10" fill="#fff" stroke="#111" stroke-width="3"/>
+<rect x="520" y="102" width="230" height="64" rx="10" fill="#e4e4e4" stroke="#111" stroke-width="3"/>
+<text x="635" y="130" font-size="19" font-weight="800" text-anchor="middle" fill="#111">C · BUILD</text>
+<text x="635" y="154" font-size="14.5" text-anchor="middle" fill="#111" font-style="italic">“make it do something new”</text>
+<text x="534" y="200" font-size="15.5" font-weight="500" fill="#111">C1  New: when X, do Y</text>
+<text x="534" y="234" font-size="15.5" font-weight="500" fill="#111">C2  New data or state</text>
+<text x="534" y="268" font-size="15.5" font-weight="500" fill="#111">C3  Change a rule / threshold</text>
+<text x="534" y="302" font-size="15.5" font-weight="500" fill="#111">C4  New event or message</text>
+<text x="534" y="336" font-size="15.5" font-weight="500" fill="#111">C5  Connect to another module</text>
+<text x="534" y="370" font-size="15.5" font-weight="500" fill="#111">C6  Refactor, same behavior</text>
+<line x1="530" y1="460" x2="740" y2="460" stroke="#111" stroke-width="1.5"/>
+<text x="635" y="486" font-size="13.5" font-weight="700" text-anchor="middle" fill="#111">first probe: LOG writers and readers</text>
+</svg><figcaption>Figure 16.1. Three families, eighteen types. Mixed task? Do the understanding part first.</figcaption></figure>

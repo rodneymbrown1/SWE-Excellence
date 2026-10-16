@@ -1,0 +1,40 @@
+(lldb) target create "./gateway"
+Current executable set to '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64).
+(lldb) command source -s 0 'lldb/03-rare-caller.lldb'
+Executing commands in '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/lldb/03-rare-caller.lldb'.
+(lldb) # Probe 3 (FILTER by caller): stop on LinkMonitor::on_event only when flush_burst called it.
+(lldb) settings set auto-confirm true
+(lldb) command script import lldb/probes.py
+(lldb) breakpoint set -n LinkMonitor::on_event
+Breakpoint 1: where = gateway`LinkMonitor::on_event(Event const&) + 28 at gateway.cpp:75:12, address = 0x0000000100000aa8
+(lldb) breakpoint command add -F probes.stop_if_called_from_flush_burst 1
+(lldb) run --max 400
+[t=  3] Down     -> Up       (missed=0 good=3)
+[t= 23] Up       -> Degraded (missed=4 good=0)
+[t= 27] Degraded -> Down     (missed=8 good=0)
+[t= 29] Down     -> Up       (missed=0 good=3)
+Process 82968 launched: '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64)
+Process 82968 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+    frame #0: 0x0000000100000aa8 gateway`LinkMonitor::on_event(this=0x000000016fdfefec, e=0x000000016fdfef20) at gateway.cpp:75:12
+   72  	class LinkMonitor {
+   73  	 public:
+   74  	  void on_event(const Event& e) {
+-> 75  	    now_ = e.tick;
+    	           ^
+   76  	    switch (e.type) {
+   77  	      case EventType::Tick:      on_tick();      break;
+   78  	      case EventType::Heartbeat: on_heartbeat(); break;
+Target 0: (gateway) stopped.
+(lldb) bt
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+  * frame #0: 0x0000000100000aa8 gateway`LinkMonitor::on_event(this=0x000000016fdfefec, e=0x000000016fdfef20) at gateway.cpp:75:12
+    frame #1: 0x0000000100000ba4 gateway`Gateway::flush_burst(this=0x000000016fdfefe0, e=0x000000016fdfef90) at gateway.cpp:170:16
+    frame #2: 0x00000001000009d8 gateway`Gateway::dispatch(this=0x000000016fdfefe0, e=0x000000016fdfef90) at gateway.cpp:163:28
+    frame #3: 0x0000000100000634 gateway`Gateway::run(this=0x000000016fdfefe0) at gateway.cpp:147:7
+    frame #4: 0x0000000100000544 gateway`main(argc=3, argv=0x000000016fdff280) at gateway.cpp:186:6
+    frame #5: 0x00000001913ec274 dyld`start + 2840
+(lldb) p e
+(const Event &) 0x000000016fdfef20 (type = Data, tick = 90, payload = 99)
+(lldb) kill
+Process 82968 exited with status = 9 (0x00000009) killed

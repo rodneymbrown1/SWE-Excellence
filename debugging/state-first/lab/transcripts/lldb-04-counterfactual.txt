@@ -1,0 +1,38 @@
+(lldb) target create "./gateway"
+Current executable set to '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64).
+(lldb) command source -s 0 'lldb/04-counterfactual.lldb'
+Executing commands in '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/lldb/04-counterfactual.lldb'.
+(lldb) # Probe 4 (EXPERIMENT): stop at the first violation, set missed_ = 0 by hand, and see if R4 now holds.
+(lldb) settings set auto-confirm true
+(lldb) breakpoint set -f gateway.cpp -l 81 -c 'e.type == EventType::Heartbeat && missed_ != 0'
+Breakpoint 1: where = gateway`LinkMonitor::on_event(Event const&) + 136 at gateway.cpp:81:3, address = 0x0000000100000b14
+(lldb) run --max 400
+[t=  3] Down     -> Up       (missed=0 good=3)
+[t= 23] Up       -> Degraded (missed=4 good=0)
+Process 82978 launched: '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64)
+Process 82978 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+    frame #0: 0x0000000100000b14 gateway`LinkMonitor::on_event(this=0x000000016fdfefec, e=0x000000016fdfef90) at gateway.cpp:81:3
+   78  	      case EventType::Heartbeat: on_heartbeat(); break;
+   79  	      case EventType::Data:      ++data_seen_;   break;
+   80  	    }
+-> 81  	  }
+    	  ^
+   82  	
+   83  	  LinkState state() const { return state_; }
+   84  	  int data_seen() const { return data_seen_; }
+Target 0: (gateway) stopped.
+(lldb) p *this
+(LinkMonitor)  (state_ = Degraded, missed_ = 7, good_ = 1, now_ = 26, data_seen_ = 8)
+(lldb) expression missed_ = 0
+(int) $0 = 0
+(lldb) breakpoint delete 1
+1 breakpoints deleted; 0 breakpoint locations disabled.
+(lldb) continue
+[t= 27] Degraded -> Up       (missed=0 good=2)
+[t=123] Up       -> Degraded (missed=4 good=0)
+[t=127] Degraded -> Down     (missed=8 good=0)
+[t=134] Down     -> Up       (missed=0 good=3)
+final: state=Up forwarded=55 dropped=5 data_seen=153
+Process 82978 resuming
+Process 82978 exited with status = 0 (0x00000000)

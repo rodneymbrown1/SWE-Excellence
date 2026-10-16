@@ -1,0 +1,8 @@
+# Probe 4 (EXPERIMENT): stop at the first violation, set missed_ = 0 by hand, and see if R4 now holds.
+settings set auto-confirm true
+breakpoint set -f gateway.cpp -l 81 -c 'e.type == EventType::Heartbeat && missed_ != 0'
+run --max 400
+p *this
+expression missed_ = 0
+breakpoint delete 1
+continue

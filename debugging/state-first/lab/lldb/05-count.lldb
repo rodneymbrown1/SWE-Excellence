@@ -1,0 +1,8 @@
+# Probe 5 (COUNT): tally heartbeats without stopping, print the total at the end.
+settings set auto-confirm true
+command script import lldb/probes.py
+breakpoint set -n LinkMonitor::on_heartbeat
+breakpoint command add -F probes.count_heartbeat 1
+breakpoint set -n Gateway::summary
+breakpoint command add -F probes.show_counts 2
+run --max 400

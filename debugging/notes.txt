@@ -1,0 +1,65 @@
+ok So I actually continued this conversation with chatgpt to ask for some resources on this topic.  
+tldr i think what im looking for at this point is conditional breakpoint and watch points
+
+"How I observe and reconstruct execution data/ flow in a continuously running, event-driven embedded system without manually stepping through the loop.  
+
+beacuse stepping through the look can be useless in such a system and can cause the state you are looking for to be different that expected.
+
+i.e. basic break main and step/next workflow works great for systems that are not in an infinite loop.
+
+I need to treat the system as a stream of events and use gdb to selectively intercept the stream.  
+
+some resources i gathered were
+GDB Deep Dive — Gillian Minnehan, Embedded Online Conference 2024 — 32 min
+https://embeddedonlineconference.com/session/GDB_Deep_Dive_EOC
+
+what I got out of this is how embedded engineers set up their environment. generally what gdb can do and what its compadible with (ALOT).  remote debugging.  a crash course of commands (i already have notes and cheatsheets)
+
+In the crash course there are a few examples what i extracted is the difference between a breakpoint and a watchpoint.  
+
+a breakpoint (my understand) is a point at which we stop the program at some location or condition.
+
+A watchpoint or (data watchpoint) is a special type of breakpoint that halts the program execution when a value of a target variable or expression changes.
+
+So far these are my tools.  watching if a value changes is generally useful and conditional breakpoints allow me to look at a frame function and decide a specific condition inside the desired frame where i want to break to examine further.
+
+and what am i examining.
+For my work as a SOFTWARE engineer.  I will hardly work with memory and anything lower than local variables, so ill looking at what when in to the function (args), classes, variables, etc. (the stuff i look at in my text editor)
+
+amd btw for a given initialized class how can i see the state of all of its variables in a given frame, or will the frame's info local only return the specific scope of what can be seen in "list".  
+
+and back to the (stuff i look at in my text editor point) - I want to reiderate that i dont need to look at memory or assembly code i dont even know what to do with that information.. I may encounter an issue with that at some point but we can can this an intro from full stack in to embedded.  i only want to see text editor familar things that i would be writting or reading in the software declarations definitions and impementations (etc). and yea i can see how i may need to make a watchpoint for a memory address (im guessing if the value of a pointer is changiner and affecting the system but not sure where its happening.  but my c knowledge stops there.  (help me fill in my gaps but dont need an encyclepedia on memory just yet)  
+
+Back to what i got from GDB Deep Dive — Gillian Minnehan, Embedded Online Conference 2024 — 32 min
+speaker also convered print formatting likely more advanced than what im doing at the moment.
+
+Ok another big one i got from the cideo is the gdbinit file.  Gillian demos https://github.com/cyrus-and/gdb-dashboar which is essentially a 1000-2000 line long python file in a .gdbinit that is a superior ui than gdb default.  Im geniuinely curious if my job has this somewhere as supported because ill be using it for sure.  
+
+the gdb python api is something i can see creatively enhancing testing, or debugging workflows in teams possibly.  
+
+speaker also covered the vs code debugger gui which i think for my workflow is the best ui possible.  its the same information as cyrus but with dropdowns and on a side pane and also the info list equivalent takes you to the file where you can make edits and finally you can write break points inthos files directly,  not to mention all your extensions, ai tools etc are in vscode.  however as she said the setup is tedious.  i spent a couple hours setting this up from windows laptop to remote ssh linux server and ultimately when i hit debug it just debugged from the terminal with no ui functionally connected, so i have yet to successfully set that up.  honestly a step by step of setting that up is a backlog for me  env 1 vs code windows env two ssh in to linux server.  manually added cpp tools to linux server after sshing in from vs code and hitting install on the extension tab.  then created a launch.json file named specifically for the task.  if i can get a link to information for this exact setup thatd be great.  
+
+ok back to vid she talks about post release debugging with core dumps ( i want be doing this while training for my job but may support this sort of thing in the future).  she gives a coredumps primer kernal dump categories ie system workqu, main thread, cle service thread etc.  she demos memfault coredump analysis
+
+
+so gdb is an essential tool for debugging firmware/ hardware/ embedded software sstems. 
+
+What I want is to focus first on just using it for what i can see in the ide. with some scenarios
+
+# always start by running the program and looking at the output, logs, or terminal.
+
+1. I dont know how this code works
+	this requires understand the part of the system you are work on or if you are working on multiple parts understand multiple or all systems.  at a glance im thinking, lets look at diagrams and documentation if availible and break down the functionality in to simple terms.  
+The system is in "Module 1>, therefore all the locals i will be "watching" or breaking will be here or if you are in multple systems watching between the n number of systems.  so this proces seems to be hey i may not know how every single fuuntion works but i know the data flow of what im working on is here and logically the desired function is data1, data2, data3, are initialized here and the goal is that under this condition we (do something), change something, update something etc. etc.  from there i can use the debugger instead of print statements to break for that data's frame/ function, or watch for that data  if the goal is to add functionality if the data changes.  So for "I dont know how this code works" id say maybe there is a set of steps an embedded software engineer can ask themselves and a set of steps to take to conclude "how the code works" and or "how it is intended to work" this includes reading the requirements, documentation, diagrams etc.  how do you speed this process up.  ho much information is too much, how much is too little.  if my module has no communication with other modules directly explicitly through messaging etc.  is there shared data they we all affect at one point can i just say im only looking at pure logic of my task and not go down a rabbit hole where i need to understandf how the entire system works.  Id like this to be a repeatable process that leads in to dgbing (key data frames)  why - so we can pinpoint where the functionality goes in minutes not hours.  
+2. I dont know where this code is called (just opned code base)
+	ok my task is in Module 1. how do i use gdb to find where module 1 is called by the program? is this the only place it is called?  is this based on some conditions i have not considered?
+	use gdb to break at the initialization or key areas of the module or watch data changing in the module or modules affected by the module and or componenents in said modules.  need to be repeatable fool proof process eliminating print statement hell.  
+
+3.  What is the variable that controls this functionality.  (what if variable appears 100 times)
+	i need to adjust something but im not sure what variable affects it.  first what function or set of steps produces the functionality.  rate the complexity of the process.  how many variables are involved.  can i just change the variable in one method to fix it?  im seeing a pattern the first step is always 1 to run the program and observe the behavior but im realizing its turning any idea feature or behavior or bug in to a logical state or condition.  sometimes the logic state or condition is known which would make it easier to find in gdb.  but my point is without logic and data you cant use gdb, you cant use watch points, breakpoints etc because you arent speaking the language of the tool.  so imagine a set of steps that could classify to frame/ break down a problem from 1 fix bug 2add feature 3understand how a module works"  where each of this uses the same fundamental  bug = we cant do this, systems wont do this, or system is doing <insert opposite of desired bevaior>  but it is behvaior.  so how do we describe the behavior in code.  ie we lose communication here.  well i know the behavior but how would i describe that as a state in a specific module and componenet and method.  if im new to the code base i dont know.  so my task is investigating and finding the missing information.  i dont know the logical state that is required for comms in this function.  1 where is the function. i cant find it -> if its not given in the requirements desciption or problem statement run the program follow the (id ton know how this code works steps or i dont know where this code is called steps.  no i know where it is next what goes in and what goes out.  what im looking for is the conditions which cause the behavior.  i can speculate since i now have the location of file and function i can use conditional breaks. in the frame i can verify/validate if the data matches what it is expected to be at this point.  then i can note the thing that is off and find where it changed by restarting gdb and following that variable from initialization to "bad state"  for adding a feature it is a similar thing we are trying to describe behavior in terms of what has been declared defined and implemented in the code.  pinpointing frames where changes will happen based on frame analysis of watchpoints and or breakpoints.  and this is the first thing i said in 1. but the "im new to this problem, module, codebase etc and am just trying to learn.  well, this step is atleast 50% reading the problem conceptually first.  because if i dont even understand the purpose premise desired state etc.  i cannot turn that premise in to a state based on declaration definition and implementaiton.  
+
+How can we use workflows developed by the best of the best engineers to this into a repeatable program where developers can rely on best practices and a superior paradigm based on excellence to achieve speed accuracy and innovation of delivery.
+I dont think people should be forced to a set of defined steps but this project's the is "SWE Excellence" and this focusses on debugging. not as a task we all hate to do but as a fundamental tool to translating requirements in to delivery
+it starts with the developer understanding the problem and using tools to get to results in minutes not days.
+  
+	

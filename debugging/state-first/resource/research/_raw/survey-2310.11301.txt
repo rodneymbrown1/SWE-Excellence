@@ -1,0 +1,792 @@
+                                            Source Code Comprehension: A Contemporary Definition and
+                                                    Conceptual Model for Empirical Investigation
+                                                                                                                   Marvin Wyrich
+                                                                                                               Saarland University
+                                                                                                             Saarbrücken, Germany
+                                                                                                            wyrich@cs.uni-saarland.de
+
+                                         ABSTRACT                                                                              1    INTRODUCTION
+                                         Be it in debugging, testing, code review or, more recently, pair                      Let us mentally transport ourselves to New York City for a mo-
+                                         programming with AI assistance: in all these activities, software                     ment. There, we find the Museum of Modern Art, one of the most
+
+
+
+
+arXiv:2310.11301v1 [cs.SE] 17 Oct 2023
+                                         engineers need to understand source code. Accordingly, plenty of                      renowned museums in the world. What could happen if a piece of
+                                         research is taking place in the field to find out, for example, what                  printed source code were hanging on a large canvas amidst con-
+                                         makes code easy to understand and which tools can best support                        temporary artworks? Presumably, the visitors would initially be
+                                         developers in their comprehension process. And while any code                         puzzled by what they see.
+                                         comprehension researcher certainly has a rough idea of what they                          Favian is one of these visitors. He stops and gazes at the code
+                                         mean when they mention a developer having a good understanding                        for about half a minute, a duration comparable to the average con-
+                                         of a piece of code, to date, the research community has not man-                      templation of an artwork [55]. At first glance, Favian perceives an
+                                         aged to define source code comprehension as a concept. Instead,                       abstract, unfamiliar language. However, as he approaches closer,
+                                         in primary research on code comprehension, an implicit definition                     he discovers patterns within the lines of text, a rhythm and struc-
+                                         by task prevails, i.e., code comprehension is what the experimen-                     ture that resonates with him on a subconscious level. And as he
+                                         tal tasks measure. This approach has two negative consequences.                       begins to discern a deeper meaning behind the code, Favian joyfully
+                                         First, it makes it difficult to conduct secondary research. Currently,                concludes, "Now I understand!" and moves on to the next artwork.
+                                         each code comprehension primary study uses different comprehen-                           Readers with a software engineering background will be skep-
+                                         sion tasks and measures, and thus it is not clear whether different                   tical at this point whether our fictional character Favian really
+                                         studies intend to measure the same construct. Second, authors of                      understood the code. But why? The notion of understanding can be
+                                         a primary study run into the difficulty of justifying their design                    used very differently by different people and in different contexts.
+                                         decisions without a definition of what they attempt to measure. An                    This is because we cannot directly observe how well somebody
+                                         operationalization of an insufficiently described construct occurs,                   understood code. Instead, code comprehension is a construct, a con-
+                                         which poses a threat to construct validity.                                           cept created by humans to classify and assign meaning to observed
+                                            The task of defining code comprehension considering the theory                     behaviors. If such a meaning can be agreed upon within a research
+                                         of the past fifty years is not an easy one. Nor is it a task that                     community, a construct offers added value.1
+                                         every author of a primary study must accomplish on their own.                             To date, the research community has not agreed on a meaning
+                                         Therefore, this paper constitutes a reference work that defines                       of code comprehension. Not because there is evident disagreement,
+                                         source code comprehension and presents a conceptual framework in                      but because we have not yet even entered into discourse about it.
+                                         which researchers can anchor their empirical code comprehension                       Accordingly, there has been a lack of publicly articulated perspec-
+                                         research.                                                                             tives on what code comprehension can be. And without such a
+                                                                                                                               perspective, researchers have neither the means to agree with it
+                                         CCS CONCEPTS                                                                          nor anything to explicitly dissent from. Essentially, the following
+                                         • Software and its engineering → Maintaining software; • Gen-                         two issues arise when researchers of primary studies investigate a
+                                         eral and reference → Reference works.                                                 construct they cannot define.
+                                                                                                                                   The first issue relates to what makes sense when it comes to as-
+                                         KEYWORDS                                                                              sessing a developer’s understanding of code. A construct like code
+                                                                                                                               comprehension can be operationalized. Favian’s self-assessment of
+                                         program comprehension, code comprehension, meta-science                               his own understanding could be such an operationalization. The jus-
+                                         ACM Reference Format:                                                                 tification of a particular operationalization depends, among other
+                                         Marvin Wyrich. 2023. Source Code Comprehension: A Contemporary Def-                   things, on how one defines code comprehension at the conceptual
+                                         inition and Conceptual Model for Empirical Investigation. In Proceedings              level. Based on such a definition, it can then be judged whether
+                                         of Submission under review (Journal). ACM, New York, NY, USA, 12 pages.               “an operationalization seems intuitively reasonable” (face valid-
+                                         https://doi.org/XXXXXXX.XXXXXXX                                                       ity) and whether “an operationalization encompasses all aspects
+                                                                                                                               of a construct” (content validity) [42]. The assessment of face and
+                                         Preprint of a submission under review. For license terms and reference information,   content validity are the first of several steps in the evaluation of
+                                         see arXiv page on which this version of the paper is hosted.
+                                         Journal, Under Review, 2023                                                           construct validity [42]. A general threat to construct validity is that
+                                         © 2023 Association for Computing Machinery.
+                                                                                                                               1 See [42, 54] for an introduction to constructs with examples from software engineer-
+                                         ACM ISBN 978-1-4503-XXXX-X/18/06. . . $15.00
+                                         https://doi.org/XXXXXXX.XXXXXXX                                                       ing, such as productivity, programming experience, and program maintainability.
+Journal, Under Review, 2023                                                                                                          Marvin Wyrich
+
+
+a definition of the construct is missing or insufficient [54]: if it is      our current picture of code comprehension. At that time, the term
+not clear what is being measured, it cannot be assessed whether              program comprehension was mainly used, which today covers a
+it is being measured validly in terms of face and content validity.          broader range of research topics, of which code comprehension is
+Sjøberg and Bergersen [54] note that in software engineering re-             one [66]. Program comprehension research of that time is in many
+search, most of the concepts are often not theoretically defined.            aspects comparable to contemporary research. However, the period
+Wyrich et al. [66] confirmed this observation within the literature          was particularly characterized by the development of models and
+on code comprehension experiments. Hardly any study defines code             theories to explain behavioral processes of developers.
+comprehension. As a consequence, in most cases, an operationaliza-              We start in 1978, when Ruven Brooks [10] lays the first milestone
+tion of a previously inadequately described construct occurs. This           of our journey with an essay about a behavioral theory of pro-
+then leads to limitations in evaluating construct validity.                  gram comprehension. He assumes that developers switch between
+    A second issue of not having a definition arises in the conduct          ‘knowledge domains’ in program understanding, which, roughly
+of secondary research. There are more diverse options available              summarized, represent different levels of abstraction of reality. Ac-
+today than ever before to measure a person’s code comprehension              cording to Brooks, a developer has understood a program when
+performance [66]. At the same time, there is a lack of research on           not only information about objects and their relationships within
+the comparability of different comprehension measures [34]. The re-          one abstraction level are known, but also their relationship in a
+search community was aware of this lack of comparability as early            nearby abstraction. Brooks’ most influential idea, however, was that
+as 40 years ago, when the first studies examined the comparability           the process of understanding is characterized by the “successive
+of specific task designs [12, 20] and others examined the compa-             refinement of hypotheses about the program’s operation” [10]. If
+rability of various comprehension measures [40, 49]. Not much in             a developer takes a particularly long time to understand a certain
+the direction of comparability has happened since then, and the              code snippet, this can be explained by the difficulty of finding cor-
+few existing studies on the comparability of different comprehen-            rect hypotheses at that moment. Brooks further already speculated
+sion measures overwhelmingly conclude that different common                  at this time that there were elements in the program, such as com-
+ways of measuring code comprehension do not correlate with each              ments or variable names, that represented cues in understanding
+other [2, 7, 16, 23, 69]. All of this not only potentially leads to uncer-   the program.
+tainty in the design of new primary studies, but also currently leads           Five years later, in 1983, Brooks [11] elaborated his thoughts
+to each empirical code comprehension study developing its own                and the model that we know today as the ‘top-down model’ of
+methodology for measuring the code comprehension performance                 program comprehension emerged: Hypotheses about knowledge
+of its participants [66]. What was a neglected issue of comparability        domains are generated, tested, and refined until their relationship
+of comprehension measures is now becoming a much larger issue                to the code becomes apparent. A hypothesis describes, for example,
+of comparability of study results in the face of increasing and barely       the basic function of a component. The first hypothesis is generated
+surveyable publication volumes, as authors of potential secondary            as soon as the developer receives the first information about the
+research cannot know which primary studies intend to measure the             program; how appropriate this hypothesis is depends on the skill
+same construct. To put it in a nutshell: source code comprehension           level and the experience of the developer with the problem domain.
+makes no sense except in the light of a definition.                          The verification and the establishment of alternative hypotheses
+    Therefore, we propose a conceptual definition for source code            are supported by certain indicators in the code. Brooks calls these
+comprehension in this paper. Our work comprises both a dictionary-           indicators ‘beacons’ here for the first time.
+like definition of the term itself, and a conceptual model explaining           Between these two publications by Brooks, in 1979 Shneiderman
+what code comprehension could be from an ontological point of                and Mayer [50] came forward with their model for programmer
+view. It is an elaborated perspective that other researchers can agree       behavior. In their work, they did not limit themselves exclusively
+with or (partially) disagree with. In either case, they benefit from         to program comprehension. Five programming tasks were studied,
+having a reference work in which to anchor their research.                   one of which constitutes comprehension. Nevertheless, we can also
+    The remainder of the paper is structured as follows. In Section 2,       call this work a seminal work because it resulted in what we know
+we travel through the history of code comprehension theory. In               today as the ‘bottom-up model’ of program comprehension: “In-
+doing so, we learn about milestones in research that have brought            stead of absorbing the program on a character-by-character basis,
+us to our current understanding of what researchers mean by code             programmers recognize the function of groups of statements, and
+comprehension. On this foundation, in Section 3 we then propose              then piece together these chunks to form even larger chunks until
+a contemporary definition of the term and provide a conceptual               the entire program is comprehended”. Shneiderman and Mayer [50]
+model for different types of empirical code comprehension research.          further emphasized the role of syntactic knowledge (programming
+Section 4 illustrates with two case examples how researchers can             language dependent) and semantic knowledge (general program-
+use the conceptual model to anchor their own primary research.               ming concepts) in a developer’s long-term memory, as well as the
+Section 5 concludes the paper with an outlook.                               role of short-term and working memory for the construction of
+                                                                             a “multileveled internal semantic structure to represent the pro-
+                                                                             gram [. . . ] The central contention is that programmers develop an
+2    A BRIEF HISTORY OF PROGRAM                                              internal semantic structure to represent the syntax of the program,
+     COMPREHENSION THEORY                                                    but that they do not memorize or comprehend the program in a
+We travel a bit in time, more precisely to the 1980s, a decade that          line-by-line form based on the syntax” [50].
+introduced almost all the relevant concepts that are still shaping
+Source Code Comprehension: A Contemporary Definition and Conceptual Model for Empirical Investigation                               Journal, Under Review, 2023
+
+
+   Both Brooks [11] and Shneiderman and Mayer [50] have sup-                         knowledge play the central role in the comprehension process and
+ported their presented concepts with initial experiments, and it                     that the understander “is best viewed as an opportunistic processor
+did not take long for independent studies to follow that put the                     capable of exploiting both bottom-up and top-down cues as they
+models to the test: Basili and Mills [4] observed themselves compre-                 become available”. Letovsky elaborates on some details and exam-
+hending and judging the correctness of a program, providing early                    ines his assumptions using video recordings of six professional
+anecdotal evidence that bottom-up comprehension practically takes                    developers who were asked to add a new feature to a project while
+place. Adelson [1] found experts to have larger recall chunks than                   thinking out loud. What is interesting for us at a later point of this
+novices, and that expert chunks contain more semantically rather                     paper is what Letovsky believes a mental model should contain: a
+than syntactically related information. Wiedenbeck [65] conducted                    description of the goals of the program (specification), a description
+two experiments on the differing influence of beacons on experi-                     of actions and data structures in the program (implementation),
+enced and inexperienced developers, and found that supposedly                        and an explanation of the links between goal and implementation
+useful indicators in the code primarily help experienced develop-                    (annotation) [29].
+ers understand it. Wiedenbeck discusses the role of beacons and                         Finally, Littman et al. [31] distinguish between static knowl-
+considers them to be in line with the bottom-up comprehension                        edge (what the program does functionally) and causal knowledge
+strategy, since beacons can represent “the link between the top-                     (about interactions of functional components during execution).
+down hypothesis formation stage and the data of the program text”.                   Both types of knowledge are required for comprehension, which is
+Moreover, what Shneiderman calls a chunk could also represent a                      why they call a mental model that contains both types of knowledge
+beacon, provided that the chunk represents a stereotypical part of                   a ‘strong mental model’. In contrast, a mental model of the program
+the program [65]. Soloway and Ehrlich [57], at the same time as                      that only contains static knowledge is called a ‘weak mental model’.
+Brooks [11], investigated top-down comprehension assumptions                         They found some developers to use a systematic comprehension
+and provided evidence that programming plans and rules of program-                   strategy, i.e. “the programmer performs extensive symbolic execu-
+ming discourse would help experienced developers with program                        tion of the data flow paths between subroutines”, and some to use
+comprehension. Programming plans represent stereotypical pro-                        an as-needed strategy, meaning that they attempt to only focus on
+gram fragments, similar to a kind of beacon. Rules of programming                    those parts of a program relevant for the experimental task, which
+discourse represent intuitive expectations of developers, e.g. that a                resulted in either a weak or a strong mental model. As a conse-
+function name matches the content of the function [57]. Rist et al.                  quence, developers following the systematic strategy were more
+[43] refinded Soloway and Ehrlich’s plan idea and provided addi-                     successful at the requested modification task [31]. Koenemann and
+tional experimental evidence for its positive influence on program                   Robertson [27] provided further evidence a few years later that
+comprehension.                                                                       developers follow an ‘as-needed’ strategy when they need to un-
+                                                                                     derstand or modify a program, and that need is primarily based on
+                                                                                     the developer’s goals. They further conclude that program com-
+From Comprehension Strategies to Mental                                              prehension is mainly a top-down process and bottom-up is used
+Models                                                                               “in cases of missing or failing hypotheses and locally for directly
+In 1987, the focus of research seemed to shift minimally from cog-                   relevant code units” [27].
+nitive comprehension strategies to the nature of mental representa-
+tions of source code (mental models).
+   Pennington [39] shows with an example of a code snippet that a                    The 1990s and the Integrated Model
+program can be abstracted in at least four different ways: (1) by the                We see that there has been neither a lack of concepts that contribute
+goals of the program, (2) as a data flow abstraction, (3) as a control               to understanding program comprehension nor a lack of empirical
+flow abstraction, and (4) of “conditionalized action”, i.e. under cer-               investigations of them. In the 1990s, we also find good examples
+tain conditions the program performs actions and enters another                      of work that derives implications for practice based on the basic
+state. Pennington calls the control-flow representation ‘program                     research on program comprehension described so far. For example,
+model’ and the combination of data-flow and goal hierarchy rep-                      Storey et al. [59] address the design of software exploration tools to
+resentation ‘situation model’, drawing on theories from earlier                      support developers and use theory to explain what design principles
+work in the field of text comprehension [61]. In her first study,                    the tools would need to follow to facilitate the construction of a
+Pennington shows that procedural (control flow) rather than func-                    mental model for program understanding.
+tional units (goal hierarchy) “form the basis of expert programmer’s                     What was missing, however, was some kind of metamodel
+mental representations”, which implies that even experts initially                   that coherently integrated the various concepts of the 1980s.
+apply bottom-up comprehension strategies [39]. Her second study                      Von Mayrhauser and Vans [63] took on this task and in 1995 set
+addresses the limitation of small code snippets. Once again, an                      another milestone in our history of program comprehension theory
+understanding of program control flow and procedures preceded                        with their ‘integrated metamodel’ of comprehension strategies.
+an understanding of program functions.                                                   Figure 1 depicts the metamodel. It is a re-creation of the graphical
+   Letovsky [29] proposes a cognitive model of the ‘knowledge-                       illustration of von Mayrhauser and Vans, where we have simplified
+based program understander’ who is made of three components,                         the knowledge base in its level of detail to make the illustration
+namely a knowledge base, a mental model of their current and                         more concise and understandable. Apart from that, all components
+evolving understanding, and an assimilation process interacting                      are included that are also contained in the original model: The top-
+with the stimulus materials. His position is that different types of                 down model based on Soloway and Ehrlich [57], the program model
+Journal, Under Review, 2023                                                                                                    Marvin Wyrich
+
+
+and situation model based on Pennington [39], and the knowledge        but a (necessary) means to accomplish a maintenance task suc-
+base, as the node that contains the information to build and switch    cessfully. We might do well, therefore, to also develop models that
+between the respective cognitive process models. The integrated        are specific to particular development activities and incorporate
+metamodel also incorporates elements from the work of Brooks           program comprehension as one aspect of such activity.
+[11], Letovsky [29], and Shneiderman and Mayer [50], so that we           Gilmore [18] presents an example of such a model that connects
+find again, e.g., the concepts of beacons, memory, chunking, and       the debugging and comprehension processes. Gilmore argues that
+various kinds of knowledge. All five incorporated models further de-   the view that developers use a mental model created during the
+scribe a matching process between the developer’s knowledge and        comprehension process in a separate step for debugging is not ac-
+the object to be understood (‘match comprehension process’), for       curate. Instead, he argues that these are two distinct processes, of
+example through the systematic verification of hypotheses accord-      which comprehension is part of a larger debugging loop: “The fact
+ing to Brooks [11] or via a more opportunistic approach according      that, in both cases, bugs were more easily found when they were
+to Letovsky [29].                                                      deeper in the structures contradicts the traditional interpretation
+                                                                       of propositional analyses of comprehension. Both groups of pro-
+       Top-Down process                      Knowledge base            grammers were more likely to find the deeper bugs, suggesting that
+                                                                       they were being detected during an ongoing comprehension pro-
+           Documents                                                   cess, rather than by comparison with a comprehension state” [18].
+                                           Top-down structures
+                                                                       Gilmore’s model not only embeds the comprehension process in
+    understanding process               Program model structures       a higher-level debugging activity, it also models the interesting
+                                                                       aspect of problem comprehension and places mismatch detection
+                                        Situation model structures     between the mental representation of the program and the mental
+       Current mental                                                  representation of the problem at the center of debugging.
+  representation of program
+
+
+   Program model process                 Situation model process
+                                                                       The 2000s: Model Refinements, Model Extensions,
+                                                                       and. . . Teaching
+     Documents and code                   Documents and code
+                                                                       We enter the decade in which the International Workshop on Pro-
+                   beacons                             beacons
+                                                                       gram Comprehension transitioned into a full conference. In the
+               read                                read                context of program comprehension strategies and theory, some
+                                                                       existing models were refined or extended.
+                                                                          Crosby et al. [13] conducted further research on the role of bea-
+           Match                                Match                  cons. Among other methods, they used eye-tracking to see what
+    comprehension process                comprehension process         developers fixated on and for how long. They found that there are at
+                                                                       least two types of beacons. One is single lines of code, which contain
+                                                                       mnemonic cues about functionality, and the other is more complex
+    Short-term memory                        Short-term memory
+                                                                       beacons, which contain cues about main goals of the program. Also,
+      Microstructure                         Low-level mappings        experts seem to rely on beacons, while novices do not.
+      Macrostructure                         High-level mappings          At the same time, Rajlich and Wilde [41] discuss the role of
+                                                                       ‘concepts’ for understanding and learning about unknown and large
+                                                                       programs. They define concepts as “units of human knowledge
+                 chunking                   chunking                   that can be processed by the human mind (short-term memory) in
+                                                                       one instance”. Examples of concepts can be single features of the
+   Program model                                 Situation model
+                                                                       software, which can be found as such in the code. There may be
+                                                                       an overlap here with the concept of complex beacons described by
+Figure 1: The “integrated metamodel” by Von Mayrhauser                 Crosby et al. [13] and there is definitely some relationship to the
+and Vans. Figure based on Figure 6 in [63].                            idea of chunking parts of the code into larger segments [50]. In any
+                                                                       case, Rajlich and Wilde [41] consider domain concept knowledge
+   Back then, von Mayrhauser and Vans considered the develop-          essential for program comprehension.
+ment of program comprehension models to be “in the theory-                Building on the works of Brooks [11] and Soloway and Ehrlich
+building phase” and theories on large-scale program comprehension      [57], O’Brien et al. [36] refine the idea of top-down comprehension
+to be “in their infancy” [63]. They could not have known that the      into expectation-based and inference-based comprehension, where
+end of the 1990s also marked the end of two decades of research that   the difference can be roughly summarized as whether beacons [43,
+produced the most influential models of program comprehension          65] in the code confirm or trigger a developer’s (pre-generated)
+to date.                                                               hypotheses. In an experiment with eight industrial developers, they
+   Before we turn to the progress towards theory building in the       were able to show empirically that for expert programmers both
+2000s, we would like to highlight an aspect that was increasingly      strategies play a role together with the bottom-up comprehension
+made explicit in papers of the 1990s and seems still a consensus       strategy. The preferred approach depends on the familiarity with
+today [32]: program comprehension is usually not an end in itself,     the application domain [36].
+Source Code Comprehension: A Contemporary Definition and Conceptual Model for Empirical Investigation                                 Journal, Under Review, 2023
+
+
+   Guéhéneuc [19] extends existing theories on program compre-                       time spent outside the IDE. The authors highlight the importance
+hension by adding vision science, i.e. the recognition of items during               of not getting interrupted during developmental activity, as it is
+program comprehension. The work brings an interesting new di-                        largely characterized by mental processes.
+mension into play: modality. In the code comprehension experiment                       On a side note, both Maalej et al. [32] and Minelli et al. [33], arrive
+landscape, modality has so far been somewhat neglected, perhaps                      at a similar picture of program comprehension as we discussed ear-
+because a homogeneous picture of the code-reading developer pre-                     lier, namely as an embedded activity. They conclude that “program
+vails in the minds of the researchers, perhaps also because modality                 comprehension is considered a necessary step to accomplishing
+is assumed to have little influence on the comprehension of infor-                   different maintenance tasks rather than a goal by itself” [32] and
+mation in general [44].                                                              “that base understanding is prevalent inside activities, that is, inside
+   In addition to these theoretical extensions and refinements, the                  conceptually related sequences of keyboard or mouse sprees. In
+theory of program comprehension strategies of the 80s and 90s                        other words, the process of program understanding is not really
+also increasingly found its way into teaching. A workshop work-                      an activity per-se, but it is interleaved with other activities like
+ing session on teaching program comprehension was organized                          editing” [33].
+with the goal of establishing “a repository of teaching resources,                      Just three years after Minelli et al.’s research, the key message
+to identify the lessons learned and future directions” [60]. Then,                   that program comprehension accounts for the majority of develop-
+for example, Exton [14] reviews existing program comprehension                       mental activity was confirmed by Xia et al. [68]. They conducted
+strategies and its relation to the constructivist learning theory, and               a large-scale field study with 78 software professionals from two
+Schulte [45] proposes a model of core aspects of understanding a                     IT companies in China and found that developers spend about 58
+program text that should guide instructors in designing teaching                     percent of their time on program comprehension activities. Since,
+lessons. The interested reader will find a good introduction to how                  according to the authors, program comprehension does not only
+program comprehension models can enrich the computer science                         take place in the IDE, Xia et al. [68] tracked the activities of devel-
+educational perspective in Schulte et al. [46].                                      opers across different applications. They were able to show that
+                                                                                     only about 20% of program comprehension takes place in the IDE,
+                                                                                     27% in web browsers and about 10% in document editors. There is
+The 2010s: What Happens in Practice?                                                 frequent switching between these applications.
+A few refinements of theoretical program comprehension models
+also entered the scientific literature in the 2010s [5, 35, 48], but the
+decade was marked in particular by studies that examined program                     The 2020s: Dawn of the Neuro Age
+comprehension in practice.                                                           Up to this point, we have observed that much has been done in
+   Maalej et al. [32] conducted a mixed methods study in which they                  terms of fundamental theories around program comprehension,
+observed and interviewed 28 software professionals and surveyed                      especially in the 1980s and 1990s, but these efforts have since given
+1477 others about their comprehension strategies, the nature of the                  way to other efforts, such as integrating the theories into teaching
+knowledge relevant to understanding, and the use of comprehen-                       or comparing them to practitioners’ experiences. Toward the middle
+sion tools. The work is a goldmine of qualitative and quantitative                   and end of the 2010s, a new trend emerged that we predict will
+findings. Some of the key insights are that developers use a recur-                  dominate the 2020s and may revive basic research: the application
+ring, structured comprehension strategy depending on the task                        of psycho-physiological measurement methods in the context of
+context, the starting point for comprehension depends on experi-                     code comprehension.
+ence, hypotheses are indeed generated and tested as described by                        While its realization brings some new challenges, the idea is
+the theoretical models, and that developers sometimes take notes to                  simple to explain: Researchers use eye tracking, functional magnetic
+reflect on their mental model. Further, source code is more trusted                  resonance imaging (fMRI), functional near-infrared spectroscopy
+than documentation, and naming conventions and common archi-                         (fNIRS), electroencephalography (EEG), or combinations of these
+tecture simplify program comprehension. Maalej et al. [32] also                      devices to gain insights into the cognitive processes associated with
+found that dedicated program comprehension tools are not used.                       software engineering tasks (neural correlates) to better understand
+Developers would instead prefer to use basic tools such as compilers                 and support such software engineering tasks [47, 52, 62]. A recent
+and text editors for program comprehension.                                          systematic mapping study in software engineering found that most
+   Minelli et al. [33] suggest that about 70 percent of a developer’s                papers that make use of psycho-physiological data explore program
+time is spent on program comprehension. They quantitatively ex-                      comprehension and debugging strategies [62].
+amined an IDE interaction dataset of 740 development sessions                           Except for eye tracking, which was already used in program
+from 18 developers (mouse and keyboard events together with                          comprehension studies two decades ago (e.g. [13]), the number of
+contextual information). A development activity was defined as a                     studies using, for example, fMRI and fNIRS to study program com-
+sequence of mouse and keyboard sprees. Development activities                        prehension is now also increasing. Some position papers promis-
+were then categorized into understanding, navigation, editing, and                   ingly outline the possibilities of gaining more objective insights
+UI interactions, where understanding consisted of basic understand-                  into program comprehension with neuroimaging devices [15] or
+ing, inspection, and mouse drifting (i.e. mouse-supported reading).                  even an entirely new, neurocognitive perspective on program com-
+The results show that by far the most time is spent on understand-                   prehension [37, 52]. However, this development of the research
+ing (70%), followed at a large distance by UI interactions (14%),                    field is still at a stage where some researchers would agree that the
+editing (5%), and navigation (4%), with the remaining 7–8% being                     achieved reliability of the related research setups is probably the
+Journal, Under Review, 2023                                                                                                        Marvin Wyrich
+
+
+greater achievement to date than initial findings on brain activi-         of each statement in a program”. Similarly, Letovsky and Soloway
+ties in program understanding [52]. Nonetheless, there are initial         [30] state that “the goal of program understanding is to recover
+findings from psycho-physiological research that strengthen and            the intentions behind the code” and Pennington [39] elaborates
+expand our understanding of program comprehension.                         that “comprehension involves the assignment of meaning to a par-
+   Siegmund et al. [51] conducted the first fMRI study in which            ticular program, an accompplishment that requires the extensive
+participants had to understand code while positioned in a scanner.         application of specialized knowledge”.
+Measured blood oxygenation levels can be used to determine brain              Further, Gilmore [18] made a valuable theoretical contribution by
+regions that are active at the time of a code comprehension task.          explicitly distinguishing between the comprehension process and
+To identify the regions that are responsible for comprehension             the state of comprehension: “The former involves the mobilisation
+in isolation, participants also had to perform a contrast task of          of cognitive resources and processes in some particular configu-
+finding syntax errors. The data show increased activity in several         ration, with the goal of constructing some mental representation
+Brodmann areas during code comprehension. The authors identified           of the program code. It is this mental representation of the code
+five of these as relevant for code comprehension (BAs 6, 21, 40, 44,       which is the comprehension state”.
+47), since it is known from previous studies that these areas are             Our definition builds on this foundation. In particular, the recov-
+related to working memory, attention, and language processing.             ery of intentions (Letovsky and Soloway [30]) and meaning (Pen-
+The findings form a basis for the development of a cognitive model         nington [39]) behind the code, and Gilmore’s distinction between
+of bottom-up code comprehension that could enrich the previously           comprehension process and comprehension state are reflected in
+discussed theory [51].                                                     the definition below. Moreover, our definition deliberately uses the
+   Further studies followed that at least partially confirmed these        term source code instead of program to explicitly distinguish code
+initial findings and provided some additional insights [17, 28, 38, 53].   comprehension from comprehension of other objects in the context
+For example, another study by Siegmund et al. [53] showed that             of the diversified research field of program comprehension that
+the presence of semantic beacons in code leads to lower activity in        exists today. Accordingly, we consider the introduction of a new
+the relevant brain regions during comprehension, and Floyd et al.          definition of the construct to be justified by the way in which it
+[17] found that developer expertise affects how accurately a classi-       unifies historically evolved views in a contemporary manner.
+fier can distinguish code and prose review based on brain activity.
+Also, worth mentioning is Peitek et al.’s study [38], in which, for        Definition 3.1 (Source Code Comprehension)
+the first time, fMRI and eye tracking were tested in combination           Source code comprehension describes a person’s intentional act and
+to investigate code comprehension. Such a combination has the              degree of accomplishment in inferring the meaning of source code.
+advantage that fast cognitive subprocesses can be captured due to
+a higher temporal resolution of the eye tracker. This allowed them            Accompanying this definition are some propositions that explain
+to show, for example, that fixations on a beacon leads to semantic         the construct in more detail:
+recall [38]. We refer the interested reader to Vieira and Farias’s map-
+ping study [62], Siegmund et al.’s viewpoint paper [52], and to the
+introduction of the paper by Sharafi et al. [47] for further pointers         (1) The degree of accomplishment represents a spectrum. Collo-
+to recent psycho-physiological studies in software engineering.                   quially, we tend to speak of someone having understood or
+                                                                                  not understood something, thus treating the construct as a
+3     DEFINING AND CONCEPTUALIZING                                                binary variable. Researchers are free to do the same in their
+      SOURCE CODE COMPREHENSION                                                   operationalization of the construct, but in doing so, they
+                                                                                  would miss out on potential in the finer-grained analysis of
+Much has been done to understand how developers approach what                     performance differences of their study participants, and this
+has been termed program or code comprehension right from the                      should be justified argumentatively.
+creation of the construct. We have learned that the construct can be          (2) The degree of accomplishment can be expressed by contrast-
+operationalized in several ways, and that various external factors                ing a developer’s mental model with external reality in terms
+as well as the comprehension strategy itself can influence the com-               of the developer’s goals. Such a comparison suggests intu-
+prehension success measures employed. However, what literature
+                                                                                  itively that one measures how accurately and completely
+has yet to provide us is a definition of what code comprehension
+                                                                                  the mental model reflects reality. However, it should be kept
+can be on a conceptual level. We will therefore define source code                in mind that, depending on the goal of the developer, it is
+comprehension in this section and then design a conceptual model                  not always favorable to aim for a complete mental model
+of code comprehension experiments.                                                of the code. We learned in Section 2 that the formation of
+                                                                                  mental models depends on both the comprehension strat-
+3.1     A Definition of Source Code Comprehension                                 egy and the comprehension task. For example, the task of
+The landscape of prominent definitions and approaches to such                     understanding source code in detail and the task of finding
+definitions for code comprehension is quite limited to the early                  a bug in the code will lead to different mental models of the
+days of the research field. For Shneiderman [49], for example, pro-               code (i.e., what Koenemann and Robertson [27] described
+gram comprehension is “the recognition of the overall function                    as ‘as-needed’ strategy). When designing the concrete way
+of the program, an understanding of intermediate level processes                  to measure the success of code comprehension, this aspect
+including program organization and comprehension of the function                  must be considered.
+Source Code Comprehension: A Contemporary Definition and Conceptual Model for Empirical Investigation                                                Journal, Under Review, 2023
+
+
+   (3) Inferring the meaning of source code can be discussed and                              In our context in which developers need to understand source
+       assessed on at least three dimensions: what the code does                           code, the above Definition 3.1 and associated propositions provide
+       (functionality), what it should do (specification), and what                        a starting point. We now take this one step further and describe
+       the intention of the code author was (context). These aspects                       on a conceptual level what code comprehension can mean in the
+       can be found in similar forms in various program compre-                            context of empirical studies. Thereby, we restrict ourselves to em-
+       hension models and are surveyed to varying degrees in con-                          pirical studies with an experimental character3 to ensure a certain
+       temporary code comprehension studies. Again, there is no                            comparability of the study designs. And we remain at a level of
+       single approach here: The concrete task design depends on                           abstraction that allows us to map the majority of existing code
+       the reasoning of the researcher regarding the goal scenario                         comprehension experiments to the proposed conceptual model.
+       of the developer.                                                                      Our conceptual model for the design of code comprehension
+   (4) There are a variety of ways to observe and measure source                           experiments is depicted in Figure 2. The model consists of three
+       code comprehension. The definition applies to behavioral                            horizontal lanes: mental model, mental state, and experimental
+       and neuro-physiological correlates, as well as both assess-                         variables. These play a role at two points in time 𝑡 and 𝑡 + 𝑥 with
+       ments in the form of administered comprehension tests and                           𝑥 > 0.
+       self-assessments of the subject.
+                                                                                           The Lanes of the Model. Let us start with the top two lanes
+    Source code comprehension is to be distinguished from source                           and their interaction. At each point in time, a developer is in a
+code comprehensibility. Code comprehension is the subject of the                           mental state 𝑆, which is backed up by a mental model 𝑀 with a
+definition and describes the act and degree of accomplishment in                           (partial) representation of the source code to be understood. The
+understanding code. Code comprehensibility, on the other hand, de-                         beginning of an experiment may represent time 𝑡; at this time, a
+scribes a quality attribute of the code. Empirical studies that intend                     developer’s mental model of a particular code snippet (depending
+to provide insights into the influence of a treatment on the com-                          on prior knowledge of the code) may not be too extensive. Later
+prehensibility of code usually first measure code comprehension,                           in the experiment (𝑡 + 𝑥), after completing a code comprehension
+i.e., how well a participant understood source code under certain                          task, the developer is in a new mental state and accordingly has a
+conditions. The data collected can then be used to draw conclu-                            changed mental model of the code.
+sions about the comprehensibility of the code. Further, we consider                           A lot can happen between these two points in time. Developers
+comprehensibility and understandability as synonyms, i.e., choosing                        generate hypotheses about how the code works, reject or confirm
+one over the other is “purely a matter of linguistic variation” [26].                      them, and understand the code better over time. This process gener-
+    A related construct is code readability, a property of code that                       ates any number of mental states and changes in the mental model
+indicates the ease with which the code can be read. Influences on                          between the two explicitly depicted mental states. The two mental
+readability can be, for example, the choice of simple variable names                       states 𝑆𝑡 and 𝑆𝑡 +𝑥 are particularly crucial for designing code com-
+or familiar control structures. However, readable code does not                            prehension experiments because they represent the initial state and
+necessarily have to be understood by the reader. In both code and                          the state in which a researcher tries to access the internal mental
+text comprehension, there is evidence that comprehensibility and                           model via externally observable proxies to infer how well a devel-
+readability do not necessarily correlate [9, 56].                                          oper has understood the source code presented (this may happen
+                                                                                           several times during the experiment).
+3.2      A Conceptual Model for Code                                                          The third lane, experimental variables, includes all experimental
+         Comprehension Experiments                                                         design decisions (e.g. the comprehension task), contextual factors
+                                                                                           (e.g. time pressure, cognitive biases), individual characteristics of the
+              The goal was always the same: to develop models and tools to
+              help developers with program understanding during program                    developer (e.g. programming experience), and other variables that
+              maintenance. However, few authors targeted the more                          can influence the mental state of a developer. In Figure 2 we see that
+              fundamental question: “what is program understanding?”                       the mental state 𝑆𝑡 +𝑥 is influenced by both the previous mental state
+                                                                                           𝑆𝑡 and a set of experimental variables 𝑉 . Part of the experimental
+                                                          Harth and Dugerdil [21]          variables, namely the statistical tests and comprehension measures,
+   There is a sentiment in Harth and Dugerdil’s quote that we                              operationalize in which way the mental model 𝑀𝑡 +𝑥 is accessed at
+can relate to a certain extent. Especially in contemporary code                            the time 𝑡 + 𝑥.
+comprehension literature, there are hardly any explanations of                                The term ‘mental model’ is used in this context as it was intro-
+what the authors mean by code understanding. To be fair, though,                           duced in the 1990s in the context of program comprehension strate-
+the question of what ‘understanding’ means conceptually is not a                           gies, i.e. as “a maintainer’s mental representation of the program
+simple one. Often, the answer also depends on the specific context,                        to be understood” [59] and “an internal, working representation
+for example, whether it is a question of implementing an AI with the                       of the software under consideration” [63]. According to a recent
+capability of understanding user needs or whether it is a question
+                                                                                           3We are aware that the term experiment is used differently [58] or even incorrectly [3]
+of explaining neuroscientifically how information processing takes
+                                                                                           in software engineering research, and that there are different types of experiments. The
+place at different levels of the nervous system2 .                                         experiments we focus on here are closest to what Stol and Fitzgerald classify as ‘Labo-
+                                                                                           raty Experiment’, the purpose of which is “to study with a high degree of precision
+2 Kevin Mitchell, in a blog post about whether an AI could cook meth, conveys the poten-   relationships between variables, or comparisons between techniques; may allow estab-
+tial diversity of views well: http://www.wiringthebrain.com/2019/02/understanding-         lishment of causality between variables” [58]. These can then be further subdivided
+understanding-could-ai.html                                                                into, for example, randomized controlled experiments and quasi experiments.
+Journal, Under Review, 2023                                                                                                      Marvin Wyrich
+
+
+                              t                      t+x                                         t                            t+x
+
+mental model              Mt                        Mt+x                 mental model          Mt                            Mt+x
+
+
+                                      (a)
+mental state              St                         St+x                mental state           St                            St+x
+                                                                                                             (d)
+
+                                      (b)                        (c)
+ experimental
+ variables                    V                        V                 experimental
+                                                                         variables              V              V                V
+
+Figure 2: Conceptual model for the design of code compre-                Figure 3: Conceptual model for the design of code compre-
+hension experiments in which the focus is on measuring                   hension experiments in which the focus is on observing the
+a participant’s eventual comprehension of a code snippet                 cognitive processes of comprehension (d).
+based on their formed mental model (c).
+
+                                                                         model” [59]. There is research on this, as we saw in Section 2,
+meta-study on mental representations during program comprehen-           but it is far from sufficient to adequately characterize the processes
+sion, this description captures the essence on which the community       and information structures involved in code comprehension.
+could agree [22]. At the same time, it should be mentioned that it           Link (b) is about the (assumed) influence of experimental vari-
+would be difficult to find controversies at present anyway, since        ables on the code comprehension process and accomplishment.
+research in the field of mental representations during program           Any experiment that investigates the influence of a variable on a
+comprehension has unfortunately declined considerably [6, 22].           participant’s eventual code comprehension is interested in this link
+   The meaning of the term ‘mental state’ is quite diverse due           (b). It is important to understand that each such experiment creates
+to different streams in the philosophy of mind. For example, for         its own implicit or explicit causal model. While link (b) is drawn as
+followers of physicalism mental states are equal to brain states         a single line with an arrowhead at the level of abstraction of our
+(followers of this theory are in the majority today), for followers      model (Figure 2), one would see at a finer level of detail that it is
+of dualism theory mental and physical are two different things [24,      actually a complex network of interdependent variables. Examples
+25]. The topic is as exciting as it is complex because between and       of code comprehension studies in which such a causal model has
+alongside these positions there are many variants, all of which          been made explicit can be found in [64, 67]. Moreover, please note
+sound plausible at first, but over time all of which have at least       that link (b) can be directed in the opposite direction, from a mental
+been confronted with thought experiments, and from some people’s         state to a later relevant experimental variable, that is, when a study
+point of view also refuted. Further elaboration is beyond the scope      intends to investigate the consequences of code comprehension on
+of this paper, so we handle the matter pragmatically as follows.         a different construct (e.g., affective states).
+Understanding is directly related to the mind, and a mental state can        Link (c) deals with capturing the mental model, relevant when
+be considered as the mind of a person at a particular time. Therefore,   measuring a person’s code snippet understanding. In most experi-
+we would like to reflect this connection in the conceptual model, in     ments, this happens once per experimental task, for example when
+that mental states represent the bridge between the environment          comprehension questions are asked to the participant after under-
+(experimental variables) and the mental model a developer has            standing a code snippet.
+about the code. However, the conceptual model allows for different
+views on the nature of mental states, so that in the first place, we     A Variant With Focus on Observation. Nowadays, we find more
+only have to agree on the idea that at any point in time such a state    and more empirical code comprehension studies in which the focus
+exists, which will transition into another state (similar to a state     is on the investigation of link (a), the cognitive processes involved
+machine). This perspective allows us to model a progression in the       in code comprehension themselves, for example in the investiga-
+comprehension process of a developer.                                    tion of activated brain regions during code comprehension tasks.
+                                                                         In some of these studies, the assessment of the mental model as
+The Links of Interest. With this, we have a rough understanding          depicted in link (c) of Figure 2 becomes secondary to irrelevant.
+of the elements of the conceptual model for the design of code           Figure 3 shows how the conceptual model can account for such stud-
+comprehension experiments. We will now go into more detail on            ies. The operationalization of code comprehension is achieved by
+the three depicted links (a), (b), and (c) in Figure 2.                  experimental variables capable of observing the transition between
+   Link (a) represents the transition from one mental state to an-       mental states. Link (d) depicts such an observation. In Section 4
+other and thus constitutes the cognitive model, i.e., “the cognitive     below, we illustrate in concrete terms what this can look like in a
+processes and information structures used to form the mental             primary study on code comprehension.
+Source Code Comprehension: A Contemporary Definition and Conceptual Model for Empirical Investigation                             Journal, Under Review, 2023
+
+
+                         t=0                            t = 600s                                           t=0                           t=30s
+
+mental model             M0                               M600                        mental model         M0                             M30
+
+
+mental state             S0                                S600                       mental state         S0                             S30
+
+                     intelligence                                                                        task
+experimental         personality                        correctness                   experimental       beacons      brain activation
+variables            experience                                                       variables          layout
+
+
+Figure 4: The comprehension part of Wagner and Wyrich                                Figure 5: The comprehension part of Siegmund et al. [53]
+[64] mapped to the conceptual model for the design of code                           mapped to the conceptual model for the design of code com-
+comprehension experiments.                                                           prehension experiments.
+
+
+                                                                                     the cognitive comprehension process itself, that is, the transition
+4    APPLICATION TO CASE EXAMPLES                                                    between mental states.
+We chose two representative code comprehension experiments for                          This is where our second case example differs. Siegmund et al.
+which we argue, based on our presented definition and conceptual                     [53] investigate how the interaction of task (bottom-up compre-
+model, that these experiments measure the same construct. We                         hension or comprehension based on semantic cues), code layout
+thus take the role of a researcher who conducts a secondary study                    (pretty-printed or disrupted), and beacons (being present or not)
+and has to decide whether certain studies are comparable (we also                    affects neural efficiency and activated brain regions during code
+stress this aspect because the authors of the selected studies may                   comprehension. The authors measure how blood oxygen levels
+have their own, non-communicated, but divergent view of what                         change while the study participants, lying in an fMRI scanner, have
+they mean by code comprehension).                                                    to understand code snippets for different input values and judge
+    The first study is by Wagner and Wyrich [64] and examines the                    whether the snippet correctly implements the same functionality
+influence of intelligence facets, personality traits, and programming                as snippets seen during a training session. Participants have 30
+experience on a developer’s accomplishment in comprehending                          seconds per snippet to do so.
+source code. The comprehension of the study participants is mea-                        Siegmund et al. [53] use the term program comprehension and
+sured by the correctness of the answers to comprehension questions                   implicitly define the construct under study by distinguishing the
+about code snippets. Here, two dimensions of comprehension are                       bottom-up comprehension strategy and comprehension based on
+tested: did participants understand what the code is supposed to do                  semantic cues (cf. Section 2). Figure 5 maps the comprehension part
+(specification), and what does the code actually do for specific input               of their study to our conceptual model. Of interest to the authors
+values (functionality). Each participant views two code snippets,                    is only the cognitive comprehension process, represented as the
+and has 10 minutes each to complete the comprehension questions.                     transition between mental states at the times of displaying and
+    The authors themselves call the construct of interest either code                hiding a code snippet after 30 seconds. For followers of physicalism,
+comprehension or code comprehension performance. They define                         mental states would correspond to brain states in this study.
+it firstly in the background chapter via the workaround of using
+Boehm et al. [8]’s definition of source code understandability (“code                4.1     Implications
+possesses the characteristic of understandability to the extent that                 We see from the two case examples that the conceptual model cov-
+its purpose is clear to the inspector”), and secondly via their opera-               ers several of the main research branches of code comprehension
+tionalization in the methodology section of their paper. We argue                    research: the more classical behavioral research on the influences
+that our proposed definition of source code comprehension applies                    on code comprehension (link b and c) and the neuroscientific in-
+to the construct that Wagner and Wyrich investigated.                                vestigation of code comprehension (link a and d). Note that both
+    Figure 4 maps their experiment [64] to our conceptual model.                     aspects can also occur within a single study, which would result in a
+The time points of interest are t=0, at which time the code compre-                  model instance comparable to the merging of Figure 4 and Figure 5.
+hension task for a code snippet begins, and t=600s, when the time                    Additionally, meta-scientific discourse on the operationalization of
+limit for processing the comprehension task of a snippet is reached.                 code comprehension can be anchored within the model (link c and
+The authors are interested in how intelligence, personality, and                     d, respectively).
+experience influence the mental state and thus the mental model
+at the end of the task. At this point, they evaluate the correctness                 4.1.1 Why is our work useful to authors of primary studies? As a
+of the given answers. The authors are not interested in examining                    researcher conducting primary research, it is possible to anchor
+Journal, Under Review, 2023                                                                                                     Marvin Wyrich
+
+
+the study design in the conceptual model. This allows for defining       comprehension aspect, and the outward conduct of a person is not
+the construct under study and justifying design decisions, such          depicted in this process. Extensions and modifications of the model
+as the operationalization of the construct. Meaningful discussion        are conceivable and desired. We motivated in the introduction that
+of construct validity threats is only possible at all with such a        there is a need for additional explicitly formulated perspectives on
+definition [54].                                                         what code comprehension can be.
+    We see that in the threats to validity sections of code comprehen-      Second, our definition of code comprehension is one that fo-
+sion experiments, uncertainty about the operationalization of the        cuses on humans. An emerging research theme within the code
+construct is sometimes expressed quite openly [66]. While we delib-      comprehension research community involves the exploration of
+erately do not recommend in this paper how code comprehension            large language models and AI agents that can explain code to the
+should be operationalized, the definition and conceptual model at        developer and thus at least mimic code comprehension. However,
+least help to clarify what code comprehension can be about. Further,     a discussion of when a machine understands source code is left for
+if it becomes apparent during the design process of a study that the     future work.
+design cannot be anchored in the conceptual model presented, this
+may indicate that one’s study may be only comparable to a limited
+extent with studies that could be anchored in this concrete model.
+
+4.1.2 Why is our work useful to authors of secondary studies? Re-        5   CONCLUSION
+searchers conducting secondary research usually need to be able          In the introduction, we presented the fictional story of Favian, a
+to decide whether a particular primary research paper should be          visitor to an art museum who unexpectedly encountered source
+included in their dataset. The ability to map a primary study to the     code displayed on a canvas hanging on the gallery wall. Despite
+conceptual model can become an explicit inclusion criterion. This        lacking any prior knowledge of code, Favian eventually arrived
+allows inclusion criteria to be evaluated more formally than has         at a point where he claimed to “understand” what he saw after
+been handled to date. For example, Wyrich et al. [66] note in their      contemplating it for some time. If Favian did indeed try to under-
+systematic mapping study of code comprehension experiments that          stand the meaning of the source code depicted, then his approach
+they had to invest a great deal of time and effort in being able to      and accomplishment in code comprehension is consistent with our
+assess whether a primary study measures code comprehension. As           definition of source code comprehension. We could then use the
+a consequence, they call on the community to work on a definition        proposed conceptual model to check how well Favian actually un-
+of the construct so that researchers of primary studies can use one      derstood the code. Alternatively, if Favian interpreted the artwork
+in their papers. We respond to their call with our work.                 and the artist’s intentions instead, it would represent a departure
+                                                                         from our definition, thereby explaining how someone without pro-
+4.1.3 Why is our work useful for the meta-scientific discourse? Our
+                                                                         gramming experience could arrive at the casual declaration of “Now
+work encourages discussions about whether the prevalent diversity
+                                                                         I understand!” upon observing source code.
+in the design of tasks and measures in code comprehension studies
+                                                                            Defining related constructs is crucial for distinguishing them
+may be in part because different constructs are measured at the
+                                                                         effectively. That is why we introduced a definition for source code
+conceptual level. Specifically, one might begin to distinguish such
+                                                                         comprehension and a conceptual model for empirical investiga-
+measures that primarily serve as proxies for code comprehensibility,
+                                                                         tion based on the surveyed code comprehension theory of the
+rather than being able to measure a person’s understanding of code
+                                                                         past decades. Both researchers and the meta-scientific discourse
+or a person’s comprehension process. For example, a study that
+                                                                         can benefit from our definition and conceptual model, as we have
+measures the time to find a bug, and merely uses the measured time
+                                                                         demonstrated by providing and discussing concrete examples.
+as a correlate with another construct, does neither consider a devel-
+                                                                            Our vision for the way forward is as follows. The individual
+oper’s resulting mental model of the code nor the transition between
+                                                                         links in our conceptual model for the design of code comprehen-
+mental states. It is therefore likely that the mere operationalization
+                                                                         sion experiments represent their own established research streams
+via time can serve as a proxy for code comprehensibility, but cannot
+                                                                         that still require more theory. For example, the community should
+be anchored in the conceptual model presented.
+                                                                         further investigate how the cognitive comprehension process oc-
+   Apart from motivating such discussions, this work contributes
+                                                                         curs during the transition between mental states. Additionally, an
+in a broader sense to the maturation of the research field. After
+                                                                         evidence-based theory is needed to understand how a complex net-
+devoting nearly fifty years to studying code comprehension, we
+                                                                         work of experimental variables influences the formation of mental
+have arrived at a definition for the construct of interest.
+                                                                         models. While both of these research streams have been conducted
+                                                                         in the past and are currently gaining momentum again, only now
+4.2     Limitations                                                      can they be integrated into a cohesive framework at the level of
+The proposed conceptual model is limited in two aspects. First, for      our model.
+the conceptual model presented in this paper, we focused on ex-             Finally, construct validity does not end with face and content
+periments, although definition 3.1 applies regardless of the chosen      validity, and many code comprehension studies do not require the
+study methodology. Observing participants in a more qualitative          development of their own test instruments (especially in corre-
+way, for example in an ethnographic study of code comprehen-             lational studies without treatments). Psychometrically validated
+sion strategies, can only be anchored in the conceptual model to a       tests for code comprehension, built upon the introduced definition,
+limited extent, since the model is mostly reduced to the cognitive       would be useful in such cases.
+Source Code Comprehension: A Contemporary Definition and Conceptual Model for Empirical Investigation                                               Journal, Under Review, 2023
+
+
+ACKNOWLEDGMENTS                                                                            [22] Ava Heinonen, Bettina Lehtelä, Arto Hellas, and Fabian Fagerholm. 2022. Syn-
+                                                                                                thesizing Research on Programmers’ Mental Models of Programs, Tasks and
+Many years of lively exchange with friends and colleagues from the                              Concepts–a Systematic Literature Review. arXiv preprint arXiv:2212.07763 (2022).
+research community led in the end to the clarity that was necessary                        [23] Errol R. Iselin. 1988. Conditional statements, looping constructs, and program
+                                                                                                comprehension: an experimental study. International Journal of Man-Machine
+to write this paper. I would especially like to thank Stefan Wagner,                            Studies 28, 1 (1988), 45–66. https://doi.org/10.1016/S0020-7373(88)80052-X
+Sven Apel, and Lena Jäger for their valuable input. Wyrich’s work                          [24] William Jaworski. 2011. Philosophy of mind: A comprehensive introduction. John
+is supported by the European Union as part of the ERC Advanced                                  Wiley & Sons.
+                                                                                           [25] Amy Kind. 2020. Philosophy of Mind: The Basics. Routledge.
+Grant 101052182.                                                                           [26] Walter Kintsch. 1998. Comprehension: A paradigm for cognition. Cambridge
+                                                                                                University Press.
+                                                                                           [27] Jürgen Koenemann and Scott P Robertson. 1991. Expert problem solving strategies
+                                                                                                for program comprehension. In Proceedings of the SIGCHI Conference on Human
+REFERENCES                                                                                      Factors in Computing Systems. 125–130.
+ [1] Beth Adelson. 1981. Problem solving and the development of abstract categories        [28] SeolHwa Lee, Andrew Matteson, Danial Hooshyar, SongHyun Kim, JaeBum Jung,
+     in programming languages. Memory & cognition 9, 4 (1981), 422–433.                         GiChun Nam, and HeuiSeok Lim. 2016. Comparing programming language
+ [2] Shulamyt Ajami, Yonatan Woodbridge, and Dror G. Feitelson. 2018. Syntax,                   comprehension between novice and expert programmers using eeg analysis.
+     predicates, idioms - what really affects code complexity? Empirical Software               In 2016 IEEE 16th international conference on bioinformatics and bioengineering
+     Engineering 24, 1 (2018), 287–328. https://doi.org/10.1007/s10664-018-9628-3               (BIBE). IEEE, 350–355.
+ [3] Claudia Ayala, Burak Turhan, Xavier Franch, and Natalia Juristo. 2022. Use and        [29] Stanley Letovsky. 1987. Cognitive processes in program comprehension. Journal
+     Misuse of the Term “Experiment” in Mining Software Repositories Research.                  of Systems and software 7, 4 (1987), 325–339.
+     IEEE Transactions on Software Engineering 48, 11 (2022), 4229–4248. https:            [30] Stanley Letovsky and Elliot Soloway. 1986. Delocalized Plans and Program
+     //doi.org/10.1109/TSE.2021.3113558                                                         Comprehension. IEEE Software 3, 3 (1986), 41–49. https://doi.org/10.1109/MS.
+ [4] Victor R. Basili and Harlan D. Mills. 1982. Understanding and Documenting                  1986.233414
+     Programs. IEEE Transactions on Software Engineering SE-8, 3 (1982), 270–283.          [31] David C Littman, Jeannine Pinto, Stanley Letovsky, and Elliot Soloway. 1987.
+     https://doi.org/10.1109/TSE.1982.235255                                                    Mental models and software maintenance. Journal of Systems and Software 7, 4
+ [5] Javier Belmonte, Philippe Dugerdil, and Ashish Agrawal. 2014. A three-layer                (1987), 341–355.
+     model of source code comprehension. In Proceedings of the 7th India Software          [32] Walid Maalej, Rebecca Tiarks, Tobias Roehm, and Rainer Koschke. 2014. On the
+     Engineering Conference. 1–10.                                                              Comprehension of Program Comprehension. 23, 4, Article 31 (2014), 37 pages.
+ [6] Leah Bidlake, Eric Aubanel, and Daniel Voyer. 2020. Systematic literature review           https://doi.org/10.1145/2622669
+     of empirical studies on mental representations of programs. Journal of Systems        [33] Roberto Minelli, Andrea Mocci, and Michele Lanza. 2015. I know what you did
+     and Software 165 (2020), 110565. https://doi.org/10.1016/j.jss.2020.110565                 last summer-an investigation of how developers spend their time. In 2015 IEEE
+ [7] Dave Binkley, Dawn Lawrie, Steve Maex, and Christopher Morrell. 2009. Identifier           23rd International Conference on Program Comprehension. IEEE, IEEE, 25–35.
+     length and limited programmer memory. Science of Computer Programming 74, 7           [34] Marvin Muñoz Barón, Marvin Wyrich, Daniel Graziotin, and Stefan Wagner. 2023.
+     (2009), 430–445.                                                                           Evidence Profiles for Validity Threats in Program Comprehension Experiments.
+ [8] Barry W. Boehm, John R. Brown, and Mlity Lipow. 1976. Quantitative Evaluation              In 2023 IEEE/ACM 45th International Conference on Software Engineering (ICSE).
+     of Software Quality. In Proceedings of the 2nd International Conference on Software        IEEE, IEEE.
+     Engineering (San Francisco, California, USA) (ICSE ’76). IEEE Computer Society        [35] Milan Nosál’ and Jaroslav Porubän. 2015. Program comprehension with four-
+     Press, Los Alamitos, CA, USA, 592–605.                                                     layered mental model. In 2015 13th International Conference on Engineering of
+ [9] Jürgen Börstler and Barbara Paech. 2016. The role of method chains and comments            Modern Electric Systems (EMES). IEEE, 1–4. https://doi.org/10.1109/EMES.2015.
+     in software readability and comprehension—An experiment. IEEE Transactions                 7158420
+     on Software Engineering 42, 9 (2016), 886–898.                                        [36] Michael P. O’Brien, Jim Buckley, and Teresa M. Shaft. 2004. Expectation-based,
+[10] Ruven Brooks. 1978. Using a behavioral theory of program comprehension                     inference-based, and bottom-up software comprehension. Journal of Software
+     in software engineering. In Proceedings of the 3rd international conference on             Maintenance and Evolution: Research and Practice 16, 6 (2004), 427–447. https:
+     Software engineering. 196–201.                                                             //doi.org/10.1002/smr.307
+[11] Ruven Brooks. 1983. Towards a theory of the comprehension of computer                 [37] Norman Peitek. 2018. A neuro-cognitive perspective of program comprehen-
+     programs. International journal of man-machine studies 18, 6 (1983), 543–554.              sion. In Proceedings of the 40th International Conference on Software Engineering:
+[12] Curtis Cook, William Bregar, and David Foote. 1984. A preliminary investiga-               Companion Proceeedings. 496–499.
+     tion of the use of the cloze procedure as a measure of program understanding.         [38] Norman Peitek, Janet Siegmund, Chris Parnin, Sven Apel, Johannes C Hofmeister,
+     Information Processing & Management 20, 1-2 (1984), 199–208.                               and André Brechmann. 2018. Simultaneous measurement of program comprehen-
+[13] Martha E Crosby, Jean Scholtz, and Susan Wiedenbeck. 2002. The Roles Beacons               sion with fmri and eye tracking: A case study. In Proceedings of the 12th ACM/IEEE
+     Play in Comprehension for Novice and Expert Programmers.. In PPIG. 5.                      International Symposium on Empirical Software Engineering and Measurement.
+[14] Christopher Exton. 2002. Constructivism and program comprehension strategies.              1–10.
+     In Proceedings 10th International Workshop on Program Comprehension. IEEE,            [39] Nancy Pennington. 1987. Stimulus structures and mental representations in
+     281–284.                                                                                   expert comprehension of computer programs. Cognitive Psychology 19, 3 (1987),
+[15] Sarah Fakhoury. 2018. Moving towards Objective Measures of Program Compre-                 295–341.
+     hension. In Proceedings of the 2018 26th ACM Joint Meeting on European Software       [40] Václav Rajlich and George S Cowan. 1997. Towards standard for experiments in
+     Engineering Conference and Symposium on the Foundations of Software Engineering            program comprehension. In Proceedings Fifth International Workshop on Program
+     (Lake Buena Vista, FL, USA) (ESEC/FSE 2018). Association for Computing Ma-                 Comprehension. IWPC’97. IEEE, IEEE, 160–161.
+     chinery, New York, NY, USA, 936–939. https://doi.org/10.1145/3236024.3275426          [41] Václav Rajlich and Norman Wilde. 2002. The role of concepts in program compre-
+[16] Sarah Fakhoury, Devjeet Roy, Yuzhan Ma, Venera Arnaoudova, and Olusola                     hension. In Proceedings 10th International Workshop on Program Comprehension.
+     Adesope. 2020. Measuring the impact of lexical and structural inconsistencies on           IEEE, 271–278.
+     developers’ cognitive load during bug localization. Empirical Software Engineering    [42] Paul Ralph and Ewan Tempero. 2018. Construct Validity in Software Engineering
+     25, 3 (2020), 2140–2178. https://doi.org/10.1007/s10664-019-09751-4                        Research and Software Metrics. In Proceedings of the 22nd International Conference
+[17] Benjamin Floyd, Tyler Santander, and Westley Weimer. 2017. Decoding the                    on Evaluation and Assessment in Software Engineering 2018 (Christchurch, New
+     representation of code in the brain: An fMRI study of code review and expertise.           Zealand) (EASE’18). Association for Computing Machinery, New York, NY, USA,
+     In 2017 IEEE/ACM 39th International Conference on Software Engineering (ICSE).             13–23. https://doi.org/10.1145/3210459.3210461
+     IEEE, 175–186.                                                                        [43] Robert S Rist et al. 1986. Plans in programming: definition, demonstration, and
+[18] David J. Gilmore. 1991. Models of debugging. Acta Psychologica 78, 1 (1991),               development. In Empirical studies of programmers. 28–47.
+     151–172. https://doi.org/10.1016/0001-6918(91)90009-O                                 [44] Beth A Rogowsky, Barbara M Calhoun, and Paula Tallal. 2016. Does modality
+[19] Yann-Gaël Guéhéneuc. 2009. A theory of program comprehension: Joining vision               matter? The effects of reading, listening, and dual modality on comprehension.
+     science and program comprehension. International Journal of Software Science               Sage Open 6, 3 (2016), 2158244016669550.
+     and Computational Intelligence (IJSSCI) 1, 2 (2009), 54–72.                           [45] Carsten Schulte. 2008. Block Model: An Educational Model of Program Com-
+[20] William E. Hall and Stuart H. Zweben. 1986. The cloze procedure and software               prehension as a Tool for a Scholarly Approach to Teaching. In Proceedings of
+     comprehensibility measurement. IEEE Transactions on Software Engineering                   the Fourth International Workshop on Computing Education Research (Sydney,
+     SE-12, 5 (1986), 608–623. https://doi.org/10.1109/TSE.1986.6312957                         Australia) (ICER ’08). Association for Computing Machinery, New York, NY, USA,
+[21] Eric Harth and Philippe Dugerdil. 2017. Program Understanding Models: An                   149–160. https://doi.org/10.1145/1404520.1404535
+     Historical Overview and a Classification.. In ICSOFT. 402–413.
+Journal, Under Review, 2023                                                                                                                                      Marvin Wyrich
+
+
+[46] Carsten Schulte, Tony Clear, Ahmad Taherkhani, Teresa Busjahn, and James H.            [69] Martin K-C Yeh, Yu Yan, Yanyan Zhuang, and Lois Anne DeLong. 2021. Identifying
+     Paterson. 2010. An Introduction to Program Comprehension for Computer                       program confusion using electroencephalogram measurements. Behaviour &
+     Science Educators. In Proceedings of the 2010 ITiCSE Working Group Reports                  Information Technology 0, 0 (2021), 1–18. https://doi.org/10.1080/0144929X.2021.
+     (Ankara, Turkey) (ITiCSE-WGR ’10). Association for Computing Machinery, New                 1933182
+     York, NY, USA, 65–86. https://doi.org/10.1145/1971681.1971687
+[47] Zohreh Sharafi, Yu Huang, Kevin Leach, and Westley Weimer. 2021. Toward an
+     Objective Measure of Developers’ Cognitive Activities. ACM Trans. Softw. Eng.
+     Methodol. 30, 3, Article 30 (2021), 40 pages. https://doi.org/10.1145/3434643
+[48] Amal Shargabi, Syed Ahmad Aljunid, Muthukkaruppanan Annamalai, Shuhaida
+     Mohamed Shuhidan, and Abdullah Mohd Zin. 2015. Program comprehension
+     levels of abstraction for novices. In 2015 International Conference on Computer,
+     Communications, and Control Technology (I4CT). 211–215. https://doi.org/10.
+     1109/I4CT.2015.7219568
+[49] Ben Shneiderman. 1977. Measuring computer program quality and comprehen-
+     sion. International Journal of Man-Machine Studies 9, 4 (1977), 465–478.
+[50] Ben Shneiderman and Richard Mayer. 1979. Syntactic/semantic interactions in
+     programmer behavior: A model and experimental results. International Journal
+     of Computer & Information Sciences 8, 3 (1979), 219–238.
+[51] Janet Siegmund, Christian Kästner, Sven Apel, Chris Parnin, Anja Bethmann,
+     Thomas Leich, Gunter Saake, and André Brechmann. 2014. Understanding
+     understanding source code with functional magnetic resonance imaging. In
+     Proceedings of the 36th international conference on software engineering. 378–389.
+[52] Janet Siegmund, Norman Peitek, André Brechmann, Chris Parnin, and Sven Apel.
+     2020. Studying programming in the neuroage: just a crazy idea? Commun. ACM
+     63, 6 (2020), 30–34.
+[53] Janet Siegmund, Norman Peitek, Chris Parnin, Sven Apel, Johannes Hofmeister,
+     Christian Kästner, Andrew Begel, Anja Bethmann, and André Brechmann. 2017.
+     Measuring Neural Efficiency of Program Comprehension. In Proceedings of the
+     2017 11th Joint Meeting on Foundations of Software Engineering (Paderborn, Ger-
+     many) (ESEC/FSE 2017). Association for Computing Machinery, New York, NY,
+     USA, 140–150. https://doi.org/10.1145/3106237.3106268
+[54] Dag I.K. Sjøberg and Gunnar R. Bergersen. 2022. Construct Validity in Software
+     Engineering. IEEE Transactions on Software Engineering 49, 3 (2022), 1374–1396.
+     https://doi.org/10.1109/TSE.2022.3176725
+[55] Lisa F Smith, Jeffrey K Smith, and Pablo PL Tinio. 2017. Time spent viewing art
+     and reading labels. Psychology of Aesthetics, Creativity, and the Arts 11, 1 (2017),
+     77–85.
+[56] Malcolm Smith and Richard Taffler. 1992. Readability and understandability:
+     Different measures of the textual complexity of accounting narrative. Accounting,
+     Auditing & Accountability Journal 5, 4 (1992), 0–0.
+[57] Elliot Soloway and Kate Ehrlich. 1984. Empirical studies of programming knowl-
+     edge. IEEE Transactions on software engineering 5 (1984), 595–609.
+[58] Klaas-Jan Stol and Brian Fitzgerald. 2018. The ABC of Software Engineering
+     Research. ACM Trans. Softw. Eng. Methodol. 27, 3, Article 11 (2018), 51 pages.
+     https://doi.org/10.1145/3241743
+[59] M.-A.D Storey, F.D Fracchia, and H.A Müller. 1999. Cognitive design elements to
+     support the construction of a mental model during software exploration. Journal
+     of Systems and Software 44, 3 (1999), 171–185. https://doi.org/10.1016/S0164-
+     1212(98)10055-9
+[60] Arie van Deursen, Jean-Marie Favre, Rainer Koschke, and Juergen Rilling. 2003.
+     Experiences in teaching software evolution and program comprehension. In
+     11th IEEE International Workshop on Program Comprehension. 283–284. https:
+     //doi.org/10.1109/WPC.2003.1199214
+[61] Teun Adrianus Van Dijk and Walter Kintsch. 1983. Strategies of discourse com-
+     prehension. (1983).
+[62] Roger Vieira and Kleinner Farias. 2021. On the Usage of Psychophysiological
+     Data in Software Engineering: An Extended Systematic Mapping Study. arXiv
+     preprint arXiv:2105.14059 (2021).
+[63] Anneliese Von Mayrhauser and A. Marie Vans. 1995. Program comprehension
+     during software maintenance and evolution. Computer 28, 8 (1995), 44–55. https:
+     //doi.org/10.1109/2.402076
+[64] Stefan Wagner and Marvin Wyrich. 2021. Code Comprehension Confounders: A
+     Study of Intelligence and Personality. IEEE Transactions on Software Engineering
+     48, 12 (2021), 4789–4801.
+[65] Susan Wiedenbeck. 1986. Beacons in computer program comprehension. Inter-
+     national Journal of Man-Machine Studies 25, 6 (1986), 697–709.
+[66] Marvin Wyrich, Justus Bogner, and Stefan Wagner. 2023. 40 Years of Designing
+     Code Comprehension Experiments: A Systematic Mapping Study. ACM Comput.
+     Surv. (2023). https://doi.org/10.1145/3626522 Just Accepted.
+[67] Marvin Wyrich, Lasse Merz, and Daniel Graziotin. 2022. Anchoring Code Under-
+     standability Evaluations through Task Descriptions. In Proceedings of the 30th
+     IEEE/ACM International Conference on Program Comprehension (Virtual Event)
+     (ICPC ’22). Association for Computing Machinery, New York, NY, USA, 133–140.
+     https://doi.org/10.1145/3524610.3527904
+[68] Xin Xia, Lingfeng Bao, David Lo, Zhenchang Xing, Ahmed E. Hassan, and Shan-
+     ping Li. 2018. Measuring Program Comprehension: A Large-Scale Field Study
+     with Professionals. IEEE Transactions on Software Engineering 44, 10 (2018),
+     951–976. https://doi.org/10.1109/TSE.2017.2734091
+

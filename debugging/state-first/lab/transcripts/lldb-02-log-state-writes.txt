@@ -1,0 +1,67 @@
+(lldb) target create "./gateway"
+Current executable set to '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64).
+(lldb) command source -s 0 'lldb/02-log-state-writes.lldb'
+Executing commands in '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/lldb/02-log-state-writes.lldb'.
+(lldb) # Probe 2 (LOG + TRAP): log every write to state_ and who made it, without stopping.
+(lldb) settings set auto-confirm true
+(lldb) command script import lldb/probes.py
+(lldb) breakpoint set -n Gateway::run
+Breakpoint 1: where = gateway`Gateway::run() + 40 at gateway.cpp:144:9, address = 0x00000001000005b8
+(lldb) breakpoint set -n Gateway::summary
+Breakpoint 2: where = gateway`Gateway::summary() const + 24 at gateway.cpp:154:22, address = 0x0000000100000688
+(lldb) run --max 400
+Process 82954 launched: '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64)
+Process 82954 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+    frame #0: 0x00000001000005b8 gateway`Gateway::run(this=0x000000016fdfefe0) at gateway.cpp:144:9
+   141 	  explicit Gateway(int max_events) : max_(max_events) {}
+   142 	
+   143 	  void run() {
+-> 144 	    int n = 0;
+    	        ^
+   145 	    while (max_ < 0 || n < max_) {  // max_ < 0 means "forever"
+   146 	      Event e = source_.next();
+   147 	      dispatch(e);
+Target 0: (gateway) stopped.
+(lldb) watchpoint set variable this->monitor_.state_
+Watchpoint created: Watchpoint 1: addr = 0x16fdfefec size = 4 state = enabled type = m
+    watchpoint spec = 'this->monitor_.state_'
+    watchpoint resources:
+       #0: addr = 0x16fdfefec size = 4
+Watchpoint 1 hit:
+    
+new value: Down
+(lldb) watchpoint command add -F probes.log_state_write 1
+(lldb) breakpoint command add -o "watchpoint delete 1" 2
+(lldb) continue
+  state_ written -> Up       after line 115   via LinkMonitor::on_heartbeat() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t=  3] Down     -> Up       (missed=0 good=3)
+  state_ written -> Degraded after line 97   via LinkMonitor::on_tick() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t= 23] Up       -> Degraded (missed=4 good=0)
+  state_ written -> Down     after line 102   via LinkMonitor::on_tick() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t= 27] Degraded -> Down     (missed=8 good=0)
+  state_ written -> Up       after line 115   via LinkMonitor::on_heartbeat() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t= 29] Down     -> Up       (missed=0 good=3)
+  state_ written -> Degraded after line 97   via LinkMonitor::on_tick() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t=123] Up       -> Degraded (missed=4 good=0)
+  state_ written -> Down     after line 102   via LinkMonitor::on_tick() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t=127] Degraded -> Down     (missed=8 good=0)
+  state_ written -> Up       after line 115   via LinkMonitor::on_heartbeat() <- LinkMonitor::on_event(Event const&) <- Gateway::dispatch(Event const&)
+[t=134] Down     -> Up       (missed=0 good=3)
+(lldb)  watchpoint delete 1
+1 watchpoints deleted.
+Process 82954 resuming
+Process 82954 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 2.1
+    frame #0: 0x0000000100000688 gateway`Gateway::summary(this=0x000000016fdfefe0) const at gateway.cpp:154:22
+   151 	
+   152 	  void summary() const {
+   153 	    std::printf("final: state=%s forwarded=%d dropped=%d data_seen=%d\n",
+-> 154 	                name(monitor_.state()), forwarded_, dropped_, monitor_.data_seen());
+    	                     ^
+   155 	  }
+   156 	
+   157 	 private:
+Target 0: (gateway) stopped.
+(lldb) kill
+Process 82954 exited with status = 9 (0x00000009) killed

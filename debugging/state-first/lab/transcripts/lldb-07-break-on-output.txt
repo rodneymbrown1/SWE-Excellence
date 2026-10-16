@@ -1,0 +1,28 @@
+(lldb) target create "./gateway"
+Current executable set to '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64).
+(lldb) command source -s 0 'lldb/07-break-on-output.lldb'
+Executing commands in '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/lldb/07-break-on-output.lldb'.
+(lldb) # Discovery probe: "where does this log line come from?"  Break on the output function, read the backtrace.
+(lldb) settings set auto-confirm true
+(lldb) breakpoint set -n printf
+Breakpoint 1: where = libsystem_c.dylib`printf, address = 0x000000018030cbec
+(lldb) run --max 400
+Process 83715 launched: '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64)
+Process 83715 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+    frame #0: 0x000000019162cbec libsystem_c.dylib`printf
+libsystem_c.dylib`printf:
+->  0x19162cbec <+0>:  pacibsp 
+    0x19162cbf0 <+4>:  sub    sp, sp, #0x20
+    0x19162cbf4 <+8>:  stp    x29, x30, [sp, #0x10]
+    0x19162cbf8 <+12>: add    x29, sp, #0x10
+Target 0: (gateway) stopped.
+(lldb) bt 5
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+  * frame #0: 0x000000019162cbec libsystem_c.dylib`printf
+    frame #1: 0x0000000100000ddc gateway`LinkMonitor::announce(this=0x000000016fdff02c, from=Down) const at gateway.cpp:128:5
+    frame #2: 0x0000000100000d08 gateway`LinkMonitor::on_heartbeat(this=0x000000016fdff02c) at gateway.cpp:115:9
+    frame #3: 0x0000000100000afc gateway`LinkMonitor::on_event(this=0x000000016fdff02c, e=0x000000016fdfefd0) at gateway.cpp:78:34
+    frame #4: 0x0000000100000964 gateway`Gateway::dispatch(this=0x000000016fdff020, e=0x000000016fdfefd0) at gateway.cpp:159:14
+(lldb) kill
+Process 83715 exited with status = 9 (0x00000009) killed

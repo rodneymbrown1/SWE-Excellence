@@ -1,0 +1,9 @@
+# Probe 1 (FILTER): stop the first time a Heartbeat leaves missed_ non-zero.   Requirement R5.
+# Run from the lab/ directory:   lldb -b -s lldb/01-invariant.lldb ./gateway
+settings set auto-confirm true
+breakpoint set -f gateway.cpp -l 81 -c 'e.type == EventType::Heartbeat && missed_ != 0'
+run --max 400
+bt
+frame variable
+p *this
+kill

@@ -1,0 +1,80 @@
+I started swe-excellence after my first week at raytheon.  this project is to standardize my practice as a swe.  right now im in a program as a new hire where we are put in teams and told to solve problems on a real code base with increasingly difficult requirements.  after getting the enviroment setup, i realized something.  I dont know what im doing.  the tier im working on is asking me to implement something on a class that has 100 instances of a variable i am sure is the one im looking for but its in several methods of the class, connected to pointers, and even goes in and out the class in a messaging system.  whats worst is that im still learning cppand there are cmake related files everywhere.  after giving up the endless cycle of tracing imports and re reading the same functions over and over i decided it was not my undersanding of C++ or coding fundamentals it was my process for understanding large and unfamiliar codebases.  So I went to a bookstore to find so inspiring linux and cpp books came back home and found https://www.youtube.com/watch?v=qmte-ZrzBKUm "Understanding Large and Unfamiliar Codebases - Mike Shah & Chris Croft-White - C++ on Sea 2025"  
+
+This video is EXACTLY what i needed and i feel inspired to try out the tools ive learned.  I added the transcript of the video in video_transcript.txt.  
+
+
+The full video presentation slides are at https://github.com/philsquared/cpponsea2025-slides/blob/main/Presentations/Understanding_Large_and_Unfamiliar_Codebases.pdf
+
+actually use the loca instead 
+file:///Users/rodneymbrown/Downloads/Understanding_Large_and_Unfamiliar_Codebases.pdf
+
+Please download and extract the content in to this project in a sub directory.  here are my notes but you can just read the powerpoint directly and read the transcript.  
+Looking For Main (searching text in the source code for the main function)
+
+thee 'cloc' tool - counts the lines of code in a project by language used
+
+Step 1 run your program
+
+understanding control flow: ex: One of the first things I like to
+do -- is to anchor around the
+‘main()’ function
+● From the main() function, you
+will often get hints as to the
+overall software architecture
+○ (i.e. are there plugins loaded, is there
+an event loop, etc.)
+○ Some things you can actively log are:
+■ What happens before main (any
+initialization code)
+■ What happens after (cleanup
+code)
+
+Debug Symbols                                   
+   Debug Builds vs debug symbols vs optimization
+
+Now this addresses the exact problem i always run in to searching for function names which becomes a treasure hunt especially when you dont know exactly what you are looking for.  
+
+So this is basically saying run the program with debug symbols. 
+
+Note: A **key** that will make
+your life easier
+○ Build/Compile with debug
+information!
+■ cmake -DCMAKE_BUILD_TYPE=Debug ..
+○ In some instances, this may also
+include making sure to build 3rd
+party libraries in debug as well
+● Debug information is useful
+for helping you inspect and
+gather more information about
+your programs execution with
+the tools we will use
+
+A nice write up on Debug information is here:
+https://developers.redhat.com/articles/2022/01/10/gdb-develope
+rs-gnu-debugger-tutorial-part-2-all-about-debuginfo
+Note: If you’re in a live system, you can ‘gdb -ex 'attach $PID'
+app.debug’ add debug info as well -- but let’s assume we have
+our debugging symbols in order!
+
+Next is "step by step debugging" (1/3)
+this also discussing debugging a running application, when that would be useful and backwards debugging (ie time travel)
+/Users/rodneymbrown/Downloads/GDB\ Cheat\ Sheet.pdf 
+https://aosabook.org/en/v2/gdb.html
+
+Reverse debugging  
+GDB and UDB
+https://sourceware.org/gdb/wiki/ReverseDebug
+
+https://undo.io/udb-free-trial/
+
+Conditional watch points blew my mind
+
+perf seemed useful to find activity in the codebaseperfing a running process is crazy
+
+also screen management was important i just started using tmux today and have been picking up vim for a couple weeks 
+
+documenation tools doxygen
+dependency walker tools are always useful ive seen them used but never added them to my tool belt.  
+
+another good tip would be look for a tests folder this is something that could be at the initial "run the applciation step" id look for a tests relavent to my work requiremts for example fix this componenet ... is there already a test for this component?  

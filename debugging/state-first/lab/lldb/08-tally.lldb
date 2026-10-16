@@ -1,0 +1,8 @@
+# A1 + A2: tally every caller of LinkMonitor::on_event and every (state, event) cell that really occurs.
+settings set auto-confirm true
+command script import lldb/probes.py
+breakpoint set -n LinkMonitor::on_event
+breakpoint command add -F probes.tally_caller_and_cell 1
+breakpoint set -n Gateway::summary
+breakpoint command add -F probes.show_tallies 2
+run --max 400

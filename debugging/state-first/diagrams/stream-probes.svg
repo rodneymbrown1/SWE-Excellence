@@ -1,0 +1,38 @@
+<figure><svg viewBox="0 0 760 320" role="img" aria-labelledby="sp-t sp-d" xmlns="http://www.w3.org/2000/svg">
+<title id="sp-t">Probes tap an endless event stream</title><desc id="sp-d">A stream of events flows into an endless loop. Five probes attach to the loop: Filter, Count, Log, Trap, Arm. On the right, you see only the events that matter.</desc>
+<defs><marker id="sp-ar" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L14,7 L0,14 z" fill="#111"/></marker></defs>
+<text x="20" y="84" font-size="16" font-weight="800" fill="#111">event stream</text>
+<rect x="20" y="100" width="22" height="22" fill="#fff" stroke="#111" stroke-width="2.5"/>
+<rect x="50" y="100" width="22" height="22" fill="#fff" stroke="#111" stroke-width="2.5"/>
+<rect x="80" y="100" width="22" height="22" fill="#111" stroke="#111" stroke-width="2.5"/>
+<rect x="110" y="100" width="22" height="22" fill="#fff" stroke="#111" stroke-width="2.5"/>
+<rect x="140" y="100" width="22" height="22" fill="#fff" stroke="#111" stroke-width="2.5"/>
+<rect x="170" y="100" width="22" height="22" fill="#111" stroke="#111" stroke-width="2.5"/>
+<rect x="200" y="100" width="22" height="22" fill="#fff" stroke="#111" stroke-width="2.5"/>
+<rect x="230" y="100" width="22" height="22" fill="#fff" stroke="#111" stroke-width="2.5"/>
+<path d="M262,111 H286" stroke="#111" stroke-width="3" marker-end="url(#sp-ar)"/>
+<rect x="290" y="62" width="230" height="150" rx="12" fill="#f1f1f1" stroke="#111" stroke-width="3.5"/>
+<text x="405" y="102" font-size="22" font-weight="800" text-anchor="middle" fill="#111">while (true)</text>
+<text x="405" y="132" font-size="16" text-anchor="middle" fill="#111">dispatch(event)</text>
+<text x="405" y="154" font-size="16" text-anchor="middle" fill="#111">state changes</text>
+<text x="405" y="190" font-size="14" text-anchor="middle" fill="#444">never stops. Do not step it.</text>
+<path d="M524,111 H580" stroke="#111" stroke-width="3" marker-end="url(#sp-ar)"/>
+<rect x="584" y="68" width="160" height="86" rx="10" fill="#fff" stroke="#111" stroke-width="3.5"/>
+<text x="664" y="98" font-size="20" font-weight="800" text-anchor="middle" fill="#111">YOU</text>
+<text x="664" y="122" font-size="14" text-anchor="middle" fill="#111">see only the events</text><text x="664" y="140" font-size="14" text-anchor="middle" fill="#111">that matter</text>
+<path d="M83,246 L310,212" stroke="#111" stroke-width="2" stroke-dasharray="4 3"/>
+<rect x="28" y="244" width="110" height="32" rx="16" fill="#111"/><text x="83" y="266" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">FILTER</text>
+<text x="83" y="298" font-size="13.5" text-anchor="middle" fill="#111">stop only if</text><text x="83" y="314" font-size="13.5" text-anchor="middle" fill="#111">a condition is true</text>
+<path d="M229,246 L310,212" stroke="#111" stroke-width="2" stroke-dasharray="4 3"/>
+<rect x="174" y="244" width="110" height="32" rx="16" fill="#111"/><text x="229" y="266" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">COUNT</text>
+<text x="229" y="298" font-size="13.5" text-anchor="middle" fill="#111">tally events,</text><text x="229" y="314" font-size="13.5" text-anchor="middle" fill="#111">do not stop</text>
+<path d="M375,246 L375,212" stroke="#111" stroke-width="2" stroke-dasharray="4 3"/>
+<rect x="320" y="244" width="110" height="32" rx="16" fill="#111"/><text x="375" y="266" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">LOG</text>
+<text x="375" y="298" font-size="13.5" text-anchor="middle" fill="#111">print a line,</text><text x="375" y="314" font-size="13.5" text-anchor="middle" fill="#111">keep running</text>
+<path d="M521,246 L500,212" stroke="#111" stroke-width="2" stroke-dasharray="4 3"/>
+<rect x="466" y="244" width="110" height="32" rx="16" fill="#111"/><text x="521" y="266" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">TRAP</text>
+<text x="521" y="298" font-size="13.5" text-anchor="middle" fill="#111">stop when this</text><text x="521" y="314" font-size="13.5" text-anchor="middle" fill="#111">data changes</text>
+<path d="M667,246 L500,212" stroke="#111" stroke-width="2" stroke-dasharray="4 3"/>
+<rect x="612" y="244" width="110" height="32" rx="16" fill="#111"/><text x="667" y="266" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">ARM</text>
+<text x="667" y="298" font-size="13.5" text-anchor="middle" fill="#111">one probe turns</text><text x="667" y="314" font-size="13.5" text-anchor="middle" fill="#111">another one on</text>
+</svg><figcaption>Figure 9.1. You do not step through an endless loop. You attach probes to it, and the probes decide which events reach you.</figcaption></figure>

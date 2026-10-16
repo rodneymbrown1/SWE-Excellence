@@ -1,0 +1,576 @@
+                                                          Using Hypotheses as a Debugging Aid
+                                                                     Abdulaziz Alaboudi                                Thomas D. LaToza
+                                                                  George Mason University                           George Mason University
+                                                                   Fairfax, Virginia, USA                            Fairfax, Virginia, USA
+                                                                     aalaboud@gmu.edu                                   tlatoza@gmu.edu
+
+
+
+
+                                            Abstract—As developers debug, developers formulate hypothe-  that, given the wealth of developer information available on
+                                         ses about the cause of the defect and gather evidence to test   the internet, finding hypotheses might be easy. To explore
+                                         these hypotheses. To better understand the role of hypotheses inthis, we conducted a small preliminary study in which we
+
+
+
+
+arXiv:2005.13652v1 [cs.SE] 27 May 2020
+                                         debugging, we conducted two studies. In a preliminary study,
+                                         we found that, even with the benefit of modern internet re-     observed three professional developers working in three open-
+                                                                                                         source projects. We found that developers often got stuck
+                                         sources, incorrect hypotheses can cause developers to investigate
+                                         irrelevant information and block progress. We then conducted    because they lacked correct hypotheses or had an insufficiently
+                                         a controlled experiment where 20 developers debugged and        precise hypothesis. Lacking a correct hypothesis, developers
+                                         recorded their hypotheses. We found that developers have few    formulated search queries beginning from incorrect output
+                                         hypotheses, two per defect. Having a correct hypothesis early
+                                         strongly predicted later success. We also studied the impact of (e.g., error messages) or an insufficiently specific hypothesis
+                                         two debugging aids: fault locations and potential hypotheses.   (e.g., example of API usage based on the hypothesis that
+                                         Offering fault locations did not help developers formulate more the API is being used incorrectly). This resulted in irrelevant
+                                         correct hypotheses or debug more successfully. In contrast,     information that did not lead to a fix, wasting further time.
+                                         offering potential hypotheses made developers six times more       Despite their centrality to debugging [9], many important
+                                         likely to succeed. These results demonstrate the potential of
+                                         future debugging tools that enable finding and sharing relevant questions remain unanswered about the role of hypotheses in
+                                         hypotheses.                                                     debugging. It is unclear how hard it is to formulate correct
+                                            Index Terms—Debugging, hypotheses, fault localization        hypotheses and how closely hypotheses are tied to developers’
+                                                                                                         debugging performance. And, in situations where developers
+                                                                I. I NTRODUCTION                         lack hypotheses, questions remain about how debugging aids
+                                            Debugging has long been a focus of software engineering might assist developers in finding hypotheses, such as suggest-
+                                         research, encompassing studies of the debugging process as ing potential fault locations to investigate or directly offering
+                                         well as the creation of numerous techniques to more effectively developers potential hypotheses.
+                                         support it [1]–[7]. Key to the process of debugging are            To fill this gap, we investigated three research questions:
+                                         hypotheses. A debugging hypothesis is a verifiable specula- RQ1 How hard is it to formulate correct hypotheses? Does for-
+                                         tion about the possible cause of the incorrect behavior [2],          mulating correct hypotheses predict debugging success?
+                                         [8], [9]. Developers build mental models of the program by RQ2 Does offering developers fault locations help developers
+                                         asking questions about the incorrect behavior of the program,         to form correct hypotheses and debug more successfully?
+                                         hypothesizing possible causes, and collecting information to RQ3 Does offering developers potential hypotheses help de-
+                                         test them [8], [10], [11]. For example, a developer who sees          velopers debug more successfully?
+                                         a search feature fail might ask, ”Why did the search not           We conducted a lab study in which 20 developers worked
+                                         return the correct answer?”. She might then hypothesize that it to debug defects in three small programs taken from Stack
+                                         was caused by an incorrect comparison in its implementation Overflow. We chose to focus on API-related defects, as studies
+                                         of string matching. From this hypothesis, she might gather suggest these can be challenging to debug [14]. To observe
+                                         evidence to test it, searching for locations related to string the process of how developers formulate hypotheses during
+                                         matching and using the debugger to gather information about debugging, we organized the debugging tasks into three stages
+                                         the run-time state to determine if each step in the string and asked developers to write down their hypotheses at each
+                                         matching algorithm is correct [9], [12].                        stage. At each stage, developers were given access to more
+                                            Unfortunately, developers often formulate incorrect hy- information, including the bug report and user interface (stage
+                                         potheses, resulting in wasted time gathering evidence and 1), source code and related documentation (stage 2), and the
+                                         looking at irrelevant code that ultimately does not lead the ability to run and edit the code (stage 3). This enabled us
+                                         developer closer to the true defect [13]. When they fail to to observe hypotheses before developers were able to test
+                                         find a correct hypothesis, developers often look for help, and discard them. Additionally, some participants were given
+                                         mitigating the need to generate their own hypotheses. Seeking access to either potential fault locations or hypotheses.
+                                         help from an experienced coworker is one way to find the           We found that participants struggled to formulate correct
+                                         correct hypothesis. Unfortunately, developers may not always hypotheses. Per defect, the median number of hypotheses
+                                         find their coworkers available [8]. One might also expect participants formulated across all stages was two. In the
+first stage, only 11% of hypotheses were correct. While this      the search space rather than in their ability to improve devel-
+increased in stage two and three, overall only 39% of reported    opers overall debugging performance. Implicit in this work is
+hypotheses were correct. However, for developers that did         the assumption that reducing the set of faulty statements a de-
+discover the correct hypothesis by stage two, their chance of     veloper must consider will necessarily improve debugging per-
+ultimately succeeding in debugging increased by a factor of       formance. One study tested this assumption directly through a
+five. Offering developers fault locations did not significantly   user study and found that fault localization techniques do not
+help developers to formulate a correct hypothesis nor enable      always help developers debug more effectively [25].
+the developer to debug any more successfully. In contrast,           A common practice when developers confront faults for
+developers who received potential hypotheses were six times       which they have no hypothesis is to consult external resources.
+more successful in fixing defects.                                In co-located development teams, developers may consult
+   These results suggest the potential value of new types of      an experienced developer. However, studies have found that
+debugging aids that offer potentially relevant hypotheses to      developers may not always find an experienced coworker
+developers. We discuss the implications of our findings for       available [8], [26]. Developers may also search the internet
+future tools that enable developers to share, find, and use       for potential hypotheses, posting questions and examining
+debugging hypotheses.                                             responses to prior questions in community resources such as
+                                                                  Stack Overflow [27], [28]. Success depends on several factors,
+                     II. BACKGROUND                               including asking sufficiently precise questions and providing
+                                                                  enough information about the problem [29]–[31].
+   Early studies of code comprehension and debugging in-             While prior work has examined how developers form and
+vestigated the role of code understanding and developers’         test hypotheses, little work has systematically examined how
+mental models. These studies found that developers formulate      a range of factors impact the generation and use of hypotheses
+hypotheses during programming tasks [15]–[19]. Brooks in-         in the debugging process. To our knowledge, we are the first
+troduced a theory in which developers form hypotheses about       study to ask developers to repeatedly report their debugging
+program behaviors while comprehending code [15]. Letovsky         hypotheses and examine the relationship between situational
+proposed that hypotheses (“conjectures”) were answers to          factors, the generation of hypotheses, and debugging success.
+questions developers ask while comprehending code [16].           We offer the first evidence about how offering fault locations
+   Several prior studies have observed developers formulate       or a set of potential hypotheses might help developers in
+and test hypotheses. Studies have found that developers ask       formulating and testing hypotheses.
+questions about incorrect output and form hypotheses about
+its cause [4], [8]. Developers then test these hypotheses by           III. P RELIMINARY S TUDY: S EARCHING FOR HELP
+examining code locations and inspecting program state [9].           To better understand the challenges developers may face in
+Robin investigated how novices and experts differ in their        formulating hypotheses, given the opportunity to use modern
+debugging process and found that experts were more likely to      Internet resources, we conducted a small preliminary study. To
+formulate correct hypotheses and successfully map them to the     observe developers, we chose to use live-streamed program-
+related code [18]. Other work has tried to avoid modeling de-     ming videos, where developers live-stream their programming
+bugging hypotheses explicitly by instead modeling developers’     activities for other developers to watch. [32]. In live-streamed
+actions, which may be easier to observe. According to infor-      programming, developers live-stream their work on real-world
+mation foraging theory, developers navigate between methods       development tasks fixing issues and implementing features
+(”patches”) based on method identifiers which offer scent that    for open source projects. During the live-streamed session,
+hint at their proximity to the fault location (”prey”) [5].       developers keep their viewers engaged by frequently thinking
+   Professional developers largely depend on the “intuitive       aloud, articulating intentions, goals and hypotheses, which
+method” of forming and testing hypotheses while debugging         make these videos a valuable data source for observational
+[9], [20]. Unfortunately, developers may formulate incorrect      studies [33]. After finishing streaming their work, developers
+hypotheses, leading them to inspect irrelevant code [13]. As      archive the videos on online platforms such as YouTube. We
+developers waste time testing incorrect hypotheses, many tools    selected three videos of developers (D1, D2, and D3) working
+have been proposed which envision entirely bypassing the          on different open source projects hosted in GitHub for 177, 85,
+need for a developer to formulate a hypothesis. Debugging         and 104 minutes, respectively. The selection process followed
+is often framed as a problem of fault localization, where a       a systematic approach. We first searched for videos posted
+developer begins with a fault and must identify the statement     in developer communities such as the r/WatchPeopleCode
+responsible [1], [21]. Many tools and techniques have been        subReddit. We then checked if the video showed developers
+built to help developers in searching for fault locations. For    working on an open source project by searching for the project
+example, program slicing tools often display a ranked list        in GitHub. Finally, we skimmed the video to determine if it
+of potentially faulty statements, shrinking the search space      included the developer searching the Web while debugging.
+of potentially faulty statements developers must presumably       Our replication package contains the data for this study [34].
+consider [6], [22]–[24]. However, automatic fault localization       D1 was building a search engine for Reddit in Python.
+tools are typically evaluated in their performance of reducing    During his three hour programming session, he encountered a
+                                                                          After debugging for half an hour, he reported that he could not
+                                                                          fix the defect, stopping work and seeking help later from other
+                                                                          developers. We investigated the pull request he was working
+                                                                          on and found he was able to fix the defect the following day.
+                                                                          From the commit history, it appears that the defect was related
+                                                                          to a missing API call unrelated to the documentations or APIs
+                                                                          he browsed in the video.
+                                                                             Together, these observations suggest the centrality of hy-
+                                                                          potheses to debugging. Even with the benefit of modern
+                                                                          Internet resources, developers often struggled to know where
+                                                                          to start. Lacking a correct hypothesis, developers formulated
+                                                                          queries hoping to discover something relevant and looked at
+                                                                          information that often led nowhere. These findings suggest the
+  Fig. 1.   Faced with an error message, D1 read a Stack Overflow post.   need for tools that help developers better search for and acquire
+                                                                          hypotheses while debugging. State of the art debugging tools
+                                                                          such as WhyLine attempt to entirely avoid hypotheses by, for
+defect related to his use of the shelve API. He hypothesized              example, enabling developers to systematically trace incorrect
+that he “maybe needs to specify the file type“ when calling the           output backwards across control and data flow. However,
+API. Using this hypothesis, he searched the Internet and started          these techniques may be ill-suited for situations involving
+reading the official documentation for a few minutes, stopping            interactions with complex third-party APIs, such as in our
+reading as there was no API to specify the file type. Unable              preliminary study, where developers cannot or do not wish to
+to hypothesize, he switched to Google and pasted the error                follow data flow through framework internals. This suggests
+message in the search field. He started browsing a related Stack          the need for new forms of debugging aids that better support
+Overflow post (Figure 1) that suggested potential solutions.              the process of hypothesis formulation and testing.
+He decided to try a solution, stating that “this looks like the
+problem I am having now”. He copied the suggested fix and                  IV. C ONTROLLED STUDY: I NVESTIGATING H YPOTHESES
+pasted it into his code, but the error still occurred. Blocked                                    IN DEBUGGING
+from further progress in his debugging task, he decided to end              We conducted a within-subjects study in which 20 partici-
+the session. In his next video, he discovered the bug was due             pants completed a series of three debugging tasks to fix API
+to an incorrect parameter to one of the APIs calls. He did not            misuse defects. In this section, we describe our study and the
+consider this possibility in formulating his search query.                choices we made in its design.
+   In his 85 min programming session, D2 worked to build a
+face detection program using C++ and openCV APIs. While                   A. Study Design
+trying to compile the program, he received an error message                  In order to observe debugging hypotheses, we chose to
+of “undefined reference to cv”. His first hypothesis was that             divide our study into three separate stages. This enable us to
+the defect was due to incorrect usage of the standard I/O APIs.           understand the time and resources required to form correct
+However, after changing it to a simple print statement, the code          hypotheses as well as avoid the possibility that developers
+still did not compile. He then copied part of the error message           might test and reject hypotheses before reporting them.
+and searched the Internet. He spent around 20 minutes testing                In each stage, participants were instructed to report their
+multiple hypotheses suggested on Stack Overflow, such as                  hypotheses and the nessary steps to test them. In the first stage,
+checking for typos and changing compilers. However, none                  participants were able to execute the program and observe its
+were correct. Two of the developers watching his live-stream              behavior through GUI or console interactions, without access
+offered the hypothesis that the defect was due to an issue in             to the source code or documentation. In the second stage,
+the way the OpenCV library was linked at compile time. After              participants were given access to related documentation and
+searching with just three words, “link to openCv”, he was able            a snapshot of the source code, but without the ability to edit
+to find relevant information and successfully fix the defect.             or execute the program. Participants were asked in this stage
+   D3 worked to implement a confirmation dialog in JavaScript             to submit new hypotheses and edit hypotheses submitted in
+using the Electron APIs. He was unable to make the dialog’s               stage one. In the third stage, participants had the ability to
+cancel and confirm options work correctly. He searched the                edit and execute the program. They were asked to continue
+Internet for documentation and code examples on how to use                forming new hypotheses or edit existing ones, if needed, and
+specific APIs. After looking at an example, he hypothesized               use any hypotheses they had to fix the defect. To investigate the
+that the bug is related to the async APIs. ”Oh, it has async              effects of offering debugging aids, participants were assigned
+APIs. Sorry, I am just a noob.”. However, changing the                    to one of three conditions for each task: a control condition (no
+implementation to use async APIs did not fix the defect. He               aid), a fault locations condition, and an potential hypothesis
+kept changing the return value of a callback function and                 condition. Debugging aids were offered to participants when
+inserting log statements to answer many “what if” questions.              they first were given the source code in stage two. Participants
+                                        TABLE I
+    GOALS AND RESOURCES FOR EACH STAGE . T HE GRAY MARKS IN THE
+     BOTTOM ROW INDICATE THAT A DEBUGGING AID WAS OFFERED TO
+          PARTICIPANTS IN TWO RANDOMLY ASSIGNED TASKS .                                                                                              A
+                                             Stage 1   Stage 2   Stage 3
+                                             7 min     10 min    20 min
+
+ Goals
+             Formulating hypotheses            3         3         3
+             Fixing the fault                                      3
+             Fault report                      3         3         3
+
+
+ Resources
+             Execution environment             3                   3
+             Picture of the correct output     3         3         3
+             Documentation                               3         3
+             Source code                                 3         3                                                                                 B
+             Debugging aids                              3         3
+
+
+
+did not have access to the Internet throughout the study. Table
+I lists the goals and provided resources for each stage.
+B. Tasks
+   To encompass a variety of modern APIs, we selected three
+programs taken from Stack Overflow questions that are related
+to different Web technologies. Each program contained a
+defect that prevented it from behaving as intended. We offered
+participants the reported Stack Overflow question as a prompt
+and the code snippet as the provided program. To ensure
+that participants understood the intended behavior, participants
+received a picture or animated gif of the expected output.
+   In the first task, participants worked with a program that
+used the DOM (Document Object Model) API to change the
+visibility of an HTML element using the “visibility” DOM
+property. The program consists of 37 lines of HTML, CSS,
+and JavaScript code. The defect concerned an incorrect use of
+the common JavaScript API “getElementsByClassName”. This
+API returns an array of DOM elements. The implementation
+contained a defect where it instead treated the return value as a
+single DOM element, which can be fixed by iterating over the
+returned collection and setting the visibility for each element.
+   In the second task, participants worked with a program built
+using React, one of the most commonly used UI frameworks1 ,
+containing 36 lines of HTML and JavaScript. The intended                                                                                             C
+behavior of this program is to switch images on a click.
+This can be achieved by successfully registering a callback
+for the onClick event. However, the implementation of the
+registration contains a defect, resulting in the onClick event
+handler generating an undefined error.
+   As animation is common in Web applications, we selected
+for the third task an animation program containing 45 lines of
+HTML, CSS, and Javascript. The intended behavior is to move
+a figure from one position to another using jQuery animation
+APIs, which it fails to achieve. To fix this defect, the correct
+position value has to be passed to the jQuery API.
+                                                                           Fig. 2. In the study environment, participants completed each debugging
+C. Debugging Aids                                                          stage in a separate page. (A) The top of each page describes the goal and
+                                                                           time limit for the current stage. (B) The middle section offers a debugging
+   We intended for the debugging aids to be representative of              environment, with the applicable resources for the stage. (C) The bottom
+aids that might be generated by current and future tools, as we            section enables participants to write down their hypotheses as well as offering
+                                                                           a debugging aid, if applicable.
+   1 https://insights.stackoverflow.com/survey/2019/
+                                                                                                                Debugging Tasks
+                                                                                Task1                               Task2                            Task3
+   Participants                                                      Stage 1    Stage 2     Stage 3   Stage 1      Stage 2      Stage 3   Stage 1   Stage 2      Stage 3
+                                                                 6             Potential hypotheses                   Fault locations
+             20                                                  6
+                  Training   Technologies knowledge assessment                    Fault locations                                                   Potential hypotheses   Survey
+                                                                 8                                                 Potential hypotheses                Fault locations
+
+
+
+Fig. 3. During the study, participants first completed a training task and a technology knowledge assessment. Participants were then randomly divided into
+three groups. A Latin square design was used to assign debugging aids to debug tasks, controlling for potential order and task effects.
+
+
+
+were interested in studying the impact of these debugging aids                       developed technology assessments with nine multiple-choice
+without any assumptions of how such aids were generated.                             questions. These questions assessed knowledge of fundamental
+In addition to studying the impact of potential hypotheses                           to advanced concepts in each of the technologies used in
+as a debugging aid, we studied the impact of offering fault                          the study’s tasks. Each question had five possible answers,
+locations, as commonly used in research prototypes offering                          including a ”I do not know” choice. To avoid any potential
+automated fault localization. Participants received either two                       learning effects, we did not ask participants about any concepts
+potential hypotheses or two fault locations. To control for                          or APIs that directly related to the defects in the study tasks.
+the performance of tools generating these aids, we simulated                         Participants received one point for each correct answer.
+the output that one of these tools would generate. In both                              Participants ranged from 0-20 years of industrial experience
+tasks, participants received one correct and one incorrect                           (median = 2) and, on the 9 point scale of the technical
+potential hypotheses or one correct and one incorrect fault                          knowledge assessment, scored from 1-8 (median = 4).
+locations with the incorrect one always listed first, simulating
+the behavior of a tool with high, but not perfect, precision.
+   Each potential hypothesis consisted of two parts: the hy-                         E. Procedure
+pothesis itself and steps describing how to test the hypothesis.
+We extracted the correct hypotheses and the steps on how to                             To conduct the study, we constructed a purpose-built study
+test them from the corresponding correct answer in the Stack                         environment website that administered the technology assess-
+Overflow question. Sine the potential hypotheses are represen-                       ment questions, the debugging tasks, and a short post-task
+tative of a debugging aid offered by a tool, the hypotheses are                      survey. The study environment contained all information about
+generalized to be applicable for different program contexts.                         the debugging tasks and enabled participants to view, edit,
+We summarized the answer and then removed any references                             and run the code, depending on the debugging stage. The
+to implementation details in the hypothesis. For the incorrect                       study environment collected the technical assessment answers,
+hypotheses, we searched Stack Overflow for a question that                           fault patches, stages time, and survey responses. During each
+described similar symptoms but with a different underlying                           debugging stage, participants were prompted to enter one or
+cause. To generate the incorrect and correct fault locations,                        more hypotheses. Figure 2 depicts an example of a stage
+we used the potential hypotheses we extracted for each task                          two page in the environment. The study environment, study
+and mapped these hypotheses to locations in the source code.                         materials, and other data are all publicly available [34].
+These locations were then presented to participants. Table II
+                                                                                        We conducted our study in three small-group sessions, each
+shows the offered potential hypotheses.
+                                                                                     lasting approximately 2.6 hours. Participants in each session
+                                                                                     were gathered in a room and asked to access the study
+D. Participants
+                                                                                     environment from their computers. To familiarize participants
+   We recruited 25 participants (15 male and 10 female) from a                       with the study environment, participants first completed a
+graduate course in software engineering at our institution. Five                     training task that consisted of a debugging task containing each
+of these participants were used to pilot the study materials and                     of the three stages. One of the authors was available to answer
+are not described further. As typical in industry, participants                      questions. Participants next completed the nine questions in the
+reflected a wide range of experience levels, including many                          technical knowledge assessment and then began each stage for
+who worked full time as a software developer.                                        each of the three debugging tasks. Participants were given a
+   To control for experience level, we measured the program-                         time limit of seven minutes in stage one, ten minutes in stage
+ming expertise of each participant. To measure programming                           two, and 20 minutes in stage three. Participants who ran out of
+experience, we asked participants to report their number of                          time in a stage were automatically advanced to the next stage.
+years of programming experience in industry. Measuring the                           Finally, participants completed a post-task survey asking them
+level of technology knowledge is more challenging, as relying                        to report the number of years they have been programming
+on participants’ self-assessments may introduce bias in the                          professionally and describe whether they found each of the
+results [35]. Thus, we instead chose to develop a technology                         debugging aids to be helpful. Participants had up to 3 hours
+knowledge assessment that can be completed quickly. We                               to complete the study. Figure 3 illustrates the study design.
+F. Data Analysis                                                        However, having the correct hypothesis usually but not
+   To score each hypothesis, we labeled a set of keywords            always leads to success in debugging. Overall, participants
+that reflecting the underlying cause in the correct debugging        failed in 20 out of 60 cases to fix the defect. Six of these 20
+hypotheses aid. Participants’ hypotheses were scored as correct      cases involved participants with a correct hypothesis at stage
+if they described a concrete and verifiable reason for the cause     two who did not successfully fix the defect. To investigate
+of the defect using the same or similar keywords as the correct      these cases, we analyzed participants’ survey responses and
+debugging hypotheses aid. For example, for a defect that was         code edits. Their responses suggest that, while they understood
+caused by passing a string instead of a number to a third party      the underlying cause of the fault, they did not know how
+library, a hypothesis such as “the defect is caused by a third       to correctly implement a fix. One participant, for example,
+party library” was considered too vague to correctly describe        realized that the fault in the first task was due to a DOM API
+the cause of the defect while “the defect was caused by an           returned a collection of DOM elements instead of a single
+incorrect parameter value passed to a third party library” was       DOM element, but tried to fix the fault by changing another
+considered concrete and correct. Two authors independently           irrelevant part of the code:
+coded participants’ hypotheses as correct or incorrect, resulting       “I tried changing the name of the item to which the event
+in a Cohen’s Kappa value of 0.76, reflecting substantial             handler was added, but it still [did] not make the div appear.
+agreement [36]. The disagreements were resolved through a            The links are not being set to visible because they are in an
+discussion between the authors.                                      array.”
+   To answer each research question, we built a series of
+regression models. To control for the effects of expertise [21]
+                                                                     B. Does offering developers fault locations help developers to
+and task [9] in our models, we included years of programming
+                                                                     form correct hypotheses and debug more successfully?
+experience, technical knowledge, and task as control variables
+in each model. Adding a control variable for task controlled            To test if offering developers fault locations increases their
+for variance between tasks in difficulty, where task three had       ability to formulate correct hypotheses at stages two and three,
+a 90% success rate and tasks one and two had 55%.                    we built a logistic regression model with the correctness of
+                                                                     the hypotheses as the dependent variable and the availability
+                          V. R ESULTS                                of fault locations as the independent variable. We found no
+A. How hard is it to formulate correct hypotheses? Does              evidence that by offering fault locations participants formulate
+formulating correct hypotheses predict debugging success?            more correct hypotheses, either in stage two (p = 0.4125) or
+                                                                     stage three (p = 0.1320). Overall, 45% of the participants in
+   We first investigated the difficulty of formulating correct hy-
+                                                                     stage two and 60% in stage three from the fault locations group
+potheses without any debugging aids. We analyzed data from
+                                                                     submitted the correct hypotheses compared to 45% and 75%
+the 20 debugging sessions in the control condition. Participants
+                                                                     participants, respectively, from the control group. Offering
+formulated 27 hypotheses (Min 1, Max 3, median 1) in stage
+                                                                     potential fault locations did not significantly help participants
+one. Of these 27 hypotheses, only three were correct (11%). In
+                                                                     fix the defect (p = 0.6710).
+the second stage, participants added eight new hypotheses and
+edited six (total 35, Min 1, Max 3, median 1), which increased          To explore why providing potential fault locations did not
+the number of correct hypotheses to nine (25%). In the last          yield observable benefits, we reviewed participants’ survey
+stage, participants added three new hypotheses and edited            responses about how they made use of the fault locations
+four (Total 38, Min 1, Max 4, Median 2), which increased             during the debugging tasks. Some participants stated that they
+the number of correct hypotheses to 15 (39%). Although our           felt that having fault locations helped them to narrow their
+study was designed to encourage participants to formulate as         search space. However, several indicated that they needed
+many hypotheses as they can, the median number of reported           additional insight beyond the fault locations to understand the
+hypotheses for each participant was two. This suggests that          underlying cause of the defect.
+not only the process of formulating a correct hypothesis is               “I looked at the buggy line help, [but] I was still not
+challenging, but also the process of formulating any reasonable           sure how to fix the code. However, at least I could
+and not necessarily correct hypothesis. Table II lists examples           focus just on those lines instead of all of the rest of
+of participants’ hypotheses in stage two. The complete list of            the application.”
+hypotheses is available online [34]
+                                                                     Another participant reported that the fault locations might help
+   We next investigated the relationship of hypotheses to
+                                                                     in situations where she has more knowledge about what might
+debugging success, irrespective of how the hypotheses were
+                                                                     cause the fault.
+obtained. We analyzed the data from the 60 debugging ses-
+sions from participants in the three conditions. We chose a               “It seemed helpful only when I was slightly con-
+dependent variable of correct or incorrect hypothesis and built           fused. On conditions when I had no clue, it could
+a logistic regression model. The model shows that participants            have been more helpful by providing more feedback
+who reported a correct hypothesis at stage two were 5 times               other than just [the] line number, like perhaps the
+more likely to fix the defect (p = 0.01).                                 correct syntax when it is wrong or incomplete.”
+                                                           TABLE II
+ T HE POTENTIAL HYPOTHESES GIVEN TO PARTICIPANTS AND EXAMPLES OF PARTICIPANTS ’ CORRECT AND INCORRECT HYPOTHESES AT STAGE TWO .
+
+ Task Correct potential hypotheses            Incorrect potential hypotheses             Examples of participants correct         Examples of participants incorrect
+                                                                                         hypotheses                               hypotheses
+      Hypothesis: You are using the           Hypothesis: You are not using the          Hypothesis: style changed is             Hypothesis: In the JS code the
+ 1    wrong DOM API or not us-                correct CSS property.                      wrongly applied to a collection          HTML Div Element’s selector (id,
+      ing getElementsByClassName cor-         How To Test: Check if you are              variable.                                class, or xpath) is not properly
+      rectly.                                 using the correct CSS property to          How To Test: Change the style            defined. There is an error in the
+      How To Test: Check if you are           change the visibility of an ele-           application to a loop over all           selector that is causing the error.
+      using the correct DOM API. Also         ment. Example: visibility: ’visible’       elements in collection.                  How To Test: Check the HTML
+      remember: getElementById returns        or ’hidden’, or display: ’none’ or                                                  code and the JS code to see if
+      an HTML element that has the            ’block’.                                                                            the JS code is using the correct
+      same id, get ElementsByClass-                                                                                               selection.
+      Name returns a HTML Collection
+      that you have to iterate over.
+      Hypothesis: You are not binding         Hypothesis: You are not creating           Hypothesis: The handleClick              Hypothesis: this.state is not being
+ 2    the scope of ’this’ for the callback.   the initial state.                         method has not been bound to the         defined properly. Since it is being
+      How To Test: Check that you are         How To Test: Check if you have             React component instance, and            done in constructor, it is causing
+      binding the callback for the click      created initial state in the construc-     so calling this.handleClick in the       this.setState to be null.
+      event with ’this. For example: call-    tor. For example: this.state = {}.         event handler set the calls ”this”       How To Test: check the correct
+      back.bind(this).                                                                   reference to an object other than        way to define state.
+                                                                                         the component, and so the setState
+                                                                                         method is not called on the right
+                                                                                         object.
+                                                                                         How      To     Test: Bind the
+                                                                                         handleClick method to the
+                                                                                         instance and try running it again.
+      Hypothesis: You are not setting the     Hypothesis:You are not assigning           Hypothesis: The animation CSS            Hypothesis:The clicked boolean
+ 3    new animation position correctly.       a callback to the click event.             under the else statement keeps the       property is being changed at an
+      How To Test:Check that the new          How To Test:Check if you have a            object at the same place as the if       incorrect location that is causing
+      position value is set correctly and     callback function to the click event.      statement, which is why the object       the if/else to malfunction.
+      in pixels. For example: 15px.           JQuery has this pattern:                   doesn’t move                             How To Test: remove the line 12
+                                              $(’#htmlId’).click(callback)               How To Test: Try changing the            and change line 20 to be changed
+                                                                                         position of object in CSS in the         = !changed;
+                                                                                         else statement around to see if the
+                                                                                         animation starts changing.
+
+
+
+C. Does offering potential hypotheses help participants debug                                                  TABLE III
+more successfully?                                                                     TASK SUCCESS AND MEDIAN TIME TO SUCCESS IN MINUTES FOR EACH
+                                                                                                           TASK BY CONDITION .
+   We investigated the impact of directly offering potential
+hypotheses on debugging success. Table III summarizes the                              Condition
+                                                                                                                       Success                  Median Time
+results. We found that participants who received potential                                                    Task1     Task2 Task3         Task1 Task2 Task3
+debugging hypotheses were six times more likely to fix the                             Control                4/8       2/6       5/6       28       13.5     14.3
+fault compared to the other groups (p = 0.0388). Surprisingly,                         Fault locations        2/6       4/6       7/8       16.6     25.3     21.6
+                                                                                       Potential hypotheses   5/6       5/8       6/6       24       18.1     12
+we found that offering potential hypotheses was a stronger
+predictor for debugging success than participants’ years of
+expertise (table IV).                                                                                            TABLE IV
+   The survey indicates that participants wanted the potential                         A N ORDINAL LOGISTIC REGRESSION TO EVALUATE THE IMPACT OF TWO
+                                                                                                   DEBUGGING AIDS ON DEBUGGING SUCCESS .
+hypotheses aid to be more helpful in locating the source code
+related to the hypothesis and to include an example.                                      variables                   Odd ratio     SE β     Wald     Sig. (p)
+      “[Potential hypotheses] weren’t usually very descrip-
+                                                                                          Fault locations                1.4         0.77      0.4    0.64
+      tive, and/or didn’t show an example. This would                                     Potential hypotheses          6.24         0.88       2     0.03*
+      have made them more helpful”.                                                       Years of experience           1.14         0.06       2     0.04*
+                                                                                          Technology knowledge          2.19         0.43     1.81    0.07.
+      “[Potential hypotheses] gave me a good suggestion
+      to find the bugs. They did not tell me the specific
+      position, and after I thought for a while, I could find
+      it out.”                                                                     0.61). To fix the defect, participants still needed to understand
+   These results suggest that potential hypotheses helped to set                   the hypothesis, find how it related to the defect, and read
+participants in the right direction to fix the defect and greatly                  additional information such as documentation. Participants
+increased their chance of success. However, we did not find                        who succeeded in the control, fault locations, and potential
+any significant differences in debugging time (f = 0.51, p =                       hypotheses conditions spent on average 5%, 17%, and 6%
+of their time reading documentation, respectively, with no          [39] suggests potential defect explanations along with fixes by
+significant differences between conditions (f = 1.7, p = 0.19).     identifying prior defect fixes with similar source code, error
+                                                                    messages, or failing tests [40]. However, despite their promise,
+        VI. L IMITATIONS AND T HREATS TO VALIDITY                   existing techniques for generating hypotheses are limited in
+   Our investigation of debugging hypotheses has several po-        ways that make them difficult to apply outside of an educa-
+tential threats to validity. One potential threat to validity is    tional context. These techniques rely on building a program
+the context in which participants worked during the study. We       specific database of potential defects and corresponding fixes,
+asked participants to use our study environment throughout the      limiting their applicability to situations where students solve
+study. To control for potential variation in participants’ search   the same programming problem.
+strategies in using external resources, we asked participants          Future debugging tools may extend the this by offering
+to not use the Internet and only use the resources offered to       developers potential hypotheses taken from similar incorrect
+them. While this does not represent the typical context of work     behavior across many different programs. But where would
+environments, we closely simulated how web developers work          potential hypotheses come from? Developers gain expertise
+by embedding a well-known editor2 in the study environment          by encountering and debugging many defects. Unfortunately,
+and gave participants the best documentation we found related       developers’ mechanisms for broadcasting this knowledge is
+to the debugging tasks.                                             limited. Developers may answers questions asked by cowork-
+   An additional potential threat to validity is in our selection   ers or in the developers’ community or write technical blog
+of debugging tasks. All of the tasks involved debugging             posts. But, as we found in our preliminary study, accessing the
+simple Web applications. Offering fault locations might benefit     appropriate hypothesis for the defect at hand may remain hard.
+developers more for larger programs. However, each task rep-        We argue that debugging tools can and should do better in
+resented a real debugging situation reported in Stack Overflow      helping developers share debugging knowledge. For example,
+after a developer struggled and needed help.                        debugging tools might be aware that a developer has succeeded
+   In our study, we extracted developers’ hypotheses by asking      in fixing a defect, and might prompt the developer to share
+them to enumerate as many hypotheses as possible before             a generalized explanation of what underlying cause. Other
+testing them. Although this may not represent how developers        developers who face similar defects in the future might then be
+debug using the scientific debugging strategy [2], it forces        furnished these debugging hypotheses by the debugging tool.
+developers to think through actions before taking them, closer         To illustrate how a developer might use such a debugging
+to the popular practice known as rubber duck debugging [37].        tool, consider a hypothetical example. When a developer
+                                                                    encounters a defect, she might ask the debugging tool for
+                        VII. DISCUSSION                             a list of potential hypotheses that match the current defect
+   Our work offer important new evidence on the role of             context. The debugging tool could then identify relevant
+hypotheses in the debugging process. The observations of            hypotheses, if available, and support the developer in testing
+professional developers in the preliminary study suggests that      them. When there are no relevant hypotheses, the developer
+even for developers with access to shared knowledge on the          could debug to find the cause of the defect. When she succeeds
+Internet, finding a correct hypothesis can still be a hard and      in debugging, the debugging tool might prompts the developer
+slow process. We found, in a lab setting, that developers with      to add contextual information about the defect and the correct
+the correct hypothesis early in the debugging process were          hypothesis to a database.
+five times more likely to succeed. But we also found that
+hypotheses were few in number. Developers were only able
+                                                                                         VIII. C ONCLUSIONS
+to formulate a median of two hypotheses, and less than half
+were able to formulate a correct hypothesis early in debugging.        Our studies offer new evidence for the importance of
+Even tools that suggest fault locations did not help developers     hypotheses to debugging. Lacking a correct hypothesis can
+to formulate more correct hypotheses or debug more success-         be an important barrier to making progress in debugging. To
+fully. This suggests that, while central to debugging success,      address this, we found that offering a debugging aid in the
+formulating a correct hypothesis is often hard.                     form of potential hypotheses made developers six time more
+   One way to address this issue may be through creating            likely to succeed in debugging. This suggests important new
+new forms of debugging tools which more effectively surface         opportunities for future tools that help developers to get started
+relevant debugging hypotheses to the developer. Our study           in finding a debugging hypothesis relevant to their task at hand.
+found initial indications of the potential benefits these tools
+might offer. Given potential explanations of the cause of a
+defect, developers were over six times more likely to succeed                           ACKNOWLEDGMENTS
+in fixing the defect. Several systems have begun to explore
+similar ideas in the context of helping novices diagnose pro-          We would like to thank the participants for their time. This
+gramming errors. For example, HelpMeOut [38] and NoFAQ              research was funded in part by NSF grant CCF-1703734 and
+                                                                    CCF-1845508. The first author is supported in part by a King
+  2 https://jsbin.com                                               Saudi University Graduate Fellowship.
+                               R EFERENCES                                          [24] Xiangyu Zhang, R. Gupta, and Youtao Zhang, “Precise dynamic slicing
+                                                                                         algorithms,” in ICSE Proceedings of the International Conference on
+                                                                                         Software Engineering, 2003, pp. 319–329.
+ [1] G. J. Myers, C. Sandler, and T. Badgett, The art of software testing.
+                                                                                    [25] C. Parnin and A. Orso, “Are automated debugging techniques actually
+     John Wiley & Sons, 2012.
+                                                                                         helping programmers?” in ISSTA Proceedings of the ACM SIGSOFT
+ [2] A. Zeller, Why Programs Fail: A Guide to Systematic Debugging.                      International Symposium on Software Testing and Analysis, 2011, pp.
+     Morgan Kaufmann, 2005.                                                              199–209.
+ [3] T. D. LaToza and B. A. Myers, “Developers ask reachability questions,”         [26] T. D. LaToza, G. Venolia, and R. DeLine, “Maintaining mental models:
+     in ICSE Proceedings of the International Conference on Software                     A study of developer work habits,” in ICSE Proceedings of the Interna-
+     Engineering, 2010, pp. 185–194.                                                     tional Conference on Software Engineering, 2006, pp. 492–501.
+ [4] A. Ko, “Debugging by asking questions about program output,” in ICSE           [27] L. Yang, M. Qiu, S. Gottipati, F. Zhu, J. Jiang, H. Sun, and Z. Chen,
+     Proceedings of the International Conference on Software Engineering,                “Asking the Right Question in Collaborative Q&A systems,” in Con-
+     2006, pp. 989–992.                                                                  ference on Information & Knowledge Management (CIKM), 2013, pp.
+ [5] J. Lawrance, C. Bogart, M. Burnett, R. Bellamy, K. Rector, and S. D.                99–108.
+     Fleming, “How programmers debug, revisited: An information forag-              [28] B. Vasilescu, A. Serebrenik, P. Devanbu, and V. Filkov, “How social
+     ing theory perspective,” IEEE Transactions on Software Engineering,                 Q&A sites are changing knowledge sharing in open source software
+     vol. 39, no. 2, pp. 197–215, Feb 2013.                                              communities,” in CSCW Conference on Computer Supported Coopera-
+ [6] Mark Weiser, “Program slicing,” in ICSE Proceedings of the Interna-                 tive Work & Social Computing, 2014, pp. 342–354.
+     tional Conference on Software Engineering, 1984, pp. 439–449.                  [29] C. Treude, O. Barzilay, and M.-A. Storey, “How do programmers ask and
+ [7] A. J. Ko and B. A. Myers, “Debugging reinvented,” in ICSE Proceedings               answer questions on the web?” in ICSE Proceedings of the International
+     of the International Conference on Software Engineering, 2008, pp. 301–             Conference on Software Engineering, 2011, pp. 804–807.
+     310.                                                                           [30] L. Mamykina, B. Manoim, M. Mittal, G. Hripcsak, and B. Hartmann,
+ [8] A. J. Ko, R. DeLine, and G. Venolia, “Information needs in collocated               “Design lessons from the fastest q&a site in the west,” in CHI Confer-
+     software development teams,” in ICSE Proceedings of the International               ence on Human Factors in Computing Systems, 2011, pp. 2857–2866.
+     Conference on Software Engineering, 2007, pp. 344–353.                         [31] M. Asaduzzaman, A. S. Mashiyat, C. K. Roy, and K. A. Schneider,
+ [9] M. Perscheid, B. Siegmund, M. Taeumel, and R. Hirschfeld, “Studying                 “Answering questions about unanswered questions of Stack Overflow,”
+     the advancement in debugging practice of professional software devel-               in MSR Conference on Mining Software Repositories, 2013, pp. 97–100.
+     opers,” Software Quality Journal, vol. 25, no. 1, pp. 83–110, 2017.            [32] A. Alaboudi and T. D. LaToza, “An exploratory study of live-streamed
+[10] T. Roehm, R. Tiarks, R. Koschke, and W. Maalej, “How do professional                programming,” in IEEE Symposium on Visual Languages and Human-
+     developers comprehend software?” in ICSE Proceedings of the Interna-                Centric Computing, 2019, pp. 5–13.
+     tional Conference on Software Engineering, Jun 2012, pp. 255–265.              [33] ——, “Supporting software engineering research and education by
+[11] J. Sillito, G. C. Murphy, and K. D. Volder, “Asking and Answering                   annotating public videos of developers programming,” in International
+     Questions during a Programming Change Task,” IEEE Transactions on                   Workshop on Cooperative and Human Aspects of Software Engineering,
+     Software Engineering, vol. 34, no. 4, pp. 434–451, Jul 2008.                        2019, pp. 117–118.
+[12] L. Layman, M. Diep, M. Nagappan, J. Singer, R. Deline, and G. Venolia,         [34] Replication package. Accessed: 2020-02-17. [Online]. Available:
+     “Debugging revisited: Toward understanding the debugging needs of                   https://archive.org/details/replication hypotheses 2020 202003
+     contemporary software developers,” in IEEE International Symposium             [35] S. Baltes and S. Diehl, “Towards a theory of software development ex-
+     on Empirical Software Engineering and Measurement, 2013, pp. 383–                   pertise,” in ESEC/FSE Proceedings of the Joint Meeting on Foundations
+     392.                                                                                of Software Engineering, 2018, pp. 187–200.
+                                                                                    [36] J. R. Landis and G. G. Koch, “The measurement of observer agreement
+[13] A. J. Ko, B. A. Myers, M. J. Coblenz, and H. H. Aung, “An Ex-
+                                                                                         for categorical data,” Biometrics, vol. 33, pp. 159–174, 1977.
+     ploratory Study of How Developers Seek, Relate, and Collect Relevant
+                                                                                    [37] H. Andrew and T. David, The pragmatic programmer. Addison-Wesley,
+     Information during Software Maintenance Tasks,” IEEE Transactions on
+                                                                                         2000.
+     software engineering, vol. 32, no. 12, pp. 971–987, 2006.
+                                                                                    [38] B. Hartmann, D. MacDougall, J. Brandt, and S. R. Klemmer, “What
+[14] Z. Coker, D. G. Widder, C. Le Goues, C. Bogart, and J. Sunshine, “A                 would other programmers do: suggesting solutions to error messages,”
+     qualitative study on framework debugging,” in International Conference              in CHI Conference on Human Factors in Computing Systems, 2010, pp.
+     on Software Maintenance and Evolution, 2019, pp. 568–579.                           1019–1028.
+[15] R. Brooks, “Towards a theory of the comprehension of computer                  [39] L. D’Antoni, R. Singh, and M. Vaughn, “Nofaq: Synthesizing command
+     programs,” International Journal of Man-Machine Studies, vol. 18, no. 6,            repairs from examples,” in ESEC/FSE Proceedings of the Joint Meeting
+     pp. 543–554, Jun 1983.                                                              on Foundations of Software Engineering, 2017, pp. 582–592.
+[16] S. Letovsky, “Cognitive processes in program comprehension,” The               [40] E. L. Glassman, A. Lin, C. J. Cai, and R. C. Miller, “Learner sourcing
+     Journal of Systems and Software, vol. 7, no. 4, pp. 325–339, Dec 1987.              personalized hints,” in CSCW Conference on Computer Supported
+[17] A. Von Mayrhauser and A. Vans, “On the role of hypotheses during                    Cooperative Work & Social Computing, 2016, pp. 1626–1636.
+     opportunistic understanding while porting large scale code,” in ICPC
+     International Workshop on Program Comprehension, 1996, pp. 68–77.
+[18] R. Jeffries, “A comparison of the debugging behavior of expert and
+     novice programmers,” Proceedings of AERA annual meeting, 1982.
+[19] D. C. Littman, J. Pinto, S. Letovsky, and E. Soloway, “Mental models
+     and software maintenance,” The Journal of Systems and Software, vol. 7,
+     no. 4, pp. 341–355, 1987.
+[20] M. Böhme, E. O. Soremekun, S. Chattopadhyay, E. Ugherughe, and
+     A. Zeller, “Where is the bug and how is it fixed? an experiment
+     with practitioners,” in ESEC/FSE Proceedings of the Joint Meeting on
+     Foundations of Software Engineering, 2017, pp. 117–128.
+[21] I. Vessey, “Expertise in debugging computer programs: A process
+     analysis,” International Journal of Man-Machine Studies, vol. 23, pp.
+     459–494, 1985.
+[22] R. A. DeMillo, H. Pan, E. H. Spafford, R. A. DeMillo, H. Pan, and
+     E. H. Spafford, “Critical slicing for software fault localization,” in ISSTA
+     Proceedings of the ACM SIGSOFT International Symposium on Software
+     Testing and Analysis, 1996, pp. 121–134.
+[23] X. Zhang, N. Gupta, and R. Gupta, “Pruning dynamic slices with
+     confidence,” in PLDI Conference on Programming Language Design
+     and Implementation, no. 6, 2006, pp. 169–180.
+

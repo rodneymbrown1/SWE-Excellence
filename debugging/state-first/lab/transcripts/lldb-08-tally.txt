@@ -1,0 +1,32 @@
+(lldb) target create "./gateway"
+Current executable set to '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64).
+(lldb) command source -s 0 'lldb/08-tally.lldb'
+Executing commands in '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/lldb/08-tally.lldb'.
+(lldb) # A1 + A2: tally every caller of LinkMonitor::on_event and every (state, event) cell that really occurs.
+(lldb) settings set auto-confirm true
+(lldb) command script import lldb/probes.py
+(lldb) breakpoint set -n LinkMonitor::on_event
+Breakpoint 1: where = gateway`LinkMonitor::on_event(Event const&) + 28 at gateway.cpp:75:12, address = 0x0000000100000aa8
+(lldb) breakpoint command add -F probes.tally_caller_and_cell 1
+(lldb) breakpoint set -n Gateway::summary
+Breakpoint 2: where = gateway`Gateway::summary() const + 24 at gateway.cpp:154:22, address = 0x0000000100000688
+(lldb) breakpoint command add -F probes.show_tallies 2
+(lldb) run --max 400
+[t=  3] Down     -> Up       (missed=0 good=3)
+[t= 23] Up       -> Degraded (missed=4 good=0)
+[t= 27] Degraded -> Down     (missed=8 good=0)
+[t= 29] Down     -> Up       (missed=0 good=3)
+[t=123] Up       -> Degraded (missed=4 good=0)
+[t=127] Degraded -> Down     (missed=8 good=0)
+[t=134] Down     -> Up       (missed=0 good=3)
+callers of LinkMonitor::on_event (function:line  count)
+  Gateway::dispatch(Event const&):159 400
+  Gateway::flush_burst(Event const&):170 93
+observed state x event (count of events seen in that state)
+                 Tick  Heartbeat     Data
+  Down             12          9        9
+  Up              160        150      135
+  Degraded          8          1        9
+final: state=Up forwarded=54 dropped=6 data_seen=153
+Process 84318 launched: '/Users/rodneymbrown/.open-canvas/projects/SWE-excellence/debugging/state-first/lab/gateway' (arm64)
+Process 84318 exited with status = 0 (0x00000000)

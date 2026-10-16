@@ -1,0 +1,44 @@
+--- a/gateway.cpp
++++ b/gateway.cpp
+@@ -95,6 +95,7 @@
+       LinkState from = state_;
+       state_ = LinkState::Degraded;
+       good_ = 0;
++      outage_start_ = now_;
+       announce(from);
+     } else if (state_ == LinkState::Degraded && missed_ >= kDownAfter) {
+       LinkState from = state_;
+@@ -113,6 +114,7 @@
+         LinkState from = state_;
+         state_ = LinkState::Up;
+         announce(from);
++        report_outage();
+       }
+     } else {  // Degraded
+       missed_ = 0;  // R5: a heartbeat always clears the missed-tick count
+@@ -120,10 +122,17 @@
+         LinkState from = state_;
+         state_ = LinkState::Up;
+         announce(from);
++        report_outage();
+       }
+     }
+   }
+ 
++  void report_outage() {
++    if (outage_start_ < 0) return;  // first connect: there was no outage
++    std::printf("[t=%3d] link recovered after %d ticks\n", now_, now_ - outage_start_);
++    outage_start_ = -1;
++  }
++
+   void announce(LinkState from) const {
+     std::printf("[t=%3d] %-8s -> %-8s (missed=%d good=%d)\n", now_, name(from),
+                 name(state_), missed_, good_);
+@@ -133,6 +142,7 @@
+   int missed_ = 0;     // ticks since the last heartbeat
+   int good_ = 0;       // consecutive heartbeats seen
+   int now_ = 0;
++  int outage_start_ = -1;  // tick when we last left Up; -1 = no outage open
+   int data_seen_ = 0;
+ };
+ 

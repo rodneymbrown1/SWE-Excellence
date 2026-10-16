@@ -1,0 +1,14 @@
+--- a/gateway.cpp
++++ b/gateway.cpp
+@@ -115,10 +115,10 @@
+         announce(from);
+       }
+     } else {  // Degraded
++      missed_ = 0;  // R5: a heartbeat always clears the missed-tick count
+       if (++good_ >= kRecoverAfter) {
+         LinkState from = state_;
+         state_ = LinkState::Up;
+-        missed_ = 0;
+         announce(from);
+       }
+     }

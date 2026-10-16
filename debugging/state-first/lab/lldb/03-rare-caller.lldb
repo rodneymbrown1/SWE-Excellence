@@ -1,0 +1,9 @@
+# Probe 3 (FILTER by caller): stop on LinkMonitor::on_event only when flush_burst called it.
+settings set auto-confirm true
+command script import lldb/probes.py
+breakpoint set -n LinkMonitor::on_event
+breakpoint command add -F probes.stop_if_called_from_flush_burst 1
+run --max 400
+bt
+p e
+kill
