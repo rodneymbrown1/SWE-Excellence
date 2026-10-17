@@ -1,0 +1,15 @@
+1/10 chopped to 23 binary places after the point: error per tick = 9.537e-08 s
+1/10 chopped to 24 binary places after the point: error per tick = 3.576e-08 s
+
+hours   our drift (23 places)   GAO clock error   GAO range-gate shift (m)   implied speed (m/s)
+    1         0.0034 s           0.0034 s                7                  2059
+    8         0.0275 s           0.0275 s               55                  2000
+   20         0.0687 s           0.0687 s              137                  1994
+   48         0.1648 s           0.1648 s              330                  2002
+   72         0.2472 s           0.2472 s              494                  1998
+  100         0.3433 s           0.3433 s              687                  2001
+
+The 23-place chop matches the GAO table to 4 decimals. The register is 24 bits wide, and because
+0.1 < 0.5 its first fractional bit is zero, so the stored value effectively keeps 23 places.
+(This explanation of the match is ours; GAO states only that the register is 24 bits.)
+The range-gate shifts are GAO's numbers; they imply a closing speed of about 2,000 m/s.

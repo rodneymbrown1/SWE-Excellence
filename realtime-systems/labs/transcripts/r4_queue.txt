@@ -1,0 +1,15 @@
+R4: ISR producer (100/s + 20-message burst each second), consumer 5 ms/msg, 5000 ms of traffic per case
+
+policy       depth delivered  dropped peak depth    p50 ms max lat ms
+drop_newest      4       526       75         4         5         24
+drop_newest      8       546       55         8         5         44
+drop_newest     18       596        5        18         5         91
+drop_newest     19       601        0        19         5         95
+drop_newest     32       601        0        19         5         95
+
+drop_oldest      4       526       75         4         5         20
+drop_oldest      8       546       55         8         5         40
+drop_oldest     18       596        5        18         5         90
+drop_oldest     19       601        0        19         5         95
+
+Note 'peak depth' counts queued items only (the one being processed is not in the queue).

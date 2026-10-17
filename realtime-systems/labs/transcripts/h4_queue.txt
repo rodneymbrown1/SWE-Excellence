@@ -1,0 +1,25 @@
+burst: 20 msgs at 1000/s once per second, on top of 100/s steady; service 5 ms/msg (capacity 200/s)
+
+sizing rule:  depth >= ceil((peak_rate - service_rate) * burst_duration) + 1
+            = ceil((1100 - 200) * 0.020) + 1 = 19 slots
+
+policy       depth delivered  dropped maxdepth    p50 ms    p99 ms   max lat ms
+drop_newest      4      1047      134        5       5.0      24.5         25.0
+drop_newest      8      1083       98        9       5.0      44.5         45.0
+drop_newest     18      1173        8       19       5.0      86.5         95.0
+drop_newest     19      1181        0       20       5.0      90.5         95.0
+drop_newest     32      1181        0       20       5.0      90.5         95.0
+
+drop_oldest      4      1047      134        5       5.0      20.0         25.0
+drop_oldest      8      1083       98        9       5.0      40.0         45.0
+drop_oldest     18      1173        8       19       5.0      86.5         95.0
+drop_oldest     19      1181        0       20       5.0      90.5         95.0
+drop_oldest     32      1181        0       20       5.0      90.5         95.0
+
+block            4      1181        0        5       5.0     155.5        165.0
+block            8      1181        0        9       5.0     135.5        145.0
+block           18      1181        0       19       5.0      90.5         95.0
+block           19      1181        0       20       5.0      90.5         95.0
+block           32      1181        0       20       5.0      90.5         95.0
+
+Little's law check (depth 32, nothing dropped): time-average items in system L = 2.209;  lambda * W = 2.209

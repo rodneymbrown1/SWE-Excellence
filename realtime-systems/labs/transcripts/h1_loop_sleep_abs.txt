@@ -1,0 +1,4 @@
+mode=sleep_abs period=10000us work=2000us noise=0us iterations=300
+wall time: 3001.6 ms   ideal: 3000.0 ms   drift: 1.6 ms
+start lateness (us):  min=0  median=1612  p99=1997  max=2719
+interval (us):        min=8408  median=9998  p99=11902  max=12011

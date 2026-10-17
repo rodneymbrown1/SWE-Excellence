@@ -1,0 +1,20 @@
+--- a/main.c
++++ b/main.c
+@@ -30,7 +30,7 @@
+ #endif
+ #define RUN_SAMPLES 3000         /* about 3 s at 997 us per sample */
+ #define IMU_PERIOD_US 997
+-#define RAW_DEPTH 4
++#define RAW_DEPTH 8            /* sized from the worst burst: 6.4 ms of filter stall at one sample per ~1 ms, plus margin */
+ 
+ typedef struct { uint32_t seq, t_us; int32_t gyro; } raw_t;
+ typedef struct { uint32_t seq, t_us; int32_t angle; int32_t angle_inv; } att_t;      /* invariant: angle_inv == ~angle */
+@@ -131,7 +131,7 @@
+     uint64_t sum = 0; for (uint32_t i = 0; i < nlat; i++) sum += lat_us[i];
+     kprintf("\n--- first look (what a dashboard would show) ---\n");
+     kprintf("samples produced   : %lu\n", (unsigned long)produced);
+-    kprintf("estimates published: %lu\n", (unsigned long)filtered);
++    kprintf("estimates published: %lu   dropped before the filter: %lu\n", (unsigned long)filtered, (unsigned long)dropped_raw);
+     kprintf("commands applied   : %lu\n", (unsigned long)actuated);
+     kprintf("mean latency       : %lu us\n", (unsigned long)(nlat ? sum / nlat : 0));
+     kprintf("control cycles     : %lu (expected ~%d)\n", (unsigned long)ctrl_cycles, (RUN_SAMPLES * IMU_PERIOD_US / 1000 + 100) / 10);

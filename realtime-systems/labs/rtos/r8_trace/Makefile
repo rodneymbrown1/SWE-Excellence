@@ -1,0 +1,4 @@
+NAME = r8_trace
+TRACE ?= 0
+EXTRA_CFLAGS = -DconfigUSE_TICK_HOOK=1 -DLAB_TRACE -DconfigGENERATE_RUN_TIME_STATS=1 -DDUMP_TRACE=$(TRACE)
+include ../common/rules.mk

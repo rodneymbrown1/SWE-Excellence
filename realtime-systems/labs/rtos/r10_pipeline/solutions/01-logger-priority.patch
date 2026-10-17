@@ -1,0 +1,11 @@
+--- a/main.c
++++ b/main.c
+@@ -120,7 +120,7 @@
+     xTaskCreate(filter,   "filter",   2 * configMINIMAL_STACK_SIZE, NULL, 4, &h[0]);
+     xTaskCreate(control,  "control",  2 * configMINIMAL_STACK_SIZE, NULL, 3, &h[1]);
+     xTaskCreate(actuator, "actuator", 2 * configMINIMAL_STACK_SIZE, NULL, 5, &h[2]);
+-    xTaskCreate(logger,   "logger",   2 * configMINIMAL_STACK_SIZE, NULL, 6, &h[3]);
++    xTaskCreate(logger,   "logger",   2 * configMINIMAL_STACK_SIZE, NULL, 1, &h[3]);   /* below every real-time task */
+     for (int i = 0; i < 4; i++) vTaskSetTaskNumber(h[i], (UBaseType_t)(i + 1));
+     vTaskDelay(1);
+     trace_reset();

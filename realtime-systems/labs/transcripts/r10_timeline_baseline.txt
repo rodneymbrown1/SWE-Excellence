@@ -1,0 +1,10 @@
+window 0.0..80.0 ms, 1 char = 1000 us
+           |         |         |         |         |         |         |         |         
+idle/other #########################    ##############################################    #
+filter     ########################  ################################################  ####
+control       ##        ##             ##   ##        ##        ##        ##             ##
+actuator      ##        ##             ##   ##        ##        ##        ##              #
+logger                            ####                                              ####   
+
+CPU share in window: idle/other 45.8%  filter 42.5%  logger 7.6%  actuator 2.3%  control 1.8%
+context switches in window: 186

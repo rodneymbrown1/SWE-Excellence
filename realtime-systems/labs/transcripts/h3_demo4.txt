@@ -1,0 +1,25 @@
+== 4. Priority inversion: H needs a lock that L holds, M is CPU-bound in between ==
+
+protocol = none      H released at 5, finished at 56, response = 51 (deadline 50) -> MISS
+  0         10        20        30        40        50        60        
+  |         |         |         |         |         |         |         
+H      #bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb#######          
+M       ########################################                        
+L #####.........................................#######.......##        
+
+protocol = inherit   H released at 5, finished at 16, response = 11 (deadline 50) -> ok
+  0         10        20        30        40        50        60        
+  |         |         |         |         |         |         |         
+H      #bbbbbbb###                                       ####           
+M       ..........#######################################....#          
+L #####.#######...............................................##        
+
+protocol = ceiling   H released at 5, finished at 16, response = 11 (deadline 50) -> ok
+  0         10        20        30        40        50        60        
+  |         |         |         |         |         |         |         
+H      .......####                                       ####           
+M       ..........#######################################....#          
+L ############................................................##        
+
+legend: '#' running   '.' ready (preempted or waiting for CPU)   'b' blocked on the lock
+

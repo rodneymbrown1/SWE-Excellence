@@ -1,0 +1,10 @@
+window 0.0..120.0 ms, 1 char = 1000 us
+           |         |         |         |         |         |         |         |         |         |         |         |         
+idle/other                                                               ###########################################               
+bc_sched   #   #                                                 #                                                 #               
+bus_dist   #   ##                                               ########                                           #####           
+comms      #    #########################################                                                              ############
+met        #####                                        #########      ###                                                         
+
+CPU share in window: comms 42.9%  idle/other 35.2%  met 11.7%  bus_dist 10.1%  bc_sched 0.1%
+context switches in window: 17

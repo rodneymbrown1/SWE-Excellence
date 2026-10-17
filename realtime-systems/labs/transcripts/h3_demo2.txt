@@ -1,0 +1,16 @@
+== 2. Rate-monotonic misses, EDF does not ==
+U = 0.971  (< 1, so EDF can schedule it; > LL bound(2) = 0.828)
+RTA: {'t1': (2, True), 't2': (8, False)}
+
+FP: misses = [('t2', 'job 0', 'deadline 7', 'finished 8')]
+   0         10        20        30   
+   |         |         |         |    
+t1 ##   ##   ##   ##   ##   ##   ##   
+t2 ..###..###..###..### .###..###..## 
+
+EDF: misses = []
+   0         10        20        30   
+   |         |         |         |    
+t1 ##   .##  ..## ##   ##   .##  ..## 
+t2 ..#### .####  #..### .####  ####   
+

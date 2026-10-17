@@ -1,0 +1,7 @@
+R1: tick = 1000 Hz (1 tick = 1000 us); work per iteration = 3000 us; wanted period = 10 ms
+
+(a) work + vTaskDelay      interval us: min=12934 mean=12999 max=13000 | after 99 iterations: elapsed=1286934 us, ideal=990000 us, drift=296934 us
+(b) work + vTaskDelayUntil interval us: min= 9847 mean= 9998 max=10000 | after 99 iterations: elapsed=989847 us, ideal=990000 us, drift=-153 us
+(c) vTaskDelay(1) lasted between 24 us and 999 us (one tick = 1000 us)
+
+Lesson: a delay of N ticks is 'at least N-1 ticks plus the rest of the current one'. Use vTaskDelayUntil for periods.

@@ -1,0 +1,15 @@
+== 3a. Transient overload (Buttazzo 2005, Fig. 9; times doubled so 1.5 becomes 3) ==
+normal: U = 0.817  RTA ok = True
+with the overrun in t1 jobs 0 and 1, the tasks that miss are: ['t2']   <- NOT the longest-period task t4
+   0         10        20        30        40        50        60        
+   |         |         |         |         |         |         |         
+t1 #######   #######   ####      ####      ####      ####      ####      
+t2 .......###.......###....######      ####....##        ######          
+t3 ..................................##    ......##                      
+t4 ................................................##          ....##    
+
+== 3b. Permanent overload, U = 1.25 (Buttazzo: C=(4,6,5), T=(8,12,20)); jobs COMPLETED in 120 ticks ==
+FP  {'a': 15, 'b': 10, 'c': 0}
+EDF {'a': 12, 'b': 8, 'c': 4}
+Under fixed priority the lowest-priority task starves; EDF slows every task by the same factor U.
+

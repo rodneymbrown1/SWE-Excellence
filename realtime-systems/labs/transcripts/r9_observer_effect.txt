@@ -1,0 +1,7 @@
+[   0 ms] us=4331 task A: iteration 0
+[   0 ms] us=4370 task B: iteration 0
+[ 100 ms] us=104317 task A: iteration 1
+[ 100 ms] us=104360 task B: iteration 1
+--- same program, two silent breakpoints on 'worker' (each one stops the target, then resumes it) ---
+[   2 ms] us=6313 task A: iteration 0
+[   2 ms] us=6352 task B: iteration 0

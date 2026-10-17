@@ -1,0 +1,26 @@
+n  bound
+1   1.0000
+2   0.8284
+3   0.7798
+4   0.7568
+5   0.7435
+10  0.7177
+100 0.6956
+ln 2 = 0.6931
+
+Set A: U = 0.833 > LL bound(3) = 0.780
+  RTA: {'t1': (1, True), 't2': (3, True), 't3': (10, True)}
+   0         10
+   |         | 
+t1 #   #   #   
+t2 .##   ##    
+t3 ...#.#...#  
+
+Set B: U = 0.971   RM misses=1   EDF misses=0
+
+protocol=none     H max response=51  H misses=1
+
+protocol=inherit  H max response=11  H misses=0
+
+protocol=ceiling  H max response=11  H misses=0
+self-test OK

@@ -1,0 +1,12 @@
+R0: FreeRTOS on QEMU mps2-an385, tick = 1000 Hz
+[   0 ms] us=4331 task A: iteration 0
+[   0 ms] us=4370 task B: iteration 0
+[ 100 ms] us=104317 task A: iteration 1
+[ 100 ms] us=104360 task B: iteration 1
+[ 200 ms] us=204317 task A: iteration 2
+[ 200 ms] us=204360 task B: iteration 2
+[ 300 ms] us=304317 task A: iteration 3
+[ 300 ms] us=304360 task B: iteration 3
+[ 400 ms] us=404317 task A: iteration 4
+[ 400 ms] us=404360 task B: iteration 4
+[ 700 ms] done. free heap=46568 bytes

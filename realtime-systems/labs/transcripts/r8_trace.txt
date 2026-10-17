@@ -1,0 +1,17 @@
+R8: tasks C/T = 1/4, 2/6, 3/12 ms, plus an interrupt every 2 ms costing 250 us
+
+1. response times (us)
+   task   deadline  measured max   RTA without ISR   RTA with ISR   misses
+   t1        4000          1260              1000           1250        0
+   t2        6000          3534              3000           3500        0
+   t3       12000         11619             10000          11500        0
+   interrupts fired: 1199
+
+2. kernel run-time statistics (time spent in each task; interrupt time is charged to the task it interrupted)
+   manager      0.0%
+   IDLE         3.1%
+   Tmr Svc      0.1%
+   t1          31.5%
+   t2          37.7%
+   t3          27.3%
+   (expected: t1 25%, t2 33%, t3 25% from C/T alone; the interrupt adds 12.5%, mostly charged to whoever it interrupted)

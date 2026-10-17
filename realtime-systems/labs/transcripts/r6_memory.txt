@@ -1,0 +1,21 @@
+Part 1: stack high-water marks (words free at the worst point so far; stack depth given at creation)
+  manager    prio 5  min-ever-free stack =  145 words (580 bytes)
+  IDLE       prio 0  min-ever-free stack =  118 words (472 bytes)
+  Tmr Svc    prio 7  min-ever-free stack =  224 words (896 bytes)
+  (the tasks were created with 256 words: any task near zero is one code change from an overflow)
+
+Part 2: heap_4 fragmentation (heap = 49152 bytes; 40 blocks of 1000 bytes)
+  allocated 40 blocks
+  after allocating             free total= 5736 B   largest free block= 5736 B   free blocks= 1   min ever free= 5736 B
+  after freeing every other    free total=25896 B   largest free block= 5736 B   free blocks=21   min ever free= 5736 B
+  pvPortMalloc(8000) -> NULL (FAILED)   (total free is large, but no single hole is)
+  after freeing the rest       free total=46056 B   largest free block=46056 B   free blocks= 1   min ever free= 5736 B
+  pvPortMalloc(8000) -> OK (blocks coalesced)
+
+Part 3: stack overflow (configCHECK_FOR_STACK_OVERFLOW = 2)
+  victim: stack is 128 words (512 bytes); recursing 8 levels (~1.2 KB) ...
+  victim: returned from the recursion. The stack is already overrun, and NOTHING has noticed.
+  >>> stack overflow hook: task 'victim' (reported at context switch, tick 1)
+  >>> stack overflow hook: task 'victim' (reported at context switch, tick 2)
+  overflow hook calls: 11.  Bytes of the neighbouring heap block that were silently overwritten: 720 of 2048
+  The check only runs at a context switch, so it reports AFTER the damage; method 2 also only inspects the last 20 bytes of the stack.

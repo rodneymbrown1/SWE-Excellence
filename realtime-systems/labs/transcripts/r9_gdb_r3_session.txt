@@ -1,0 +1,81 @@
+freertos.py loaded: fr-tasks, fr-tick, fr-queue
+Reset_Handler () at ../common/startup.c:40
+40	void Reset_Handler(void) {
+
+### 1. LOGPOINT: log every bus_dist job without touching the code (phase 1 = binary semaphore)
+Breakpoint 1 at 0x536: file labs/third_party/FreeRTOS-Kernel/tasks.c, line 2418.
+
+### 2. WATCHPOINT on a shared variable: stop when bc_sched declares the first reset
+Hardware watchpoint 2: resets
+
+### 3. PROBE THE KERNEL: stop where the kernel raises a task's priority (only a MUTEX does this)
+Breakpoint 3 at 0x128c: file labs/third_party/FreeRTOS-Kernel/tasks.c, line 6747.
+tick   12: bus_dist finished job 0, response 5 ms
+tick   70: bus_dist finished job 1, response 13 ms
+tick  112: bus_dist finished job 2, response 5 ms
+tick  162: bus_dist finished job 3, response 5 ms
+
+>>> resets became 1 at tick 257
+task         state                      prio  notes
+Tmr Svc      suspended/blocked-forever     7  blocked on queue/semaphore @0x20000ab0 (waiting to receive)
+manager      delayed                       7  
+bc_sched     RUNNING                       6  
+bus_dist     suspended/blocked-forever     5  blocked on queue/semaphore @0x20000ff0 (waiting to receive)
+comms        delayed                       4  
+met          ready                         3  
+IDLE         ready                         0  
+
+--- the lock (a binary semaphore): who owns it? ---
+items waiting = 0   length = 1   item size = 0
+(no owner: counting/binary semaphores and queues are not owned by anyone)
+xTasksWaitingToReceive: bus_dist
+
+tick  262: bus_dist finished job 4, response 55 ms
+tick  267: bus_dist finished job 5, response 10 ms
+tick  312: bus_dist finished job 6, response 5 ms
+tick  362: bus_dist finished job 7, response 5 ms
+tick  462: bus_dist finished job 8, response 55 ms
+tick  467: bus_dist finished job 9, response 10 ms
+tick  512: bus_dist finished job 10, response 5 ms
+tick  562: bus_dist finished job 11, response 5 ms
+tick  662: bus_dist finished job 12, response 55 ms
+tick  667: bus_dist finished job 13, response 10 ms
+tick  712: bus_dist finished job 14, response 5 ms
+tick  762: bus_dist finished job 15, response 5 ms
+tick  862: bus_dist finished job 16, response 55 ms
+tick  867: bus_dist finished job 17, response 10 ms
+tick  912: bus_dist finished job 18, response 5 ms
+tick  962: bus_dist finished job 19, response 5 ms
+tick 1020: bus_dist finished job 0, response 5 ms
+
+Breakpoint 3, xTaskPriorityInherit (pxMutexHolder=0x20002188 <ucHeap+8116>) at labs/third_party/FreeRTOS-Kernel/tasks.c:6747
+6747	        TCB_t * const pxMutexHolderTCB = pxMutexHolder;
+
+>>> xTaskPriorityInherit called at tick 1067 (phase 2: the lock is a mutex)
+before the boost:
+task         state                      prio  notes
+Tmr Svc      suspended/blocked-forever     7  blocked on queue/semaphore @0x20000ab0 (waiting to receive)
+manager      delayed                       7  
+bc_sched     delayed                       6  
+bus_dist     RUNNING                       5  
+comms        delayed                       4  
+met          ready                         3  
+IDLE         ready                         0  
+0x00001e0e in xQueueSemaphoreTake (xQueue=0x20000ff0 <ucHeap+3612>, xTicksToWait=4294967295) at labs/third_party/FreeRTOS-Kernel/queue.c:1795
+1795	                            xInheritanceOccurred = xTaskPriorityInherit( pxQueue->u.xSemaphore.xMutexHolder );
+Value returned is $1 = 1
+
+after the boost (back in xQueueSemaphoreTake):
+task         state                      prio  notes
+Tmr Svc      suspended/blocked-forever     7  blocked on queue/semaphore @0x20000ab0 (waiting to receive)
+manager      delayed                       7  
+bc_sched     delayed                       6  
+bus_dist     RUNNING                       5  
+met          ready                         5    <-- priority 5 inherited (base 3)
+comms        delayed                       4  
+IDLE         ready                         0  
+
+--- the lock (a mutex): who owns it? ---
+items waiting = 0   length = 1   item size = 0
+mutex holder = met
+[Inferior 1 (process 1) killed]

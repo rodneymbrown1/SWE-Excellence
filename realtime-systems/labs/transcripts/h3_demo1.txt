@@ -1,0 +1,10 @@
+== 1. U above the bound, still schedulable ==
+U = 0.833   LL bound(3) = 0.780  -> the bound test is inconclusive
+RTA: {'t1': (1, True), 't2': (3, True), 't3': (10, True)}
+simulation over one hyperperiod: misses = 0
+   0         10
+   |         | 
+t1 #   #   #   
+t2 .##   ##    
+t3 ...#.#...#  
+

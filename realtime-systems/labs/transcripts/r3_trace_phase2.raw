@@ -1,0 +1,113 @@
+R3: priority inversion. H=bus_dist(5) M=comms(4) L=met(3); H and L share LOCK.
+
+=== Phase 1: LOCK = binary semaphore (no priority inheritance) ===
+  [  55 ms] bc_sched: bus_dist did not finish its cycle -> RESET #1
+  [ 255 ms] bc_sched: bus_dist did not finish its cycle -> RESET #2
+  [ 455 ms] bc_sched: bus_dist did not finish its cycle -> RESET #3
+  [ 655 ms] bc_sched: bus_dist did not finish its cycle -> RESET #4
+  [ 855 ms] bc_sched: bus_dist did not finish its cycle -> RESET #5
+bus_dist: 20 jobs, response times of the first 6 (ms): 51 5 4 4 51 5
+bus_dist deadline misses (response > 50 ms): 5     resets: 5
+
+=== Phase 2: LOCK = mutex (priority inheritance) ===
+bus_dist: 20 jobs, response times of the first 6 (ms): 11 4 4 4 11 4
+bus_dist deadline misses (response > 50 ms): 0     resets: 0
+N 1 bc_sched
+N 2 bus_dist
+N 3 comms
+N 4 met
+T 1011746 1 1 0
+T 1011756 1 2 0
+T 1011766 1 3 0
+T 1011776 1 4 0
+T 1016246 1 1 0
+T 1016256 1 2 0
+T 1017281 1 4 0
+T 1024847 1 2 0
+T 1027867 1 3 0
+T 1066246 1 1 0
+T 1066256 1 2 0
+T 1070278 1 3 0
+T 1071960 1 4 0
+T 1073973 1 0 0
+T 1116246 1 1 0
+T 1116256 1 2 0
+T 1120280 1 3 0
+T 1160334 1 0 0
+T 1166246 1 1 0
+T 1166256 1 2 0
+T 1170279 1 0 0
+T 1211244 1 4 0
+T 1216246 1 1 0
+T 1216256 1 2 0
+T 1217281 1 4 0
+T 1224315 1 2 0
+T 1227335 1 3 0
+T 1266246 1 1 0
+T 1266256 1 2 0
+T 1270278 1 3 0
+T 1271428 1 4 0
+T 1273441 1 0 0
+T 1316246 1 1 0
+T 1316256 1 2 0
+T 1320280 1 3 0
+T 1360334 1 0 0
+T 1366246 1 1 0
+T 1366256 1 2 0
+T 1370279 1 0 0
+T 1411244 1 4 0
+T 1416246 1 1 0
+T 1416256 1 2 0
+T 1417281 1 4 0
+T 1424315 1 2 0
+T 1427335 1 3 0
+T 1466246 1 1 0
+T 1466256 1 2 0
+T 1470278 1 3 0
+T 1471428 1 4 0
+T 1473441 1 0 0
+T 1516246 1 1 0
+T 1516256 1 2 0
+T 1520280 1 3 0
+T 1560334 1 0 0
+T 1566246 1 1 0
+T 1566256 1 2 0
+T 1570279 1 0 0
+T 1611244 1 4 0
+T 1616246 1 1 0
+T 1616256 1 2 0
+T 1617281 1 4 0
+T 1624315 1 2 0
+T 1627335 1 3 0
+T 1666246 1 1 0
+T 1666256 1 2 0
+T 1670278 1 3 0
+T 1671428 1 4 0
+T 1673441 1 0 0
+T 1716246 1 1 0
+T 1716256 1 2 0
+T 1720280 1 3 0
+T 1760334 1 0 0
+T 1766246 1 1 0
+T 1766256 1 2 0
+T 1770279 1 0 0
+T 1811244 1 4 0
+T 1816246 1 1 0
+T 1816256 1 2 0
+T 1817281 1 4 0
+T 1824315 1 2 0
+T 1827335 1 3 0
+T 1866246 1 1 0
+T 1866256 1 2 0
+T 1870278 1 3 0
+T 1871428 1 4 0
+T 1873441 1 0 0
+T 1916246 1 1 0
+T 1916256 1 2 0
+T 1920280 1 3 0
+T 1960334 1 0 0
+T 1966246 1 1 0
+T 1966256 1 2 0
+T 1970279 1 0 0
+T 2011244 1 4 0
+T 2016248 1 0 0

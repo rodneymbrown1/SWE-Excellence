@@ -1,0 +1,24 @@
+tasks: 4   utilization U = 0.450   hyperperiod = 200
+Liu-Layland bound for n=4: 0.757   -> U <= bound: schedulable under RM (sufficient test)
+hyperbolic bound (prod(U_i+1) <= 2): passes     harmonic periods: no
+
+Response-time analysis (fixed priority, rate-monotonic):
+task   prio     C     T     D     B   R(worst)  slack  ok?
+sense     4     1    10    10     0         1      9  yes
+filter    3     3    20    20     0         4     16  yes
+control    2     4    40    40     0         8     32  yes
+log       1    10   100   100     0        19     81  yes
+
+Simulation (FP, critical instant at t=0, 200 ticks): deadline misses = 0
+task   prio    C     T     D   jobs  max-R  misses
+sense     4    1    10    10    20      1       0
+filter    3    3    20    20    10      4       0
+control    2    4    40    40     5      8       0
+log       1   10   100   100     2     19       0
+
+        0         10        20        30        40        50        
+        |         |         |         |         |         |         
+sense   #         #         #         #         #         #         
+filter  .###                .###                .###                
+control ....####                                ....####            
+log     ........##.########                                         

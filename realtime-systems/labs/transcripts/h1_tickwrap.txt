@@ -1,0 +1,17 @@
+start=240 timeout=30 deadline=14 (wrapped)
+
+elapsed  now  naive(now>=deadline)  safe((int8)(now-deadline)>=0)
+    0   240  EXPIRED             waiting                <-- naive is wrong
+    4   244  EXPIRED             waiting                <-- naive is wrong
+    8   248  EXPIRED             waiting                <-- naive is wrong
+   12   252  EXPIRED             waiting                <-- naive is wrong
+   16     0  waiting             waiting             
+   20     4  waiting             waiting             
+   24     8  waiting             waiting             
+   28    12  waiting             waiting             
+   32    16  EXPIRED             EXPIRED             
+   36    20  EXPIRED             EXPIRED             
+   40    24  EXPIRED             EXPIRED             
+
+The naive test says 'expired' at elapsed=0 (it is already >= 14), so a 30-tick timeout fires immediately.
+The safe test is correct as long as the interval you measure is less than half the counter range (127 here).

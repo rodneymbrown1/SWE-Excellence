@@ -1,0 +1,113 @@
+R3: priority inversion. H=bus_dist(5) M=comms(4) L=met(3); H and L share LOCK.
+
+=== Phase 1: LOCK = binary semaphore (no priority inheritance) ===
+  [  55 ms] bc_sched: bus_dist did not finish its cycle -> RESET #1
+  [ 255 ms] bc_sched: bus_dist did not finish its cycle -> RESET #2
+  [ 455 ms] bc_sched: bus_dist did not finish its cycle -> RESET #3
+  [ 655 ms] bc_sched: bus_dist did not finish its cycle -> RESET #4
+  [ 855 ms] bc_sched: bus_dist did not finish its cycle -> RESET #5
+bus_dist: 20 jobs, response times of the first 6 (ms): 51 5 4 4 51 5
+bus_dist deadline misses (response > 50 ms): 5     resets: 5
+N 1 bc_sched
+N 2 bus_dist
+N 3 comms
+N 4 met
+T 5746 1 1 0
+T 5756 1 2 0
+T 5766 1 3 0
+T 5776 1 4 0
+T 10246 1 1 0
+T 10256 1 2 0
+T 11278 1 3 0
+T 51331 1 4 0
+T 58894 1 2 0
+T 60244 1 1 0
+T 60291 1 2 0
+T 61963 1 2 0
+T 65985 1 4 0
+T 67998 1 0 0
+T 110246 1 1 0
+T 110256 1 2 0
+T 114279 1 3 0
+T 154333 1 0 0
+T 160246 1 1 0
+T 160256 1 2 0
+T 164278 1 0 0
+T 205244 1 4 0
+T 210246 1 1 0
+T 210256 1 2 0
+T 211278 1 3 0
+T 251331 1 4 0
+T 258362 1 2 0
+T 260244 1 1 0
+T 260291 1 2 0
+T 261432 1 2 0
+T 265454 1 4 0
+T 267467 1 0 0
+T 310246 1 1 0
+T 310256 1 2 0
+T 314279 1 3 0
+T 354333 1 0 0
+T 360246 1 1 0
+T 360256 1 2 0
+T 364278 1 0 0
+T 405244 1 4 0
+T 410246 1 1 0
+T 410256 1 2 0
+T 411278 1 3 0
+T 451331 1 4 0
+T 458362 1 2 0
+T 460244 1 1 0
+T 460291 1 2 0
+T 461432 1 2 0
+T 465454 1 4 0
+T 467467 1 0 0
+T 510246 1 1 0
+T 510256 1 2 0
+T 514279 1 3 0
+T 554333 1 0 0
+T 560246 1 1 0
+T 560256 1 2 0
+T 564278 1 0 0
+T 605244 1 4 0
+T 610246 1 1 0
+T 610256 1 2 0
+T 611278 1 3 0
+T 651331 1 4 0
+T 658362 1 2 0
+T 660244 1 1 0
+T 660291 1 2 0
+T 661432 1 2 0
+T 665454 1 4 0
+T 667467 1 0 0
+T 710246 1 1 0
+T 710256 1 2 0
+T 714279 1 3 0
+T 754333 1 0 0
+T 760246 1 1 0
+T 760256 1 2 0
+T 764278 1 0 0
+T 805244 1 4 0
+T 810246 1 1 0
+T 810256 1 2 0
+T 811278 1 3 0
+T 851331 1 4 0
+T 858362 1 2 0
+T 860244 1 1 0
+T 860291 1 2 0
+T 861432 1 2 0
+T 865454 1 4 0
+T 867467 1 0 0
+T 910246 1 1 0
+T 910256 1 2 0
+T 914279 1 3 0
+T 954333 1 0 0
+T 960246 1 1 0
+T 960256 1 2 0
+T 964278 1 0 0
+T 1005244 1 4 0
+T 1010248 1 0 0
+
+=== Phase 2: LOCK = mutex (priority inheritance) ===
+bus_dist: 20 jobs, response times of the first 6 (ms): 11 4 4 4 11 4
+bus_dist deadline misses (response > 50 ms): 0     resets: 0

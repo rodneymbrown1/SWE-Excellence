@@ -1,0 +1,21 @@
+{
+  "// NOTE": "[MANUAL] Not executed in this project (no GUI available). Documented VS Code C/C++ (cppdbg) attach-to-gdbstub configuration. Start QEMU first with:  python3 labs/rtos/run.py <elf> --gdb",
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "QEMU Cortex-M3 (attach to gdbstub)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/labs/rtos/r3_inversion/build/r3_inversion.elf",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "arm-none-eabi-gdb",
+      "miDebuggerServerAddress": "localhost:1234",
+      "stopAtEntry": false,
+      "setupCommands": [
+        { "text": "-enable-pretty-printing", "ignoreFailures": true },
+        { "text": "source ${workspaceFolder}/labs/rtos/gdb/freertos.py", "ignoreFailures": true }
+      ]
+    }
+  ]
+}

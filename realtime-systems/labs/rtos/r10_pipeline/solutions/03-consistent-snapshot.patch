@@ -1,0 +1,36 @@
+--- a/main.c
++++ b/main.c
+@@ -66,10 +66,12 @@
+         burn_us(400);                                          /* the filter maths */
+         if (r.seq % 250 == 249) burn_us(6000);                 /* rare slow path: recalibration */
+         int32_t a = r.gyro * 3;
++        taskENTER_CRITICAL();                                  /* publish all four fields as one unit */
+         att.angle = a;
+         att.angle_inv = ~a;
+         att.t_us = r.t_us;
+         att.seq = r.seq;
++        taskEXIT_CRITICAL();
+         filtered++;
+         if (nlat < 3200) lat_us[nlat++] = now_us() - r.t_us;
+     }
+@@ -83,12 +85,15 @@
+         uint32_t t0 = now_us();
+         if (t0 - prev > 11000) ctrl_late++;                    /* period overshoot > 10% */
+         prev = t0;
+-        int32_t a = att.angle;                                 /* read 1 */
+-        uint32_t s1 = att.seq;
++        att_t snap;
++        taskENTER_CRITICAL();                                  /* take ONE consistent snapshot, then work on the copy */
++        snap.angle = att.angle; snap.seq = att.seq; snap.t_us = att.t_us; snap.angle_inv = att.angle_inv;
++        taskEXIT_CRITICAL();
++        int32_t a = snap.angle;
+         burn_us(150);                                          /* compute with 'a' */
+-        uint32_t ts = att.t_us;                                /* read 2: assumes it describes the same sample as 'a' */
+-        uint32_t s2 = att.seq;
+-        if (s1 != s2) torn++;
++        uint32_t ts = snap.t_us;                               /* same sample by construction */
++        uint32_t s2 = snap.seq;
++        if (snap.angle_inv != ~snap.angle) torn++;
+         cmd_t c = { s2, ts, a / 2 };
+         xQueueOverwrite(q_cmd, &c);
+         commanded++; ctrl_cycles++;

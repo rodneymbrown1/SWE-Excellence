@@ -1,0 +1,41 @@
+--- a/main.c
++++ b/main.c
+@@ -43,6 +43,7 @@
+ static volatile uint32_t produced, filtered, commanded, actuated, dropped_raw, torn, isr_late, ctrl_cycles, ctrl_late;
+ static uint32_t lat_us[3200], nlat;                /* per-sample latency: IMU interrupt -> estimate published */
+ static volatile uint32_t done;
++static TaskHandle_t calib_h;
+ 
+ static void imu_isr(void) {
+     static uint32_t last, seq;
+@@ -64,7 +65,7 @@
+     for (;;) {
+         xQueueReceive(q_raw, &r, portMAX_DELAY);
+         burn_us(400);                                          /* the filter maths */
+-        if (r.seq % 250 == 249) burn_us(6000);                 /* rare slow path: recalibration */
++        if (r.seq % 250 == 249) xTaskNotifyGive(calib_h);      /* hand the slow path to a low-priority task */
+         int32_t a = r.gyro * 3;
+         taskENTER_CRITICAL();                                  /* publish all four fields as one unit */
+         att.angle = a;
+@@ -77,6 +78,13 @@
+     }
+ }
+ 
++static void calibrate(void *arg) {
++    for (;;) {
++        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
++        burn_us(6000);                                         /* recalibration: runs only when nothing urgent is ready */
++    }
++}
++
+ static void control(void *arg) {
+     TickType_t last = xTaskGetTickCount();
+     uint32_t prev = now_us();
+@@ -126,6 +134,7 @@
+     xTaskCreate(control,  "control",  2 * configMINIMAL_STACK_SIZE, NULL, 3, &h[1]);
+     xTaskCreate(actuator, "actuator", 2 * configMINIMAL_STACK_SIZE, NULL, 5, &h[2]);
+     xTaskCreate(logger,   "logger",   2 * configMINIMAL_STACK_SIZE, NULL, 1, &h[3]);   /* below every real-time task */
++    xTaskCreate(calibrate, "calibrate", 2 * configMINIMAL_STACK_SIZE, NULL, 2, &calib_h);
+     for (int i = 0; i < 4; i++) vTaskSetTaskNumber(h[i], (UBaseType_t)(i + 1));
+     vTaskDelay(1);
+     trace_reset();

@@ -1,0 +1,10 @@
+# third-party downloads (personal study copies; do not redistribute)
+research/_raw/
+labs/third_party/
+# build outputs
+labs/**/build/
+labs/**/*.o
+labs/**/*.elf
+labs/**/*.bin
+print/*.html
+.DS_Store

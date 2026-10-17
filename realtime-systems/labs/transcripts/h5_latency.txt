@@ -1,0 +1,10 @@
+method                         samples    p50 ms   p99 ms  p99.9 ms  p99.99 ms    max ms
+closed-loop (as reported)         5501      1.20     1.40      1.40    5001.15      5001
+closed-loop + correction          6000      1.21  4411.15   4951.15    5001.15      5001
+open-loop (ground truth)          6000      1.22  4482.77   4956.91    5001.27      5001
+
+The system stalled for 5 s of a 60 s test: ~8% of the requests that WOULD have arrived were delayed.
+Open-loop sees 558 of 6000 requests slower than 100 ms; the closed-loop tester recorded 1.
+
+RTOS translation: if a task overruns and you log only the response times of the jobs that ran, the
+releases it SKIPPED during the overrun never appear in your histogram.  Count releases, not completions.

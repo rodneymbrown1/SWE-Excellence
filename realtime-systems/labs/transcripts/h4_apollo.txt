@@ -1,0 +1,8 @@
+period 2.0s, job needs 1.0s CPU, pool = 8 core sets
+
+hp load 0.40 (job fits)            alarms in  800 s:  0   first alarm at -   peak outstanding jobs 1
+hp load 0.52 (small deficit)       alarms in  800 s:  1   first alarm at 400 s   peak outstanding jobs 8
+hp load 0.62 (larger deficit)      alarms in  800 s: 11   first alarm at 68 s   peak outstanding jobs 8
+
+What to notice: a small steady deficit does not fail at once -- it fills a fixed pool, then the system restarts,
+recovers, and fails again.  The alarm spacing is set by (pool size) / (deficit per period).

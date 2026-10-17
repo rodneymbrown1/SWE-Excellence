@@ -1,0 +1,16 @@
+R7: sizeof(TickType_t) = 2 bytes; wraps after 65536 ticks
+tick count is now 65501 (wraps in 35 ms)
+
+  periodic wake 0: tick=65521  elapsed=19273 us
+  periodic wake 1: tick=    5  elapsed=39273 us
+  periodic wake 2: tick=   25  elapsed=59273 us
+  periodic wake 3: tick=   45  elapsed=79273 us
+  periodic wake 4: tick=   65  elapsed=99273 us
+  periodic wake 5: tick=   85  elapsed=119273 us
+
+(2) start=65507 deadline=71 (wrapped=yes)
+    naive  (now >= deadline): loop ran 0 times, lasted 2 us   <- 100 ticks requested
+    start=65507 deadline=71
+    safe   ((int16)(now-deadline) >= 0): loop ran 100 times, lasted 99651 us
+
+Also in the kernel API: xTaskCheckForTimeOut() does this comparison correctly for you.

@@ -1,0 +1,11 @@
+Set A: predicted max R = 1000, 3000, 10000 us (no misses)
+  task   C(us)  T(ms)  jobs  max R(us)  mean R(us)  misses
+  t1      1000      4   599       1006        1005       0
+  t2      2000      6   399       3024        3021       0
+  t3      3000     12   199      10087       10086       0
+
+Set B: predicted max R = 2000, 8000 us; t2 deadline is 7000 us -> MISS
+  task   C(us)  T(ms)  jobs  max R(us)  mean R(us)  misses
+  t1      2000      5   489       2008        2007       0
+  t2      4000      7   349       8284        7323     279
+

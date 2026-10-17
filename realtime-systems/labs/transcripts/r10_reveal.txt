@@ -1,0 +1,9 @@
+R10: pipeline, 3000 IMU samples
+
+--- first look (what a dashboard would show) ---
+samples produced   : 3000
+estimates published: 2946
+commands applied   : 309
+mean latency       : 715 us
+control cycles     : 309 (expected ~309)
+[reveal] dropped_raw=54 torn=47 isr_late=0 ctrl_late=61 filtered=2946

@@ -1,0 +1,14 @@
+R3: priority inversion. H=bus_dist(5) M=comms(4) L=met(3); H and L share LOCK.
+
+=== Phase 1: LOCK = binary semaphore (no priority inheritance) ===
+  [  55 ms] bc_sched: bus_dist did not finish its cycle -> RESET #1
+  [ 255 ms] bc_sched: bus_dist did not finish its cycle -> RESET #2
+  [ 455 ms] bc_sched: bus_dist did not finish its cycle -> RESET #3
+  [ 655 ms] bc_sched: bus_dist did not finish its cycle -> RESET #4
+  [ 855 ms] bc_sched: bus_dist did not finish its cycle -> RESET #5
+bus_dist: 20 jobs, response times of the first 6 (ms): 51 5 4 4 51 5
+bus_dist deadline misses (response > 50 ms): 5     resets: 5
+
+=== Phase 2: LOCK = mutex (priority inheritance) ===
+bus_dist: 20 jobs, response times of the first 6 (ms): 11 4 4 4 11 4
+bus_dist deadline misses (response > 50 ms): 0     resets: 0

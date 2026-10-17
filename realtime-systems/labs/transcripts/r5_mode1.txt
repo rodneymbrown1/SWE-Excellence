@@ -1,0 +1,4 @@
+R5: watchdog mode 1 (1 = feed from ISR, 2 = feed from low-priority task, 3 = feed only if all tasks checked in)
+[1500 ms] end of run (no watchdog reset happened)
+  sensor cycles=150  control cycles=15  logger cycles=15  watchdog feeds=150
+  -> control stopped at cycle 15 (t ~ 300 ms) and the system never noticed.
